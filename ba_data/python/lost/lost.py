@@ -6,7 +6,7 @@ from bascenev1lib.actor.spaz import Spaz
 from bascenev1lib.gameutils import SharedObjects
 
 import math
-killers = ['Spaz', 'Snake Shadow']
+killers = ['Spaz', 'Snake Shadow', 'Masked Man']
 
 class DamageMessage:
     """ a message  that says how much damage someone should take"""

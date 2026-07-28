@@ -70,13 +70,32 @@ def register_appearances() -> None:
     # pylint: disable=too-many-locals
     # pylint: disable=too-many-statements
     from lost.killers import (
-        SpazKiller, NinjaKiller
+        SpazKiller, NinjaKiller, MaskedManKiller
     )
     from lost.survivors import (
         ZoeSurvivor, PirateSurvivor, MellSurvivor, 
         KronkSurvivor
     )
     
+    # Spaz #######################################
+    t = Appearance('Masked Man')
+    t.color_texture = 'neoSpazColor'
+    t.color_mask_texture = 'neoSpazColorMask'
+    t.icon_texture = 'neoSpazIcon'
+    t.icon_mask_texture = 'neoSpazIconColorMask'
+    t.head_mesh = 'neoSpazHead'
+    t.torso_mesh = 'neoSpazTorso'
+    t.pelvis_mesh = 'neoSpazPelvis'
+    t.upper_arm_mesh = 'neoSpazUpperArm'
+    t.forearm_mesh = 'neoSpazForeArm'
+    t.hand_mesh = 'neoSpazHand'
+    t.upper_leg_mesh = 'neoSpazUpperLeg'
+    t.lower_leg_mesh = 'neoSpazLowerLeg'
+    t.toes_mesh = 'neoSpazToes'
+    t.style = 'cyborg'
+    t.default_color = (0.7, 0.4, 0.1)
+    t.default_highlight = (0.35, 0.4, 0.5)
+    t.moveset = MaskedManKiller
 
     # Spaz #######################################
     t = Appearance('Spaz')
