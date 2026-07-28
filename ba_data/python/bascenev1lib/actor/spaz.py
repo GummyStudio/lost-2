@@ -324,9 +324,14 @@ class Spaz(bs.Actor):
         Can pass all button presses through here; if we see an obscene number
         of them in a short time let's shame/pushish this guy for using turbo.
         """
+        #r fuckoff
+        return
         t_ms = int(bs.basetime() * 1000.0)
         assert isinstance(t_ms, int)
         t_bucket = int(t_ms / 1000)
+        # only care about jumps
+        if source != 'jump':
+            return
         if t_bucket == self._turbo_filter_time_bucket:
             # Add only once per timestep (filter out buttons triggering
             # multiple actions).
@@ -468,7 +473,7 @@ class Spaz(bs.Actor):
         if t_ms - self.last_pickup_time_ms >= self._pickup_cooldown:
             self.node.pickup_pressed = True
             self.last_pickup_time_ms = t_ms
-        self._turbo_filter_add_press('pickup')
+        #self._turbo_filter_add_press('pickup')
 
     def on_pickup_release(self) -> None:
         """
@@ -490,7 +495,7 @@ class Spaz(bs.Actor):
         if not self.node:
             return
         self.node.hold_position_pressed = True
-        self._turbo_filter_add_press('holdposition')
+        #self._turbo_filter_add_press('holdposition')
 
     def on_hold_position_release(self) -> None:
         """
@@ -528,7 +533,7 @@ class Spaz(bs.Actor):
                         0.8,
                     ),
                 )
-        self._turbo_filter_add_press('punch')
+        #self._turbo_filter_add_press('punch')
 
     def _safe_play_sound(self, sound: bs.Sound, volume: float) -> None:
         """Plays a sound at our position if we exist."""
@@ -569,7 +574,7 @@ class Spaz(bs.Actor):
             self.node.bomb_pressed = True
             if not self.node.hold_node:
                 self.drop_bomb()
-        self._turbo_filter_add_press('bomb')
+        #self._turbo_filter_add_press('bomb')
 
     def on_bomb_release(self) -> None:
         """
@@ -598,8 +603,8 @@ class Spaz(bs.Actor):
         # Filtering these events would be tough since its an analog
         # value, but lets still pass full 0-to-1 presses along to
         # the turbo filter to punish players if it looks like they're turbo-ing.
-        if self._last_run_value < 0.01 and value > 0.99:
-            self._turbo_filter_add_press('run')
+        #if self._last_run_value < 0.01 and value > 0.99:
+            #self._turbo_filter_add_press('run')
 
         self._last_run_value = value
 
@@ -614,7 +619,7 @@ class Spaz(bs.Actor):
         # input events get clustered up during net-games and we'd wind up
         # killing a lot and making it hard to fly.. should look into this.
         self.node.fly_pressed = True
-        self._turbo_filter_add_press('fly')
+        #self._turbo_filter_add_press('fly')
 
     def on_fly_release(self) -> None:
         """
