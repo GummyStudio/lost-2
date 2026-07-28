@@ -78,20 +78,29 @@ def register_appearances() -> None:
     )
     
     # Spaz #######################################
-    t = Appearance('Masked Man')
-    t.color_texture = 'neoSpazColor'
-    t.color_mask_texture = 'neoSpazColorMask'
-    t.icon_texture = 'neoSpazIcon'
-    t.icon_mask_texture = 'neoSpazIconColorMask'
-    t.head_mesh = 'neoSpazHead'
-    t.torso_mesh = 'neoSpazTorso'
-    t.pelvis_mesh = 'neoSpazPelvis'
-    t.upper_arm_mesh = 'neoSpazUpperArm'
-    t.forearm_mesh = 'neoSpazForeArm'
-    t.hand_mesh = 'neoSpazHand'
-    t.upper_leg_mesh = 'neoSpazUpperLeg'
-    t.lower_leg_mesh = 'neoSpazLowerLeg'
-    t.toes_mesh = 'neoSpazToes'
+    # Bunny ###################################
+    t = Appearance('Easter Bunny')
+    t.color_texture = 'bunnyColor'
+    t.color_mask_texture = 'bunnyColorMask'
+    t.icon_texture = 'bunnyIcon'
+    t.icon_mask_texture = 'bunnyIconColorMask'
+    t.head_mesh = 'bunnyHead'
+    t.torso_mesh = 'bunnyTorso'
+    t.pelvis_mesh = 'bunnyPelvis'
+    t.upper_arm_mesh = 'bunnyUpperArm'
+    t.forearm_mesh = 'bunnyForeArm'
+    t.hand_mesh = 'bunnyHand'
+    t.upper_leg_mesh = 'bunnyUpperLeg'
+    t.lower_leg_mesh = 'bunnyLowerLeg'
+    t.toes_mesh = 'bunnyToes'
+    bunny_sounds = ['bunny1', 'bunny2', 'bunny3', 'bunny4']
+    bunny_hit_sounds = ['bunnyHit1', 'bunnyHit2']
+    t.jump_sounds = ['bunnyJump']
+    t.attack_sounds = bunny_sounds
+    t.impact_sounds = bunny_hit_sounds
+    t.death_sounds = ['bunnyDeath']
+    t.pickup_sounds = bunny_sounds
+    t.fall_sounds = ['bunnyFall']
     t.style = 'cyborg'
     t.default_color = (0.7, 0.4, 0.1)
     t.default_highlight = (0.35, 0.4, 0.5)

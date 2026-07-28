@@ -111,7 +111,7 @@ class Beam(bs.Actor):
 class MaskedManKiller(CharacterMoveset):
     """who is this kid!"""
     is_killer = True
-    chase_theme_dir = 'spazChasetheme'
+    chase_theme_dir = 'coolone'
     hitpoints = 2000
 
     move_speed = 0.8
