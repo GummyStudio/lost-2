@@ -1,10 +1,10 @@
-# BombSquad - Fountain Sealers
+# lost
 <p align="center">
     <picture>
-        <img src="https://github.com/user-attachments/assets/6e49b910-3ef0-44d4-8777-2bb00fb1c314">
+        <img src="https://github.com/user-attachments/assets/b0002aed-0848-4d6d-a64b-d1e2840281ee">
     </picture>
 </p>
 <p>
-BombSquad Fountain Sealers is a (VERY) work-in-progress modpack that 
-combines the Undertale and Deltarune universe into a single pack.<br>
-oh yeah also gummy dont shelf this please its a awesome concept 3:
+lost in a world without rules. will you survive this place's rounds?<br>
+Become a survivor or a killer in this asymmetrical 1v8 killer game made in Ballistica.
+</p>
