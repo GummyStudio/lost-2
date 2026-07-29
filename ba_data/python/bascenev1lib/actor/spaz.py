@@ -112,6 +112,7 @@ class Spaz(bs.Actor):
             self._hockey = False
         self._punched_nodes: set[bs.Node] = set()
         self._cursed = False
+        self.stunned= False
         self._connected_to_player: bs.Player | None = None
         materials = [
             factory.spaz_material,
@@ -268,9 +269,23 @@ class Spaz(bs.Actor):
             # Faster walkspeed than killers, but slower run speed.
             self.max_walk_speed = 1.0
             self.max_run_speed = 1.0
+        self.input_run = 0
+        self.input_x = 0
+        self.input_y = 0
         
         if is_killer:
             self.node.name = ''
+        
+        bs.timer(0.001, self.tick_movement, repeat=True)
+
+    def tick_movement(self):
+        if not self.exists():
+            return
+        # Ew... has to be in a seperate handler, 
+        # or else changing the variables wont do anything.
+        self.node.move_up_down = self.input_y * self.max_walk_speed
+        self.node.move_left_right = self.input_x * self.max_walk_speed
+        self.node.run = self.input_run * self.max_run_speed
 
 
 
@@ -598,7 +613,7 @@ class Spaz(bs.Actor):
         t_ms = int(bs.time() * 1000.0)
         assert isinstance(t_ms, int)
         self.last_run_time_ms = t_ms
-        self.node.run = value * self.max_run_speed
+        self.input_run = value
 
         # Filtering these events would be tough since its an analog
         # value, but lets still pass full 0-to-1 presses along to
@@ -648,7 +663,7 @@ class Spaz(bs.Actor):
         """
         if not self.node:
             return
-        self.node.move_up_down = value * self.max_walk_speed
+        self.input_y = value
 
     def on_move_left_right(self, value: float) -> None:
         """
@@ -659,7 +674,7 @@ class Spaz(bs.Actor):
         """
         if not self.node:
             return
-        self.node.move_left_right = value  * self.max_walk_speed
+        self.input_x = value
 
     def on_punched(self, damage: int) -> None:
         """Called when this spaz gets punched."""
@@ -867,9 +882,13 @@ class Spaz(bs.Actor):
                     position=self.node.position,
                 )
                 return
+            # we already stunned, no thnkas
+            if self.stunned:
+                return
             
             # Become invincible instantly
             self.set_invincible(msg.duration+3.5)
+            self.stunned = True
 
             # Tell their moveset that we took their stun
             if msg.spaz:
@@ -902,6 +921,7 @@ class Spaz(bs.Actor):
             def return_():
                 self.max_run_speed /= 0.02
                 self.max_walk_speed /= 0.02
+                self.stunned = False
 
             bs.timer(msg.duration, return_)
 

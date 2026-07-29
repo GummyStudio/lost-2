@@ -9,8 +9,7 @@ from bascenev1lib.actor.spaz import Spaz
 from bascenev1lib.gameutils import SharedObjects
 # import _bascenev1; import bascenev1 as bs;_bascenev1.getsession().start_timer(11932913915); _bascenev1.set_map_bounds((-99990, -99990, -99990, 99990, 99990, 99990)); bs.getactivity().players[0].actor.node.area_of_interest_radius = -50
 import math
-# FIXME: Need to merge this with bs.app.classic (or spaz appearances).
-killers = ['Spaz', 'Snake Shadow', 'Easter Bunny']
+
 
 HP_COLORS = [
     (0,   (0.3, 0.1, 0.1)),
@@ -97,6 +96,12 @@ class SurvivorDetectedMessage:
 
 class KillerDetectedMessage:
     """ send this to any object in need to detect a killer. """
+
+class SurvivorUnDetectedMessage:
+    """ send this to any object in need to undetect a survivor. """
+
+class KillerUnDetectedMessage:
+    """ send this to any object in need to undetect a killer. """
 
 class CharacterMoveset:
     """ 
@@ -246,6 +251,7 @@ class CharacterMoveset:
             or self.spaz._dead
             or self.spaz.frozen
             or self.spaz.node.knockout > 0.0
+            or self.spaz.stunned
         )
 
     def can_do_ability1(self):
@@ -442,7 +448,8 @@ class AsymFactory:
             actions=(
                 ('modify_part_collision', 'collide', True),
                 ('modify_part_collision', 'physical', False),
-                ('message', 'our_node', 'at_connect', SurvivorDetectedMessage())
+                ('message', 'our_node', 'at_connect', SurvivorDetectedMessage()),
+                ('message', 'our_node', 'at_disconnect', SurvivorUnDetectedMessage())
             ),
         )
 
@@ -471,7 +478,8 @@ class AsymFactory:
             actions=(
                 ('modify_part_collision', 'collide', True),
                 ('modify_part_collision', 'physical', False),
-                ('message', 'our_node', 'at_connect', KillerDetectedMessage())
+                ('message', 'our_node', 'at_connect', KillerDetectedMessage()),
+                ('message', 'our_node', 'at_disconnect', KillerUnDetectedMessage())
             ),
         )
         
@@ -488,6 +496,10 @@ class AsymFactory:
                 ('modify_part_collision', 'collide', False),
             ),
         )
+
+        self.no_collision = bs.Material()
+        # collide with nothin
+        self.no_collision.add_actions(('modify_part_collision', 'collide', False),)
         
 
 
@@ -665,6 +677,67 @@ def assignspazinput(spaz: Spaz, player: bs.Player):
         bs.InputType.JUMP_RELEASE, spaz.on_jump_release
     )
 
+def assignspazinput(spaz: Spaz, player: bs.Player):
+    player.resetinput()
+    player.assigninput(
+        bs.InputType.LEFT_RIGHT, spaz.on_move_left_right
+    )
+    player.assigninput(
+        bs.InputType.UP_DOWN, spaz.on_move_up_down
+    )
+    player.assigninput(bs.InputType.RUN, spaz.on_run)
+    player.assigninput(
+        bs.InputType.BOMB_PRESS, spaz.on_bomb_press
+    )
+    player.assigninput(
+        bs.InputType.BOMB_RELEASE, spaz.on_bomb_release
+    )
+    player.assigninput(
+        bs.InputType.PICK_UP_PRESS, spaz.on_pickup_press
+    )
+    player.assigninput(
+        bs.InputType.PICK_UP_RELEASE, spaz.on_pickup_release
+    )
+    player.assigninput(
+        bs.InputType.PUNCH_PRESS, spaz.on_punch_press
+    )
+    player.assigninput(
+        bs.InputType.PUNCH_RELEASE, spaz.on_punch_release
+    )
+    player.assigninput(
+        bs.InputType.JUMP_PRESS, spaz.on_jump_press
+    )
+    player.assigninput(
+        bs.InputType.JUMP_RELEASE, spaz.on_jump_release
+    )
+
+def show_lms_texture(texture_name: str, ):
+    position = (0.0, 0.0)
+    scale = (450.0, 450.0)
+    display_duration = 2.0
+    fade_duration = 0.5
+   
+    node = bs.newnode(
+        'image',
+        attrs={
+            'texture': bs.gettexture(f'LMS/{texture_name}'),
+            'attach': 'center',
+            'position': position,
+            'scale': scale,
+            'opacity': 1.0,
+            'color': (1.0, 1.0, 1.0),
+        },
+    )
+
+    def _start_fade() -> None:
+        if not node.exists():
+            return
+        
+        bs.animate(node, 'opacity', {0.0: 1.0, fade_duration: 0.0})
+        
+        bs.timer(fade_duration, node.delete)
+    bs.animate(node, 'opacity', {0.0: 0.0, display_duration*0.2: 1.0})
+    bs.timer(display_duration, _start_fade)
 
 class Lobby(bs.Activity[bs.Player, bs.Team]):
     """ where the lobby takes place. """
@@ -766,7 +839,7 @@ class ChooserActivity(bs.Activity[bs.Player, bs.Team]):
         
         self.killer_player = random.choice(self.players)
 
-        killer_keys = killers
+        killer_keys = bs.app.classic.killers
         self.selected_killer_id = killer_keys[0]
         icon_scale = 260
         x = 0
@@ -820,23 +893,23 @@ class ChooserActivity(bs.Activity[bs.Player, bs.Team]):
     def _next_killer(self):
         self._killer_index = (
             self._killer_index + 1
-        ) % len(killers)
+        ) % len(bs.app.classic.killers)
         self._update_per_choice()
         self._move_sound.play()
     
     def _prev_killer(self):
         self._killer_index = (
             self._killer_index - 1
-        ) % len(killers)
+        ) % len(bs.app.classic.killers)
         self._update_per_choice()
         self._move_sound.play()
 
     def _update_per_choice(self):
-        killer_keys = killers
+        killer_keys = bs.app.classic.killers
         if not killer_keys:
             return
         index = self._killer_index
-        self.selected_killer_id = killers[index]
+        self.selected_killer_id = bs.app.classic.killers[index]
         # variables
         killer = killer_keys[self._killer_index]
         apps = bs.app.classic.spaz_appearances
@@ -1036,7 +1109,7 @@ class Match(bs.Activity[bs.Player, bs.Team]):
     def on_transition_in(self):
         super().on_transition_in()
         mapss = [
-            #maps.StepRightUp,
+            maps.StepRightUp,
             maps.MonkeyFace,
         ]
         map = random.choice(mapss)
@@ -1245,16 +1318,25 @@ class Match(bs.Activity[bs.Player, bs.Team]):
         ):
             self.session.start_timer(96)
             bs.setmusic(bs.MusicType.LMS4)  
+            show_lms_texture('spaz-vs-zoe')
         elif (
             list(self.survivors)[0].actor.character == 'Mel' and
             list(self.killers)[0].actor.character == 'Snake Shadow'
         ):
             self.session.start_timer(86)
             bs.setmusic(bs.MusicType.LMS5)    
+            show_lms_texture('ninja-vs-mel')
         else:
 
             self.session.start_timer(69)
             bs.setmusic(bs.MusicType.LMS1)
+            if list(self.killers)[0].actor.character == 'Snake Shadow':
+                show_lms_texture('snakeshadow')
+            elif list(self.killers)[0].actor.character == 'Easter Bunny':
+                show_lms_texture('bunny')
+            else:
+                show_lms_texture('spaz')
+
         self.lms = True
         for player in self.survivors:
             player.actor.node.is_area_of_interest = True

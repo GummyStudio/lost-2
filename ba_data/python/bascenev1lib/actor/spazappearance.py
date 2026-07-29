@@ -70,40 +70,15 @@ def register_appearances() -> None:
     # pylint: disable=too-many-locals
     # pylint: disable=too-many-statements
     from lost.killers import (
-        SpazKiller, NinjaKiller, MaskedManKiller
+        SpazKiller, NinjaKiller, MaskedManKiller,
+        WizardKiller,
     )
     from lost.survivors import (
         ZoeSurvivor, PirateSurvivor, MellSurvivor, 
-        KronkSurvivor
+        KronkSurvivor,
     )
     
-    # Bunny ###################################
-    t = Appearance('Easter Bunny')
-    t.color_texture = 'bunnyColor'
-    t.color_mask_texture = 'bunnyColorMask'
-    t.icon_texture = 'bunnyIcon'
-    t.icon_mask_texture = 'bunnyIconColorMask'
-    t.head_mesh = 'bunnyHead'
-    t.torso_mesh = 'bunnyTorso'
-    t.pelvis_mesh = 'bunnyPelvis'
-    t.upper_arm_mesh = 'bunnyUpperArm'
-    t.forearm_mesh = 'bunnyForeArm'
-    t.hand_mesh = 'bunnyHand'
-    t.upper_leg_mesh = 'bunnyUpperLeg'
-    t.lower_leg_mesh = 'bunnyLowerLeg'
-    t.toes_mesh = 'bunnyToes'
-    bunny_sounds = ['bunny1', 'bunny2', 'bunny3', 'bunny4']
-    bunny_hit_sounds = ['bunnyHit1', 'bunnyHit2']
-    t.jump_sounds = ['bunnyJump']
-    t.attack_sounds = bunny_sounds
-    t.impact_sounds = bunny_hit_sounds
-    t.death_sounds = ['bunnyDeath']
-    t.pickup_sounds = bunny_sounds
-    t.fall_sounds = ['bunnyFall']
-    t.style = 'cyborg'
-    t.default_color = (0.7, 0.4, 0.1)
-    t.default_highlight = (0.35, 0.4, 0.5)
-    t.moveset = MaskedManKiller
+   
 
     # Spaz #######################################
     t = Appearance('Spaz')
@@ -140,6 +115,7 @@ def register_appearances() -> None:
     t.default_color = (0.6, 0.6, 0.6)
     t.default_highlight = (0.2, 0.2, 0.2)
     t.moveset = SpazKiller
+    bs.app.classic.killers.append('Spaz')
 
 
     # Zoe #####################################
@@ -177,6 +153,7 @@ def register_appearances() -> None:
     t.default_color = (0.6, 0.6, 0.6)
     t.default_highlight = (0, 1, 0)
     t.moveset = ZoeSurvivor
+    bs.app.classic.survivors.append('Zoe')
 
     # Pirate #######################################
     t = Appearance('Jack Morgan')
@@ -213,6 +190,7 @@ def register_appearances() -> None:
     t.default_color = (1, 0.2, 0.1)
     t.default_highlight = (1, 1, 0)
     t.moveset = PirateSurvivor
+    bs.app.classic.survivors.append('Jack Morgan')
 
     # Chef ###########################################
     t = Appearance('Mel')
@@ -251,6 +229,7 @@ def register_appearances() -> None:
     t.default_color = (1, 1, 1)
     t.default_highlight = (0.1, 0.6, 0.1)
     t.moveset = MellSurvivor
+    bs.app.classic.survivors.append('Mel')
 
      # Barbarian #####################################
     t = Appearance('Kronk')
@@ -289,6 +268,7 @@ def register_appearances() -> None:
     t.default_color = (0.4, 0.5, 0.4)
     t.default_highlight = (1, 0.5, 0.3)
     t.moveset = KronkSurvivor
+    bs.app.classic.survivors.append('Kronk')
 
 
 
@@ -320,7 +300,66 @@ def register_appearances() -> None:
     t.default_color = (0, 0, 1.0)#(1, 1, 1)
     t.default_highlight = (1, 1, 1)
     t.moveset = NinjaKiller
+    bs.app.classic.killers.append('Snake Shadow')
+
+     # Bunny ###################################
+    t = Appearance('Easter Bunny')
+    t.color_texture = 'bunnyColor'
+    t.color_mask_texture = 'bunnyColorMask'
+    t.icon_texture = 'bunnyIcon'
+    t.icon_mask_texture = 'bunnyIconColorMask'
+    t.head_mesh = 'bunnyHead'
+    t.torso_mesh = 'bunnyTorso'
+    t.pelvis_mesh = 'bunnyPelvis'
+    t.upper_arm_mesh = 'bunnyUpperArm'
+    t.forearm_mesh = 'bunnyForeArm'
+    t.hand_mesh = 'bunnyHand'
+    t.upper_leg_mesh = 'bunnyUpperLeg'
+    t.lower_leg_mesh = 'bunnyLowerLeg'
+    t.toes_mesh = 'bunnyToes'
+    bunny_sounds = ['bunny1', 'bunny2', 'bunny3', 'bunny4']
+    bunny_hit_sounds = ['bunnyHit1', 'bunnyHit2']
+    t.jump_sounds = ['bunnyJump']
+    t.attack_sounds = bunny_sounds
+    t.impact_sounds = bunny_hit_sounds
+    t.death_sounds = ['bunnyDeath']
+    t.pickup_sounds = bunny_sounds
+    t.fall_sounds = ['bunnyFall']
+    t.style = 'cyborg'
+    t.default_color = (0.7, 0.4, 0.1)
+    t.default_highlight = (0.35, 0.4, 0.5)
+    t.moveset = MaskedManKiller
+    bs.app.classic.killers.append('Easter Bunny')
     
+
+    # Wizard ###################################
+    t = Appearance('Grumbledorf')
+    t.color_texture = 'wizardColor'
+    t.color_mask_texture = 'wizardColorMask'
+    t.icon_texture = 'wizardIcon'
+    t.icon_mask_texture = 'wizardIconColorMask'
+    t.head_mesh = 'wizardHead'
+    t.torso_mesh = 'wizardTorso'
+    t.pelvis_mesh = 'wizardPelvis'
+    t.upper_arm_mesh = 'wizardUpperArm'
+    t.forearm_mesh = 'wizardForeArm'
+    t.hand_mesh = 'wizardHand'
+    t.upper_leg_mesh = 'wizardUpperLeg'
+    t.lower_leg_mesh = 'wizardLowerLeg'
+    t.toes_mesh = 'wizardToes'
+    wizard_sounds = ['wizard1', 'wizard2', 'wizard3', 'wizard4']
+    wizard_hit_sounds = ['wizardHit1', 'wizardHit2']
+    t.jump_sounds = wizard_sounds
+    t.attack_sounds = wizard_sounds
+    t.impact_sounds = wizard_hit_sounds
+    t.death_sounds = ['wizardDeath']
+    t.pickup_sounds = wizard_sounds
+    t.fall_sounds = ['wizardFall']
+    t.style = 'cyborg'
+    t.default_color = (0.2, 0.2, 0.2)
+    t.default_highlight = (0.06, 0.15, 0.4)
+    t.moveset = WizardKiller
+    bs.app.classic.killers.append('Grumbledorf')
 
     return
 
@@ -631,32 +670,7 @@ def register_appearances() -> None:
     t.default_color = (0.3, 0.5, 0.8)
     t.default_highlight = (1, 0, 0)
 
-    # Wizard ###################################
-    t = Appearance('Grumbledorf')
-    t.color_texture = 'wizardColor'
-    t.color_mask_texture = 'wizardColorMask'
-    t.icon_texture = 'wizardIcon'
-    t.icon_mask_texture = 'wizardIconColorMask'
-    t.head_mesh = 'wizardHead'
-    t.torso_mesh = 'wizardTorso'
-    t.pelvis_mesh = 'wizardPelvis'
-    t.upper_arm_mesh = 'wizardUpperArm'
-    t.forearm_mesh = 'wizardForeArm'
-    t.hand_mesh = 'wizardHand'
-    t.upper_leg_mesh = 'wizardUpperLeg'
-    t.lower_leg_mesh = 'wizardLowerLeg'
-    t.toes_mesh = 'wizardToes'
-    wizard_sounds = ['wizard1', 'wizard2', 'wizard3', 'wizard4']
-    wizard_hit_sounds = ['wizardHit1', 'wizardHit2']
-    t.jump_sounds = wizard_sounds
-    t.attack_sounds = wizard_sounds
-    t.impact_sounds = wizard_hit_sounds
-    t.death_sounds = ['wizardDeath']
-    t.pickup_sounds = wizard_sounds
-    t.fall_sounds = ['wizardFall']
-    t.style = 'spaz'
-    t.default_color = (0.2, 0.4, 1.0)
-    t.default_highlight = (0.06, 0.15, 0.4)
+    
 
     # Cowboy ###################################
     t = Appearance('Butch')

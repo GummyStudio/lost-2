@@ -454,7 +454,7 @@ class Chooser:
         is_test_input = input_device.is_test_input
 
         # Playable Survivors...
-        self._character_names = ['Zoe', 'Jack Morgan', 'Mel', 'Kronk']
+        self._character_names = babase.app.classic.survivors
 
         # If we're a local player, pull our local profiles from the config.
         # Otherwise ask the remote-input-device for its profile list.
