@@ -126,4 +126,7 @@ class KronkSurvivor(CharacterMoveset):
 
         return False
 
+    def ability3(self):
+        pass
+
    

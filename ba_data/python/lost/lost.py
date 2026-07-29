@@ -1,12 +1,13 @@
 """Module for everything related to Lost."""
 import bascenev1 as bs
+import _bascenev1
 from bascenev1._activitytypes import TransitionActivity
 import random
 import babase as ba
 from bascenev1lib import maps
 from bascenev1lib.actor.spaz import Spaz
 from bascenev1lib.gameutils import SharedObjects
-
+# import _bascenev1; import bascenev1 as bs;_bascenev1.getsession().start_timer(11932913915); _bascenev1.set_map_bounds((-99990, -99990, -99990, 99990, 99990, 99990)); bs.getactivity().players[0].actor.node.area_of_interest_radius = -50
 import math
 # FIXME: Need to merge this with bs.app.classic (or spaz appearances).
 killers = ['Spaz', 'Snake Shadow', 'Easter Bunny']
@@ -678,12 +679,17 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         map = maps.ThePad
         map.preload()
         self.map = map()
+        
+        
+
     
     def on_begin(self):
         super().on_begin()
         # Start us a timer.
         bs.setmusic(bs.MusicType.LOBBY)
         self.session.start_timer(15)
+       
+        
 
         
         
@@ -858,11 +864,24 @@ class ChooserActivity(bs.Activity[bs.Player, bs.Team]):
         self.finish_selection()
 
     def finish_selection(self):
-        results = {
-            'killer_player': self.killer_player.sessionplayer,
-            'chosen_killer': self.selected_killer_id,
-        }
-        self.end(results)
+        try:
+            results = {
+                'killer_player': self.killer_player.sessionplayer,
+                'chosen_killer': self.selected_killer_id,
+            }
+            self.end(results)
+        except:
+            # erorr,, end game
+            self.end(
+                {
+                    'whowon': 'survivors',
+                    'winners': [
+                        [
+                     
+                        ]
+                    ]
+                }
+            )
 
 class SurvivorIcon(bs.Actor):
     """An icon for a survivor that will update by itself
@@ -953,6 +972,9 @@ class SurvivorIcon(bs.Actor):
         
         
 class Match(bs.Activity[bs.Player, bs.Team]):
+
+    # import bascenev1 as bs;bs.getactivity().on_timer_complete()
+    
     allow_pausing = False
     allow_mid_activity_joins = False
 
@@ -1003,7 +1025,8 @@ class Match(bs.Activity[bs.Player, bs.Team]):
     def on_transition_in(self):
         super().on_transition_in()
         mapss = [
-            maps.StepRightUp
+            #maps.StepRightUp,
+            maps.MonkeyFace,
         ]
         map = random.choice(mapss)
         map.preload()
@@ -1211,7 +1234,7 @@ class Match(bs.Activity[bs.Player, bs.Team]):
         ):
             self.session.start_timer(96)
             bs.setmusic(bs.MusicType.LMS4)  
-        if (
+        elif (
             list(self.survivors)[0].actor.character == 'Mel' and
             list(self.killers)[0].actor.character == 'Snake Shadow'
         ):

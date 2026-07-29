@@ -98,7 +98,7 @@ class Beam(bs.Actor):
             sfx = self.owner.moveset.sfx.get('beam_hit') 
             actor.handlemessage(
                 DamageMessage(
-                    damage=dmg,
+                    damage=int(dmg),
                     spaz=self.owner,
                     type='maskedman_beam',
                 )
@@ -376,7 +376,7 @@ class MaskedManKiller(CharacterMoveset):
             self.handle_bashes()
             node.handlemessage(
                 DamageMessage(
-                    damage=dmg,
+                    damage=int(dmg),
                     spaz=self.spaz,
                     type='spaz_punch',
                     hurt_sound=None,
