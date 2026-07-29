@@ -355,8 +355,8 @@ def register_appearances() -> None:
     t.death_sounds = ['wizardDeath']
     t.pickup_sounds = wizard_sounds
     t.fall_sounds = ['wizardFall']
-    t.style = 'spaz'
-    t.default_color = (0.2, 0.4, 1.0)
+    t.style = 'cyborg'
+    t.default_color = (0.2, 0.2, 0.2)
     t.default_highlight = (0.06, 0.15, 0.4)
     t.moveset = WizardKiller
     bs.app.classic.killers.append('Grumbledorf')
