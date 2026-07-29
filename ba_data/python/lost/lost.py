@@ -97,6 +97,12 @@ class SurvivorDetectedMessage:
 class KillerDetectedMessage:
     """ send this to any object in need to detect a killer. """
 
+class SurvivorUnDetectedMessage:
+    """ send this to any object in need to undetect a survivor. """
+
+class KillerUnDetectedMessage:
+    """ send this to any object in need to undetect a killer. """
+
 class CharacterMoveset:
     """ 
     
@@ -245,6 +251,7 @@ class CharacterMoveset:
             or self.spaz._dead
             or self.spaz.frozen
             or self.spaz.node.knockout > 0.0
+            or self.spaz.stunned
         )
 
     def can_do_ability1(self):
@@ -441,7 +448,8 @@ class AsymFactory:
             actions=(
                 ('modify_part_collision', 'collide', True),
                 ('modify_part_collision', 'physical', False),
-                ('message', 'our_node', 'at_connect', SurvivorDetectedMessage())
+                ('message', 'our_node', 'at_connect', SurvivorDetectedMessage()),
+                ('message', 'our_node', 'at_disconnect', SurvivorUnDetectedMessage())
             ),
         )
 
@@ -470,7 +478,8 @@ class AsymFactory:
             actions=(
                 ('modify_part_collision', 'collide', True),
                 ('modify_part_collision', 'physical', False),
-                ('message', 'our_node', 'at_connect', KillerDetectedMessage())
+                ('message', 'our_node', 'at_connect', KillerDetectedMessage()),
+                ('message', 'our_node', 'at_disconnect', KillerUnDetectedMessage())
             ),
         )
         
@@ -487,6 +496,10 @@ class AsymFactory:
                 ('modify_part_collision', 'collide', False),
             ),
         )
+
+        self.no_collision = bs.Material()
+        # collide with nothin
+        self.no_collision.add_actions(('modify_part_collision', 'collide', False),)
         
 
 

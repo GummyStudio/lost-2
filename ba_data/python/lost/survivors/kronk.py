@@ -46,11 +46,12 @@ class KronkSurvivor(CharacterMoveset):
         self.spaz.max_walk_speed *= 0.2
         self.spaz.max_run_speed *= 0.1
         def punch():
+            self.spaz.max_walk_speed /= 0.2
+            self.spaz.max_run_speed /= 0.1
             self.spaz.impulse(x=5 if self.has_parry_counter else 2, y=1)
             self.spaz.node.punch_pressed = True
             self.spaz.node.punch_pressed = False
-            self.spaz.max_walk_speed /= 0.2
-            self.spaz.max_run_speed /= 0.1
+            
         bs.timer(punch_dur, punch)
     
     def ability2(self):
@@ -60,6 +61,8 @@ class KronkSurvivor(CharacterMoveset):
         self.spaz.handlemessage(bs.CelebrateMessage(1.2))
         
         self.block_timer = bs.timer(1.2, bs.WeakCall(self._stop_blocking))
+        self.spaz.max_walk_speed *= 0.01
+        self.spaz.max_run_speed *= 0.01
 
 
   
@@ -67,6 +70,8 @@ class KronkSurvivor(CharacterMoveset):
     def _stop_blocking(self):
         self.is_blocking = False
         self.block_timer = None
+        self.spaz.max_walk_speed /= 0.01
+        self.spaz.max_run_speed /= 0.01
 
     def handle_recieved_damage(self):
         if self.is_blocking:
