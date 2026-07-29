@@ -9,8 +9,7 @@ from bascenev1lib.actor.spaz import Spaz
 from bascenev1lib.gameutils import SharedObjects
 # import _bascenev1; import bascenev1 as bs;_bascenev1.getsession().start_timer(11932913915); _bascenev1.set_map_bounds((-99990, -99990, -99990, 99990, 99990, 99990)); bs.getactivity().players[0].actor.node.area_of_interest_radius = -50
 import math
-# FIXME: Need to merge this with bs.app.classic (or spaz appearances).
-killers = ['Spaz', 'Snake Shadow', 'Easter Bunny']
+
 
 HP_COLORS = [
     (0,   (0.3, 0.1, 0.1)),
@@ -816,7 +815,7 @@ class ChooserActivity(bs.Activity[bs.Player, bs.Team]):
         
         self.killer_player = random.choice(self.players)
 
-        killer_keys = killers
+        killer_keys = bs.app.classic.killers
         self.selected_killer_id = killer_keys[0]
         icon_scale = 260
         x = 0
@@ -870,23 +869,23 @@ class ChooserActivity(bs.Activity[bs.Player, bs.Team]):
     def _next_killer(self):
         self._killer_index = (
             self._killer_index + 1
-        ) % len(killers)
+        ) % len(bs.app.classic.killers)
         self._update_per_choice()
         self._move_sound.play()
     
     def _prev_killer(self):
         self._killer_index = (
             self._killer_index - 1
-        ) % len(killers)
+        ) % len(bs.app.classic.killers)
         self._update_per_choice()
         self._move_sound.play()
 
     def _update_per_choice(self):
-        killer_keys = killers
+        killer_keys = bs.app.classic.killers
         if not killer_keys:
             return
         index = self._killer_index
-        self.selected_killer_id = killers[index]
+        self.selected_killer_id = bs.app.classic.killers[index]
         # variables
         killer = killer_keys[self._killer_index]
         apps = bs.app.classic.spaz_appearances
@@ -1086,7 +1085,7 @@ class Match(bs.Activity[bs.Player, bs.Team]):
     def on_transition_in(self):
         super().on_transition_in()
         mapss = [
-            #maps.StepRightUp,
+            maps.StepRightUp,
             maps.MonkeyFace,
         ]
         map = random.choice(mapss)

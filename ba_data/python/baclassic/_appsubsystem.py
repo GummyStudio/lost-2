@@ -85,6 +85,8 @@ class ClassicAppSubsystem(babase.AppSubsystem):
 
         # Spaz.
         self.spaz_appearances: dict[str, spazappearance.Appearance] = {}
+        self.killers = []
+        self.survivors = []
         self.last_spaz_turbo_warn_time = babase.AppTime(-99999.0)
 
         # Server Mode.
