@@ -281,8 +281,8 @@ class Spaz(bs.Actor):
     def tick_movement(self):
         if not self.exists():
             return
-        # Ew... we have to put input in variables otherwise speed wont change mid
-        # movement if the speed variable is changed.
+        # Ew... has to be in a seperate handler, 
+        # or else changing the variables wont do anything.
         self.node.move_up_down = self.input_y * self.max_walk_speed
         self.node.move_left_right = self.input_x * self.max_walk_speed
         self.node.run = self.input_run * self.max_run_speed

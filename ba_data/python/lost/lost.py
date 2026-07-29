@@ -713,7 +713,7 @@ def assignspazinput(spaz: Spaz, player: bs.Player):
 
 def show_lms_texture(texture_name: str, ):
     position = (0.0, 0.0)
-    scale = (600.0, 600.0)
+    scale = (450.0, 450.0)
     display_duration = 2.0
     fade_duration = 0.5
    

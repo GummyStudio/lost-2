@@ -40,7 +40,7 @@ class MusicBox(bs.Actor):
                 'mesh': bs.getmesh('box'),
                 'color_texture': bs.gettexture('white'),
                 'mesh_scale': 0.35,
-                'gravity_scale': 0,
+                'gravity_scale': 0.0,
                 'body': 'box',
                 'position': position,
                 'shadow_size': 1.0,
@@ -92,7 +92,7 @@ class MusicBox(bs.Actor):
         self.node.position = self.position
         self.item_node.position = (
                 self.node.position[0],
-                self.node.position[1]+0.15,
+                self.node.position[1]+0.5,
                 self.node.position[2],
             )
     
