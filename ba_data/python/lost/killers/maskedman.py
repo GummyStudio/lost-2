@@ -365,10 +365,7 @@ class MaskedManKiller(CharacterMoveset):
         dele = node.getdelegate(bs.Actor)
 
         if self.node_not_punched_nodes(node) and len(self._punched_nodes) == 0:
-            dmg = 2.5
-            # rigged but whatever
-            dmg *= (self.getspeed(ignore_y=False) + 1)
-            dmg = int(dmg)
+            dmg = 5
             self._last_used_1 = (
                 self._last_used_1 - 
                 (self.ability1_cooldown - 0.4)

@@ -401,7 +401,7 @@ class AsymFactory:
             actions=(
                 ('modify_part_collision', 'collide', False),
             )
-       )
+        )
         
         # Killer doors.
         self.killer_door_material = bs.Material()
@@ -716,6 +716,17 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         spaz.handlemessage(bs.StandMessage(spawn))
         spaz.node.name = player.getname()
         spaz.node.name_color = player.color
+        # variables
+        mats = spaz.node.materials
+        asymf = AsymFactory.get()
+        # convert to list, then remove survivor material
+        # this is bad but no other way i guess
+        mats_list = list(mats)
+        mats_list.remove(asymf.survivor_material)
+        # back to tuple and then add back to node materials
+        mats = tuple(mats_list)
+        spaz.node.materials = mats
+        # tada, should be able to hit people now :3
         assignspazinput(spaz, player)
         player.actor = spaz
 
