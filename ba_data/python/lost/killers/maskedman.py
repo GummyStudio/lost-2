@@ -42,7 +42,11 @@ class Beam(bs.Actor):
                 'reflection': 'powerup',
                 'reflection_scale': [1.0],
                 'gravity_scale': 0,
-                'materials': (asymf.killer_trap_object_material, shared.object_material),
+                'materials': (
+                    asymf.killer_trap_object_material, 
+                    shared.object_material,
+                    asymf.no_wall_collide,
+                ),
             },
         )
         self.dying = False
@@ -117,13 +121,13 @@ class MaskedManKiller(CharacterMoveset):
     move_speed = 0.8
     run_speed = 1.0
 
-    ability1_cooldown = 4
-    ability2_cooldown = 12
-    ability3_cooldown = 5
+    ability1_cooldown = 2
+    ability2_cooldown = 15
+    ability3_cooldown = 18
 
     ability1_icon = babase.charstr(babase.SpecialChar.LEFT_BUTTON)
-    ability2_icon = babase.charstr(babase.SpecialChar.TOP_BUTTON)
-    ability3_icon = babase.charstr(babase.SpecialChar.DPAD_CENTER_BUTTON)
+    ability2_icon = babase.charstr(babase.SpecialChar.FIREBALL)
+    ability3_icon = babase.charstr(babase.SpecialChar.UP_ARROW)
     
     def __init__(self, spaz):
         super().__init__(spaz)
@@ -154,7 +158,7 @@ class MaskedManKiller(CharacterMoveset):
 
     def ability3(self) -> None:
         self.play('punch')
-        self.spaz.impulse(x=7, y=2)
+        self.spaz.impulse(x=0.3, y=5)
     
     def ability2(self) -> None:
         def shoot():
@@ -167,7 +171,7 @@ class MaskedManKiller(CharacterMoveset):
                 pass
             x = self.spaz.node.move_left_right
             z = -self.spaz.node.move_up_down
-            pos = self.spaz.node.position
+            pos = self.spaz.node.torso_position
             pos = (
                 pos[0] + x,
                 pos[1],
@@ -178,7 +182,7 @@ class MaskedManKiller(CharacterMoveset):
                 owner=self.spaz,
             ).autoretain()
             beam.node.velocity = (x*20, 0, z*20)
-            mag = -400
+            mag = -460
             ppos = self.spaz.node.position
             punchdir = self.spaz.node.velocity
             self.spaz.node.handlemessage(
@@ -192,8 +196,19 @@ class MaskedManKiller(CharacterMoveset):
                 mag,
             )
             self.play('beam_shoot')
+            direction = bs.Vec3(x, 0.1, z)
+            direction = direction * 5
+            pos = self.spaz.node.torso_position
+            bs.emitfx(
+                position=pos,
+                chunk_type='spark',
+                velocity=direction,
+                count=30,
+                scale=0.7,
+                spread=0.35,
+            )
         self.play('prepare')
-        time = 1.4
+        time = 1.1
         self.spaz.node.handlemessage('celebrate_l', time*1000)
         bs.timer(1.4, shoot)
 
@@ -350,12 +365,13 @@ class MaskedManKiller(CharacterMoveset):
         dele = node.getdelegate(bs.Actor)
 
         if self.node_not_punched_nodes(node) and len(self._punched_nodes) == 0:
-            dmg = 2
+            dmg = 2.5
             # rigged but whatever
             dmg *= (self.getspeed(ignore_y=False) + 1)
+            dmg = int(dmg)
             self._last_used_1 = (
                 self._last_used_1 - 
-                (self.ability1_cooldown - 0.3)
+                (self.ability1_cooldown - 0.1)
             )
             self.handle_bashes()
             node.handlemessage(

@@ -22,6 +22,7 @@ class MusicType(Enum):
     """
 
     MENU = 'Menu'
+    KILLER_SELECT = 'Killer_Select'
     LMS1 = 'A grave soul (now run)'
     LMS2 = 'Plead'
     LMS3 = 'Creation of Hatred'

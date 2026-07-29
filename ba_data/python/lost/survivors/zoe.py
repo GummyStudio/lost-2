@@ -72,6 +72,8 @@ class ZoeSurvivor(CharacterMoveset):
             self.oblation += 35
             self._punched_nodes.add(node)
             def revert():
+                if not node:
+                    return
                 node.getdelegate(bs.Actor).max_walk_speed /= 0.5
                 node.getdelegate(bs.Actor).max_run_speed /= 0.2
             node.getdelegate(bs.Actor).max_walk_speed *= 0.5

@@ -1,14 +1,48 @@
+"""Module for everything related to Lost."""
 import bascenev1 as bs
 from bascenev1._activitytypes import TransitionActivity
 import random
+import babase as ba
 from bascenev1lib import maps
 from bascenev1lib.actor.spaz import Spaz
 from bascenev1lib.gameutils import SharedObjects
 
 import math
-# FIXME: Merge this with bs.app.classic
+# FIXME: Need to merge this with bs.app.classic (or spaz appearances).
 killers = ['Spaz', 'Snake Shadow', 'Easter Bunny']
 
+HP_COLORS = [
+    (0,   (0.3, 0.1, 0.1)),
+    (500, (0.9, 0, 0.1)),
+    (1000, (0, 1, 0.1)),
+]
+
+# lerpiinjg
+def _lerp_color(c1, c2, t: float):
+    return (
+        c1[0] + (c2[0] - c1[0]) * t,
+        c1[1] + (c2[1] - c1[1]) * t,
+        c1[2] + (c2[2] - c1[2]) * t,
+    )
+
+def _get_hp_color(hp: float):
+    points = HP_COLORS
+
+    # Below first threshold
+    if hp <= points[0][0]:
+        return points[0][1]
+
+    # Between thresholds
+    for i in range(len(points) - 1):
+        p1, c1 = points[i]
+        p2, c2 = points[i + 1]
+
+        if p1 <= hp <= p2:
+            t = (hp - p1) / (p2 - p1)  # 0 → 1
+            return _lerp_color(c1, c2, t)
+
+    # Above last threshold
+    return points[-1][1]
 
 class DamageMessage:
     """ a message  that says how much damage someone should take"""
@@ -363,7 +397,9 @@ class AsymFactory:
                 self.survivor_material
                 # They have our material, we shoulnt collide with them.
             ),
-            actions=('modify_part_collision', 'collide', False),
+            actions=(
+                ('modify_part_collision', 'collide', False),
+            )
        )
         
         # Killer doors.
@@ -438,6 +474,20 @@ class AsymFactory:
             ),
         )
         
+        this_mat = self.no_wall_collide = bs.Material()
+        #: Material that doesn't collide with walls (or footing).
+
+        # Duh
+        this_mat.add_actions(
+            conditions=(
+                'they_have_material',
+                SharedObjects.get().footing_material
+            ),
+            actions=(
+                ('modify_part_collision', 'collide', False),
+            ),
+        )
+        
 
 
 class LostSession(bs.Session):
@@ -462,7 +512,11 @@ class LostSession(bs.Session):
 
         
     
-    def add_time(self, seconds: float, flash_color: tuple[float, float, float] = (0, 1, 0)) -> None:
+    def add_time(
+        self, 
+        seconds: float, 
+        flash_color: tuple[float] = (1, 0, 0)
+    ) -> None:
         if self._countdown_timer is None:
             return   # doesnt exist
 
@@ -473,37 +527,51 @@ class LostSession(bs.Session):
         # Update
         if self._timer_node:
             self._timer_node.text = f'{self.format_time(max(0, int(self._time_remaining)))}'
-
-            self._timer_node.color = flash_color
-            self._timer_node.scale = 1.8
-
-            bs.timer(
-                0.3,
-                bs.WeakCall(
-                    self._reset_timer_node_style
-                ),
+            # variables
+            default_color = (1, 1, 1)
+            default_scale = 1.3
+            # this amount MUST be even (so ends in color1)
+            steps = 15
+            step_time = 0.07
+            end_time = step_time * steps
+            color1 = default_color
+            color2 = flash_color
+            anim = {
+                i * step_time: (color1 if i % 2 == 0 else color2)
+                for i in range(steps)
+            }
+            big_scale = default_scale + 0.6
+            
+            node = self._timer_node
+            bs.animate_array(
+                node, 'color', 3, anim,
             )
-
-    def _reset_timer_node_style(self) -> None:
-        if self._timer_node:
-            self._timer_node.color = (1, 1, 1)
-            self._timer_node.scale = 1.5
+            bs.animate(
+                node,
+                'scale',
+                {
+                    0: node.scale,
+                    0.1: big_scale, 
+                    end_time - 0.1: big_scale, 
+                    end_time: default_scale, 
+                }
+            )
 
 
     def start_timer(self, duration: float) -> None:
         if self._timer_node:
             self.stop_timer()
         self._time_remaining = duration
-
+        
         self._timer_node = bs.newnode(
             'text',
             attrs={
                 'v_attach': 'top',
-                'h_attach': 'center',
                 'h_align': 'center',
-                'color': (1, 1, 1),
-                'scale': 1.5,
-                'position': (0, -60),
+                'v_align': 'top',
+                'opacity': 0.5,
+                'scale': 1.3,
+                'position': (0, -10),
                 'text': f'{self.format_time(int(self._time_remaining))}',
             },
         )
@@ -535,13 +603,13 @@ class LostSession(bs.Session):
         self.getactivity().on_timer_complete()
     
     def format_time(self, sec):
-        total_seconds = max(0, int(sec))
-        minutes = total_seconds // 60
-        remaining_seconds = total_seconds % 60
-
-        return f"{minutes}:{remaining_seconds:02d}"
-        
-        
+        hours = sec // 3600
+        mins = (sec % 3600) // 60
+        seconds = sec % 60
+        if hours > 0:
+            return f"{hours:02}:{mins:02}:{seconds:02}"
+        else:
+            return f"{mins:02}:{seconds:02}"
     
     def on_activity_end(self, activity, results):
         self.stop_timer()
@@ -635,7 +703,7 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         spaz = Spaz(
             character=player.character,
             color=player.color,
-            highlight=player.color,
+            highlight=player.highlight,
             source_player=player,
             start_invincible=False,
         )
@@ -668,6 +736,7 @@ class ChooserActivity(bs.Activity[bs.Player, bs.Team]):
         super().__init__(settings)
         self.killer_player: bs.Player | None = None
         self.selected_killer_id: str | None = None
+        self._killer_index = 0
 
     def on_transition_in(self):
         super().on_transition_in()
@@ -676,38 +745,114 @@ class ChooserActivity(bs.Activity[bs.Player, bs.Team]):
 
     def on_begin(self):
         super().on_begin()
-        bs.setmusic(bs.MusicType.MENU)
+        bs.setmusic(bs.MusicType.KILLER_SELECT)
         
         self.killer_player = random.choice(self.players)
-        
-        bs.broadcastmessage(
-            f"{self.killer_player.getname()} is picking a Killer!",
-            color=(1, 0.2, 0.2)
-        )
 
         killer_keys = killers
-        self.selected_killer_id = killer_keys[0] if killer_keys else 'Spaz'
+        self.selected_killer_id = killer_keys[0]
+        icon_scale = 260
+        x = 0
+        y = 140
+        self._move_sound = bs.getsound('deek')
+        self._done_sound = bs.getsound('punch01')
+        name = self.killer_player.getname(full=True)
+        self._player_text = bs.newnode(
+            'text',
+            attrs={
+                'scale': 1.2,
+                'text': f'- {name} is picking a killer -',
+                'h_align': 'center',
+                'position': (x, y),
+            }
+        )
+        y -= (icon_scale * 0.5) + 10
+        self._icon_node = bs.newnode(
+            'image',
+            attrs={
+                'scale': (icon_scale, icon_scale),
+                'mask_texture': bs.gettexture('characterIconMask'),
+                'position': (x, y),
+            }
+        )
+        y -= (icon_scale * 0.5) + 50
+        self._icon_text = bs.newnode(
+            'text',
+            attrs={
+                'scale': 1.4,
+                'text': '',
+                'h_align': 'center',
+                'position': (x, y),
+            }
+        )
+        self._update_per_choice()
 
         self.session.start_timer(15)
 
         if self.killer_player:
             self.killer_player.resetinput()
-            self.killer_player.assigninput(bs.InputType.PUNCH_PRESS, self._cycle_killer_choice)
+            self.killer_player.assigninput(bs.InputType.RIGHT_PRESS, self._next_killer)
+            self.killer_player.assigninput(bs.InputType.LEFT_PRESS, self._prev_killer)
+            self.killer_player.assigninput(bs.InputType.PUNCH_PRESS, self._done)
+    
+    def _done(self):
+        self._done_sound.play()
+        self.session.stop_timer()
+        self.on_timer_complete()
+    
+    def _next_killer(self):
+        self._killer_index = (
+            self._killer_index + 1
+        ) % len(killers)
+        self._update_per_choice()
+        self._move_sound.play()
+    
+    def _prev_killer(self):
+        self._killer_index = (
+            self._killer_index - 1
+        ) % len(killers)
+        self._update_per_choice()
+        self._move_sound.play()
 
-    def _cycle_killer_choice(self):
+    def _update_per_choice(self):
         killer_keys = killers
         if not killer_keys:
             return
-
-        curr_index = killer_keys.index(self.selected_killer_id) if self.selected_killer_id in killer_keys else 0
-        next_index = (curr_index + 1) % len(killer_keys)
-        self.selected_killer_id = killer_keys[next_index]
-
-
-        bs.broadcastmessage(
-            f"Selected: {self.selected_killer_id}",
-            color=(1, 0.8, 0.2)
+        index = self._killer_index
+        self.selected_killer_id = killers[index]
+        # variables
+        killer = killer_keys[self._killer_index]
+        apps = bs.app.classic.spaz_appearances
+        character = apps[killer]
+        # TOO LONG
+        gt = bs.gettexture
+        # set the icon attributes stuff
+        self._icon_node.tint_texture = gt(character.icon_mask_texture)
+        self._icon_node.texture = gt(character.icon_texture)
+        self._icon_node.tint_color = character.default_color
+        self._icon_node.tint2_color = character.default_highlight
+        # get name
+        name = bs.Lstr(
+            translate=(
+                'characterNames', 
+                character.name,
+            ),
         )
+        # text is <- NAME -> so it looks nicer
+        # (and no need for actual text!!!!)
+        left = ba.charstr(ba.SpecialChar.LEFT_ARROW)
+        right = ba.charstr(ba.SpecialChar.RIGHT_ARROW)
+        lstr = bs.Lstr(
+            value='${A} ${B} ${C}',
+            subs=[
+                ('${A}', left),
+                ('${B}', name),
+                ('${C}', right),
+            ],
+        )
+        self._icon_text.text = lstr
+        self._icon_text.color = character.default_color
+        
 
     def on_timer_complete(self):
         self.finish_selection()
@@ -719,6 +864,94 @@ class ChooserActivity(bs.Activity[bs.Player, bs.Team]):
         }
         self.end(results)
 
+class SurvivorIcon(bs.Actor):
+    """An icon for a survivor that will update by itself
+    when told to by something (like the match)."""
+    def __init__(
+        self, 
+        position: tuple[float],
+        source_player: bs.Player,
+        scale: int = 1,
+    ):
+        super().__init__()
+        self._source_player = source_player
+        self._spaz = source_player.actor
+        self._already_logged_death = False
+        size = (64 * scale, 64 * scale)
+        self.node = bs.newnode(
+            'image',
+            attrs={
+                'scale': size,
+                'position': position,
+                'attach': 'bottomCenter',
+                'mask_texture': bs.gettexture('characterIconMask'),
+            }
+        )
+        node = self.node
+        player = self._source_player
+        apps = bs.app.classic.spaz_appearances
+        character = apps[player.character]
+        gt = bs.gettexture
+        node.tint_texture = gt(character.icon_mask_texture)
+        node.texture = gt(character.icon_texture)
+        node.tint_color = player.color
+        node.tint2_color = player.highlight
+        y_spacing = -20
+        self.name_node = bs.newnode(
+            'text',
+            owner=self.node,
+            attrs={
+                'text': player.getname(),
+                'scale': scale,
+                'position': (
+                    position[0], 
+                    position[1] + ((size[1] * scale) + y_spacing)
+                ),
+                'v_attach': 'bottom',
+                'h_align': 'center',
+                'v_align': 'bottom',
+                'maxwidth': size[0] + 30,
+                'color': bs.safecolor(player.color),
+            }
+        )
+        self.hp_node = bs.newnode(
+            'text',
+            owner=self.node,
+            attrs={
+                'scale': scale,
+                'position': (
+                    position[0], 
+                    position[1] - ((size[1] * scale) + y_spacing)
+                ),
+                'v_attach': 'bottom',
+                'h_align': 'center',
+                'v_align': 'top',
+                'maxwidth': size[0] + 30,
+            }
+        )
+        self.node.connectattr('opacity', self.name_node, 'opacity')
+        self.node.connectattr('opacity', self.hp_node, 'opacity')
+        self.update()
+    
+    def update(self):
+        if not self._spaz.is_alive():
+            self.node.color = (0.4, 0.4, 0.4)
+        self.hp_node.text = '+' + str(
+            int(self._spaz.hitpoints / 10)
+        )
+        self.hp_node.color = _get_hp_color(self._spaz.hitpoints)
+    
+    def handlemessage(self, msg):
+        if isinstance(msg, bs.DieMessage):
+            self._source_player = None
+            self._spaz = None
+            if self.node:
+                self.node.delete()
+        else:
+            return super().handlemessage(msg)
+        return None
+        
+        
 class Match(bs.Activity[bs.Player, bs.Team]):
     allow_pausing = False
     allow_mid_activity_joins = False
@@ -734,18 +967,38 @@ class Match(bs.Activity[bs.Player, bs.Team]):
         self.max_terror_radius = 40.0
         self.min_terror_radius = 2.5
         self._entries = {}
+        self._survivor_icons = []
         self.match_data = settings.get('match_data', {})
         # Seriously eric.. no other way to make this better?
         self.killer_target = self.match_data.get('killer_player')
-
         
     def on_expire(self):
         super().on_expire()
         self.survivors = set()
         self.killers = set()
         self._ui_update_timer = None
+    
+    def _spawn_survivor_icons(self):
+        # we want center of screen,
+        # so let's do that
+        scale = 0.8
+        icon_size = (64 * scale, 64 * scale)
+        spacing = icon_size[0] + 25
+        total_width = (len(self.survivors) - 1) * spacing
+        x = -total_width * 0.5
+        y = 50
+        for survivor in self.survivors:
+            icon = SurvivorIcon(
+                position=(x, y),
+                scale=scale,
+                source_player=survivor,
+            )
+            self._survivor_icons.append(icon)
+            x += spacing
         
-        
+    def _update_icons(self):
+        for icon in self._survivor_icons:
+            icon.update()
     
     def on_transition_in(self):
         super().on_transition_in()
@@ -779,16 +1032,22 @@ class Match(bs.Activity[bs.Player, bs.Team]):
             if player != self.killer_player:
                 self.spawn_player(player, is_killer=False)
         self.spawn_player(self.killer_player, is_killer=True)
+        self._spawn_survivor_icons()
+        self._ui_update_timer = bs.Timer(
+            0.1, 
+            bs.WeakCall(self._update_icons), 
+            repeat=True
+        )
 
         self.chase_music = bs.newnode(
-                 type='sound',
-                 attrs={
-                     'sound': self.killer_chase_theme_audio,
-                     'positional': False,
-                     'music': True,
-                     'volume': 0.0,
-                 },
-            )
+            'sound',
+            attrs={
+                'sound': self.killer_chase_theme_audio,
+                'positional': False,
+                'music': True,
+                'volume': 0.0,
+            },
+        )
         bs.timer(0.1, self._music_tick, repeat=True)
 
 
@@ -891,13 +1150,15 @@ class Match(bs.Activity[bs.Player, bs.Team]):
             character = self.killer_character
             color = bs.app.classic.spaz_appearances[character].default_color
             highlight = bs.app.classic.spaz_appearances[character].default_highlight
-            self.killer_chase_theme_audio = bs.getsound(bs.app.classic.spaz_appearances[character].moveset.chase_theme_dir)
+            self.killer_chase_theme_audio = bs.getsound(
+                bs.app.classic.spaz_appearances[character].moveset.chase_theme_dir
+            )
         else:
             self.survivors.add(player)
             spawn = self.map.get_ffa_start_position([])
             character = player.character # Their survivor..
             color=player.color
-            highlight=player.color
+            highlight=player.highlight
         
        
         spaz = Spaz(

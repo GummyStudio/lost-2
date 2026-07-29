@@ -77,7 +77,6 @@ def register_appearances() -> None:
         KronkSurvivor
     )
     
-    # Spaz #######################################
     # Bunny ###################################
     t = Appearance('Easter Bunny')
     t.color_texture = 'bunnyColor'
