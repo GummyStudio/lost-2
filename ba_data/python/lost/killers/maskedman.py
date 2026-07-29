@@ -376,7 +376,7 @@ class MaskedManKiller(CharacterMoveset):
             self.handle_bashes()
             node.handlemessage(
                 DamageMessage(
-                    damage=int(dmg),
+                    damage=dmg,
                     spaz=self.spaz,
                     type='spaz_punch',
                     hurt_sound=None,
