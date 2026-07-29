@@ -665,6 +665,67 @@ def assignspazinput(spaz: Spaz, player: bs.Player):
         bs.InputType.JUMP_RELEASE, spaz.on_jump_release
     )
 
+def assignspazinput(spaz: Spaz, player: bs.Player):
+    player.resetinput()
+    player.assigninput(
+        bs.InputType.LEFT_RIGHT, spaz.on_move_left_right
+    )
+    player.assigninput(
+        bs.InputType.UP_DOWN, spaz.on_move_up_down
+    )
+    player.assigninput(bs.InputType.RUN, spaz.on_run)
+    player.assigninput(
+        bs.InputType.BOMB_PRESS, spaz.on_bomb_press
+    )
+    player.assigninput(
+        bs.InputType.BOMB_RELEASE, spaz.on_bomb_release
+    )
+    player.assigninput(
+        bs.InputType.PICK_UP_PRESS, spaz.on_pickup_press
+    )
+    player.assigninput(
+        bs.InputType.PICK_UP_RELEASE, spaz.on_pickup_release
+    )
+    player.assigninput(
+        bs.InputType.PUNCH_PRESS, spaz.on_punch_press
+    )
+    player.assigninput(
+        bs.InputType.PUNCH_RELEASE, spaz.on_punch_release
+    )
+    player.assigninput(
+        bs.InputType.JUMP_PRESS, spaz.on_jump_press
+    )
+    player.assigninput(
+        bs.InputType.JUMP_RELEASE, spaz.on_jump_release
+    )
+
+def show_lms_texture(texture_name: str, ):
+    position = (0.0, 0.0)
+    scale = (600.0, 600.0)
+    display_duration = 2.0
+    fade_duration = 0.5
+   
+    node = bs.newnode(
+        'image',
+        attrs={
+            'texture': bs.gettexture(f'LMS/{texture_name}'),
+            'attach': 'center',
+            'position': position,
+            'scale': scale,
+            'opacity': 1.0,
+            'color': (1.0, 1.0, 1.0),
+        },
+    )
+
+    def _start_fade() -> None:
+        if not node.exists():
+            return
+        
+        bs.animate(node, 'opacity', {0.0: 1.0, fade_duration: 0.0})
+        
+        bs.timer(fade_duration, node.delete)
+    bs.animate(node, 'opacity', {0.0: 0.0, display_duration*0.2: 1.0})
+    bs.timer(display_duration, _start_fade)
 
 class Lobby(bs.Activity[bs.Player, bs.Team]):
     """ where the lobby takes place. """
@@ -1234,16 +1295,25 @@ class Match(bs.Activity[bs.Player, bs.Team]):
         ):
             self.session.start_timer(96)
             bs.setmusic(bs.MusicType.LMS4)  
+            show_lms_texture('spaz-vs-zoe')
         elif (
             list(self.survivors)[0].actor.character == 'Mel' and
             list(self.killers)[0].actor.character == 'Snake Shadow'
         ):
             self.session.start_timer(86)
             bs.setmusic(bs.MusicType.LMS5)    
+            show_lms_texture('ninja-vs-mel')
         else:
 
             self.session.start_timer(69)
             bs.setmusic(bs.MusicType.LMS1)
+            if list(self.killers)[0].actor.character == 'Snake Shadow':
+                show_lms_texture('snakeshadow')
+            elif list(self.killers)[0].actor.character == 'Easter Bunny':
+                show_lms_texture('bunny')
+            else:
+                show_lms_texture('spaz')
+
         self.lms = True
         for player in self.survivors:
             player.actor.node.is_area_of_interest = True
