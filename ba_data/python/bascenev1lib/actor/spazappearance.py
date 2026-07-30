@@ -85,7 +85,7 @@ def register_appearances() -> None:
     t.color_texture = 'neoSpazColor'
     t.color_mask_texture = 'neoSpazColorMask'
     t.icon_texture = 'neoSpazIcon'
-    t.icon_mask_texture = 'neoSpazIconColorMask'
+    t.icon_mask_texture = 'black'
     t.head_mesh = 'neoSpazHead'
     t.torso_mesh = 'neoSpazTorso'
     t.pelvis_mesh = 'neoSpazPelvis'
@@ -277,7 +277,7 @@ def register_appearances() -> None:
     t.color_texture = 'ninjaColor'
     t.color_mask_texture = 'ninjaColorMask'
     t.icon_texture = 'ninjaIcon'
-    t.icon_mask_texture = 'ninjaIconColorMask'
+    t.icon_mask_texture = 'black'
     t.head_mesh = 'ninjaHead'
     t.torso_mesh = 'ninjaTorso'
     t.pelvis_mesh = 'ninjaPelvis'
@@ -307,7 +307,7 @@ def register_appearances() -> None:
     t.color_texture = 'bunnyColor'
     t.color_mask_texture = 'bunnyColorMask'
     t.icon_texture = 'bunnyIcon'
-    t.icon_mask_texture = 'bunnyIconColorMask'
+    t.icon_mask_texture = 'black'
     t.head_mesh = 'bunnyHead'
     t.torso_mesh = 'bunnyTorso'
     t.pelvis_mesh = 'bunnyPelvis'
@@ -387,7 +387,7 @@ def register_appearances() -> None:
     t.style = 'bear'
     t.default_color = (0.7, 0.5, 0.0)
     t.moveset = BearSurvivor
-    bs.app.classic.survivors.append('Bernard')
+    #bs.app.classic.survivors.append('Bernard')
 
     # Skeleton ################################
     t = Appearance('Bones')
