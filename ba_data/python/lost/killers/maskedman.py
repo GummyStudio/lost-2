@@ -20,7 +20,8 @@ class Beam(bs.Actor):
     ):
         super().__init__()
         self.mesh = bs.getmesh('bomb')
-        self.tex = bs.gettexture('tokens4')
+        self.tex_text = 'tokens4'
+        self.tex = bs.gettexture(self.tex_text) # doing ts so i can steal it for gunhoudn >:3 - bude
         self.scale = 0.9
         self.bscale = 1.2
         self.owner = owner
