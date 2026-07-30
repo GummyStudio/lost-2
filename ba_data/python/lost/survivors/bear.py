@@ -1,7 +1,7 @@
-import bascenev1 as bs
-import babase
-from lost.lost import CharacterMoveset, DamageMessage, AsymFactory, StunMessage
-from lost.killers.maskedman import Beam as shooter # dont feel like copypasting allat lol
+import bascenev1 as bs # pyright: ignore[reportMissingImports]
+import babase # pyright: ignore[reportMissingImports] # shut UPPPPP vs code dont cry because i only imported survivors folder
+from lost.lost import CharacterMoveset, DamageMessage, AsymFactory, StunMessage # pyright: ignore[reportMissingImports]
+from lost.killers.maskedman import Beam as shooter# pyright: ignore[reportMissingImports] # dont feel like copypasting allat lol
 
 class BearSurvivor(CharacterMoveset):
     is_killer = False
@@ -38,6 +38,7 @@ class BearSurvivor(CharacterMoveset):
         self.has_shot_before = False
         self.bash_equipped = False
         self.bash_charges = 0
+        self.stored_bash_charges = 0 # this one is never changed, except when using bash again, good for using functions
 
     def ability1(self):
         
@@ -45,6 +46,8 @@ class BearSurvivor(CharacterMoveset):
         #            When the attack key is pressed, she will release her charges. See ability3
         
         if self.bash_equipped == False and self.gun_equipped == False:
+            self.bash_charges = 0
+            self.stored_bash_charges = 0
             self.play_sound('bash_equip')
             self.bash_equipped = True
             self.bash_equip_celebration_loop()
@@ -74,9 +77,8 @@ class BearSurvivor(CharacterMoveset):
             1:playehilit
             }
         )
-        print(self.bash_charges)
+
         self.bash_charges += 1
-        print(self.bash_charges)
         
         
         # JOHN SWITCHCASE because i can't fucking chain bs.timers??? This shit sucks.
@@ -94,12 +96,14 @@ class BearSurvivor(CharacterMoveset):
             bs.timer(1,bs.Call(self.bash_flash, (1,0,0), 5)) # red, last chance to press atk...
         else:
             self.bash_charges = 0 # haha you missed
+            self.bash_equipped = False
+            self.small_slowdown()
             
        
     def small_slowdown(self):
         self.move_speed /= 1.2
         self.run_speed /= 1.2
-        bs.timer(0.6, small_slowdown_recover)
+        bs.timer(0.6, small_slowdown_recover) # type: ignore
     def small_slowdown_recover(self):
         self.move_speed *= 1.2
         self.run_speed *= 1.2
@@ -129,59 +133,105 @@ class BearSurvivor(CharacterMoveset):
         
         # -- Attack -- Basically just the M1 counterpart to Lost as an ability, will use her currently equipped weapon.
         # Bash: Will give debuffs according to its charge
-        # Shoot: Will give debuffs and then stun
+        # Shoot: Will give debuffs and then stun on second use
         
-        def shoot(): # taken strait outta masked man!
-            if not self.spaz.node:
-                return
+        if self.gun_equipped:
+            self.gun_equipped = False
+            def shoot(): # taken strait outta masked man!
+                if not self.spaz.node:
+                    return
+                self.spaz.node.punch_pressed = True
+                try: 
+                    bs.timer(0, bs.Call(setattr, self.spaz.node, 'punch_pressed', False))
+                except: 
+                    pass
+                x = self.spaz.node.move_left_right
+                z = -self.spaz.node.move_up_down
+                pos = self.spaz.node.torso_position
+                pos = (
+                    pos[0] + x,
+                    pos[1],
+                    pos[2] + z,
+                )
+                beam = shooter.Beam(
+                    position=pos,
+                    owner=self.spaz,
+                    tex_text='bonesColorMask' # first red thing i saw ok
+                ).autoretain()
+                beam.node.velocity = (x*20, 0, z*20)
+                mag = -460
+                ppos = self.spaz.node.position
+                punchdir = self.spaz.node.velocity
+                self.spaz.node.handlemessage(
+                    'kick_back',
+                    ppos[0],
+                    ppos[1],
+                    ppos[2],
+                    punchdir[0],
+                    punchdir[1],
+                    punchdir[2],
+                    mag,
+                )
+                direction = bs.Vec3(x, 0.1, z)
+                direction = direction * 5
+                pos = self.spaz.node.torso_position
+                bs.emitfx(
+                    position=pos,
+                    chunk_type='spark',
+                    velocity=direction,
+                    count=30,
+                    scale=0.7,
+                    spread=0.35,
+                )
+            self.play_sound('gun_shoot')
+            time = 0.4
+            self.spaz.node.handlemessage('celebrate_l', time*1000)
+            bs.timer(time, shoot)
+            self.ability2_cooldown = 41
+            self._last_used_2 = bs.time()-1
+        elif self.bash_equipped:
+            self.stored_bash_charges = self.bash_charges
+            self.bash_charges = 0
+            self._punched_nodes = set()
+        
             self.spaz.node.punch_pressed = True
-            try: 
-                bs.timer(0, bs.Call(setattr, self.spaz.node, 'punch_pressed', False))
-            except: 
-                pass
-            x = self.spaz.node.move_left_right
-            z = -self.spaz.node.move_up_down
-            pos = self.spaz.node.torso_position
-            pos = (
-                pos[0] + x,
-                pos[1],
-                pos[2] + z,
+            self.spaz.node.punch_pressed = False
+            self.spaz.max_walk_speed *= 0.1
+            
+            def revert():
+                self.spaz.impulse(x=4.5, y=1)
+                self.spaz.max_walk_speed /= 0.1
+            bs.timer(0.1, revert)
+    
+    def handle_spaz_punched_something(self, collision: bs.Collision) -> bool:
+        node = collision.opposingnode
+
+        if node.getnodetype() != 'spaz':
+            return
+
+        if self.node_not_punched_nodes(node) and len(self._punched_nodes) == 0:
+            node.handlemessage(
+                DamageMessage(
+                    damage=10,
+                    spaz=self.spaz,
+                    type='gh_bash',
+                    hurt_sound='bash_hit',
+                )
             )
-            beam = shooter.Beam(
-                position=pos,
-                owner=self.spaz,
-                tex_text='bonesColorMask' # first red thing i saw ok
-            ).autoretain()
-            beam.node.velocity = (x*20, 0, z*20)
-            mag = -460
-            ppos = self.spaz.node.position
-            punchdir = self.spaz.node.velocity
-            self.spaz.node.handlemessage(
-                'kick_back',
-                ppos[0],
-                ppos[1],
-                ppos[2],
-                punchdir[0],
-                punchdir[1],
-                punchdir[2],
-                mag,
-            )
-            direction = bs.Vec3(x, 0.1, z)
-            direction = direction * 5
-            pos = self.spaz.node.torso_position
-            bs.emitfx(
-                position=pos,
-                chunk_type='spark',
-                velocity=direction,
-                count=30,
-                scale=0.7,
-                spread=0.35,
-            )
-        self.play('gun_shoot')
-        time = 0.7
-        self.spaz.node.handlemessage('celebrate_l', time*1000)
-        bs.timer(time, shoot)
-        
+            self.play_sound('bash_swing', position=self.spaz.node.position)
+            self._punched_nodes.add(node)
+            def revert():
+                if not node:
+                    return
+                node.getdelegate(bs.Actor).max_walk_speed /= 0.5
+                node.getdelegate(bs.Actor).max_run_speed /= 0.2
+            node.getdelegate(bs.Actor).max_walk_speed *= 0.5
+            node.getdelegate(bs.Actor).max_run_speed *= 0.2
+            bs.timer(2, revert)
+
+        return False
+
+
 
     def gun_equip_celebration_loop(self):
         if self.gun_equipped:
