@@ -47,9 +47,9 @@ class BearSurvivor(CharacterMoveset):
         self.block_timer = None
         
         
-        self.is_using_literally_anything = False
         self.gun_equipped = False
         self.bash_equipped = False
+        self.charging_bash = False
         self.bash_charges = 1
         
         
@@ -94,8 +94,12 @@ class BearSurvivor(CharacterMoveset):
         # -- Shoot -- Gunhound will start holding her shotgun, although she cannot jump or sprint in this state.
         
         if gun_equipped == False and bash_equipped == False:
-            
-        
+            self.play_sound('gun_equip')
+            gun_equipped = True
+            self.gun_equip_celebration_loop()
+        elif gun_equipped == True and bash_equipped == False:
+            self.play_sound('gun_unequip')
+            gun_equipped = False
         
      # #block
         # self.is_blocking = True
@@ -103,6 +107,12 @@ class BearSurvivor(CharacterMoveset):
         # self.spaz.handlemessage(bs.CelebrateMessage(1.2))
         
         # self.block_timer = bs.timer(1.2, bs.WeakCall(self._stop_blocking))
+
+    def ability3(self):
+        
+        # -- Attack -- Basically just the M1 counterpart to Lost as an ability, will use her current weapon
+        
+        pass
 
     def gun_equip_celebration_loop(self):
         while gun_equipped:
@@ -173,8 +183,4 @@ class BearSurvivor(CharacterMoveset):
                 self.play_sound('punch_hit', position=self.spaz.node.position)
 
         return False
-
-    def ability3(self):
-        pass
-
    
