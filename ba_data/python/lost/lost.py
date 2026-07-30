@@ -1109,8 +1109,9 @@ class Match(bs.Activity[bs.Player, bs.Team]):
     def on_transition_in(self):
         super().on_transition_in()
         mapss = [
-            maps.StepRightUp,
-            maps.MonkeyFace,
+            #maps.StepRightUp,
+            #maps.MonkeyFace,
+            maps.CragCastle,
         ]
         map = random.choice(mapss)
         map.preload()

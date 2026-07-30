@@ -665,6 +665,8 @@ class CragCastle(bs.Map):
             ),
             'vr_fill_mound_mesh': bs.getmesh('cragCastleVRFillMound'),
             'vr_fill_mound_tex': bs.gettexture('vrFillMound'),
+            'killer_door': bs.getmesh('courtyardKillerDoors'),
+            'killer_door_collide': bs.getcollisionmesh('courtyardKillerDoors')
         }
         # fixme should chop this into vr/non-vr sections
         return data
@@ -716,6 +718,20 @@ class CragCastle(bs.Map):
                 'color': (0.2, 0.25, 0.2),
                 'background': True,
                 'color_texture': self.preloaddata['vr_fill_mound_tex'],
+            },
+        )
+
+        from lost.lost import AsymFactory
+
+        self.killer_doors = bs.newnode(
+            'terrain',
+            attrs={
+                'mesh': self.preloaddata['killer_door'],
+                'lighting': False,
+                'opacity': 0.5,
+                'color_texture': bs.gettexture('bonesColorMask'),
+                'collision_mesh': self.preloaddata['killer_door_collide'],
+                'materials': [AsymFactory.get().killer_door_material]
             },
         )
         gnode = bs.getactivity().globalsnode

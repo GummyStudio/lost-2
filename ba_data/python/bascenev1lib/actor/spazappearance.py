@@ -71,7 +71,7 @@ def register_appearances() -> None:
     # pylint: disable=too-many-statements
     from lost.killers import (
         SpazKiller, NinjaKiller, MaskedManKiller,
-        WizardKiller,
+        WizardKiller, BonesKiller
     )
     from lost.survivors import (
         ZoeSurvivor, PirateSurvivor, MellSurvivor, 
@@ -389,6 +389,36 @@ def register_appearances() -> None:
     t.moveset = BearSurvivor
     bs.app.classic.survivors.append('Bernard')
 
+    # Skeleton ################################
+    t = Appearance('Bones')
+    t.color_texture = 'bonesColor'
+    t.color_mask_texture = 'bonesColorMask'
+    t.icon_texture = 'bonesIcon'
+    t.icon_mask_texture = 'bonesIconColorMask'
+    t.head_mesh = 'bonesHead'
+    t.torso_mesh = 'bonesTorso'
+    t.pelvis_mesh = 'bonesPelvis'
+    t.upper_arm_mesh = 'bonesUpperArm'
+    t.forearm_mesh = 'bonesForeArm'
+    t.hand_mesh = 'bonesHand'
+    t.upper_leg_mesh = 'bonesUpperLeg'
+    t.lower_leg_mesh = 'bonesLowerLeg'
+    t.toes_mesh = 'bonesToes'
+    bones_sounds = ['bones1', 'bones2', 'bones3']
+    bones_hit_sounds = ['bones1', 'bones2', 'bones3']
+    t.jump_sounds = bones_sounds
+    t.attack_sounds = bones_sounds
+    t.impact_sounds = bones_hit_sounds
+    t.death_sounds = ['bonesDeath']
+    t.pickup_sounds = bones_sounds
+    t.fall_sounds = ['bonesFall']
+    t.style = 'bones'
+    t.default_color = (0.6, 0.9, 1)
+    t.default_highlight = (0.6, 0.9, 1)
+    t.moveset = BonesKiller
+    bs.app.classic.killers.append('Bones')
+
+
 
     return
 
@@ -452,33 +482,7 @@ def register_appearances() -> None:
     t.default_color = (0.5, 0.5, 1)
     t.default_highlight = (1, 0.5, 0)
 
-    # Skeleton ################################
-    t = Appearance('Bones')
-    t.color_texture = 'bonesColor'
-    t.color_mask_texture = 'bonesColorMask'
-    t.icon_texture = 'bonesIcon'
-    t.icon_mask_texture = 'bonesIconColorMask'
-    t.head_mesh = 'bonesHead'
-    t.torso_mesh = 'bonesTorso'
-    t.pelvis_mesh = 'bonesPelvis'
-    t.upper_arm_mesh = 'bonesUpperArm'
-    t.forearm_mesh = 'bonesForeArm'
-    t.hand_mesh = 'bonesHand'
-    t.upper_leg_mesh = 'bonesUpperLeg'
-    t.lower_leg_mesh = 'bonesLowerLeg'
-    t.toes_mesh = 'bonesToes'
-    bones_sounds = ['bones1', 'bones2', 'bones3']
-    bones_hit_sounds = ['bones1', 'bones2', 'bones3']
-    t.jump_sounds = bones_sounds
-    t.attack_sounds = bones_sounds
-    t.impact_sounds = bones_hit_sounds
-    t.death_sounds = ['bonesDeath']
-    t.pickup_sounds = bones_sounds
-    t.fall_sounds = ['bonesFall']
-    t.style = 'bones'
-    t.default_color = (0.6, 0.9, 1)
-    t.default_highlight = (0.6, 0.9, 1)
-
+    
     # Penguin ###################################
     t = Appearance('Pascal')
     t.color_texture = 'penguinColor'
