@@ -61,8 +61,7 @@ class KronkSurvivor(CharacterMoveset):
         self.spaz.handlemessage(bs.CelebrateMessage(1.2))
         
         self.block_timer = bs.timer(1.2, bs.WeakCall(self._stop_blocking))
-        self.spaz.max_walk_speed *= 0.01
-        self.spaz.max_run_speed *= 0.01
+       
 
 
   
@@ -70,8 +69,7 @@ class KronkSurvivor(CharacterMoveset):
     def _stop_blocking(self):
         self.is_blocking = False
         self.block_timer = None
-        self.spaz.max_walk_speed /= 0.01
-        self.spaz.max_run_speed /= 0.01
+       
 
     def handle_recieved_damage(self):
         if self.is_blocking:
@@ -95,6 +93,7 @@ class KronkSurvivor(CharacterMoveset):
             return False
 
         if self.node_not_punched_nodes(node) and len(self._punched_nodes) == 0:
+            self._punched_nodes.add(node)
             if self.has_parry_counter:
                 
                 self.has_parry_counter = False 

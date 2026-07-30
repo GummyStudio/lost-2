@@ -21,7 +21,7 @@ class LandMine(bs.Actor):
                     'materials': [AsymFactory.get().killer_trap_object_material],
                 },
             )
-        self.impulse(x=1, y=1)
+        self.impulse(x=1, y=0.5)
         self.active = False
         self.position = position
         bs.timer(0.2, self.activate)

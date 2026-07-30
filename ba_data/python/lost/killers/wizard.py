@@ -27,7 +27,9 @@ class MusicBox(bs.Actor):
                 'gravity_scale': 0.0,
                 'materials': [
                     AsymFactory.get().killer_trap_object_material,
-                    AsymFactory.get().no_wall_collide
+                    AsymFactory.get().no_wall_collide,
+                    # Give killer material so it can be placed in killer walls.
+                    AsymFactory.get().killer_material
                 ],
                 'shadow_size': 0,
             },
@@ -175,6 +177,8 @@ class KillerWall(bs.Actor):
                 'gravity_scale': 2.0,
                 'materials': [
                     AsymFactory.get().killer_door_material,
+                    # Give killer material so it can be placed in killer walls.
+                    AsymFactory.get().killer_material
                 ],
                 'shadow_size': 0.3,
             },

@@ -497,9 +497,24 @@ class AsymFactory:
             ),
         )
 
+        this_mat = self.only_wall_collide = bs.Material()
+        #: Material that only collide with walls (or footing).
+        this_mat.add_actions(('modify_part_collision', 'collide', False))
+
+        # Duh
+        this_mat.add_actions(
+            conditions=(
+                'they_have_material',
+                SharedObjects.get().footing_material
+            ),
+            actions=(
+                ('modify_part_collision', 'collide', True),
+            ),
+        )
+
         self.no_collision = bs.Material()
         # collide with nothin
-        self.no_collision.add_actions(('modify_part_collision', 'collide', False),)
+        self.no_collision.add_actions(('modify_part_collision', 'collide', False))
         
 
 
@@ -745,6 +760,7 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
     def __init__(self, settings):
         self.session: LostSession
         super().__init__(settings)
+        self.killers = []
         
     
     def on_transition_in(self):
@@ -752,6 +768,7 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         map = maps.ThePad
         map.preload()
         self.map = map()
+        
         
         
 
@@ -1109,9 +1126,9 @@ class Match(bs.Activity[bs.Player, bs.Team]):
     def on_transition_in(self):
         super().on_transition_in()
         mapss = [
-            #maps.StepRightUp,
+            maps.StepRightUp,
             #maps.MonkeyFace,
-            maps.CragCastle,
+            #maps.CragCastle,
         ]
         map = random.choice(mapss)
         map.preload()
