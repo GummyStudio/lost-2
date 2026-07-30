@@ -38,9 +38,18 @@ class AgentSurvivor(CharacterMoveset):
     
     def handle_clone(self):
         if not self.clone:
+            self.spaz.allow_movement = True
             return
         if not self.clone.is_alive():
             return
+        
+        # Disallow movement if controlling clone
+        if self.clone_mode == 'Control' and self.controling_clone:
+            self.spaz.allow_movement = False
+        else:
+            self.spaz.allow_movement = True
+
+
         
         if self.clone_mode == 'Random':
             if not ((bs.time() - self.last_clone_move) >= 0.4):
@@ -81,12 +90,10 @@ class AgentSurvivor(CharacterMoveset):
                 self.clone.on_move_left_right(self.spaz.input_x)
                 self.clone.on_move_up_down(self.spaz.input_y)
                 self.clone.on_run(self.spaz.input_run)
-                self.spaz.allow_movement = False
         
                
                 
             else:
-                self.spaz.allow_movement = True
                 self.clone.on_move_left_right(0)
                 self.clone.on_move_up_down(0)
                 self.clone.on_run(0)
@@ -100,9 +107,9 @@ class AgentSurvivor(CharacterMoveset):
     def ability1(self):
         self.controling_clone = not self.controling_clone
         PopupText(
-            'Controling clone...' if self.controling_clone else 'Returning input.',
+            '.', # Just to mind game, i guess.
             position=self.spaz.node.position,
-            scale=0.75
+            scale=1.0
         ).autoretain()
     def ability2(self):
         self.kill_clone()
@@ -142,7 +149,7 @@ class AgentSurvivor(CharacterMoveset):
             self.mode += 1
         
         PopupText(
-            self.clone_mode,
+            str(self.clone_mode)[0],
             position=self.spaz.node.position,
             scale=0.8
         ).autoretain()

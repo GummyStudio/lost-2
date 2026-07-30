@@ -148,6 +148,7 @@ class Spaz(bs.Actor):
         self.color = color
         self.highlight = highlight
         self.allow_movement = True
+        # Just stop movement, and capture input.
         
         
         self.node: bs.Node = bs.newnode(
@@ -289,15 +290,22 @@ class Spaz(bs.Actor):
     def tick_movement(self):
         if not self.exists():
             return
-        if not self.allow_movement:
-            return
-        if self.stunned:
-            return
+        
         # Ew... has to be in a seperate handler, 
         # or else changing the variables wont do anything.
-        self.node.move_up_down = self.input_y * self.max_walk_speed
-        self.node.move_left_right = self.input_x * self.max_walk_speed
-        self.node.run = self.input_run * self.max_run_speed
+        
+        # Can we move?
+        if (
+            self.allow_movement
+            and not self.stunned
+        ):
+            self.node.move_up_down = self.input_y * self.max_walk_speed
+            self.node.move_left_right = self.input_x * self.max_walk_speed
+            self.node.run = self.input_run * self.max_run_speed
+        else:
+            self.node.move_up_down = 0
+            self.node.move_left_right = 0
+            self.node.run = 0
 
 
 
@@ -697,12 +705,12 @@ class Spaz(bs.Actor):
                 self._stop_wiggle_sequence
             )
             return
-        self._wiggledancetimer = bs.Timer(
-            0.01, lambda: (
-                self.node.handlemessage('celebrate', int(50))
-            ),
-            repeat=True
-        )
+        #self._wiggledancetimer = bs.Timer(
+        #    0.01, lambda: (
+        #        self.node.handlemessage('celebrate', int(50))
+        #    ),
+        #    repeat=True
+        #)
         pnum = 0
         self.wiggling = True
         bs.getsound('drumRollShort').play(position=self.node.position)
