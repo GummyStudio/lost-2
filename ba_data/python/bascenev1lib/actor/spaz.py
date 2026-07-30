@@ -147,6 +147,7 @@ class Spaz(bs.Actor):
 
         self.color = color
         self.highlight = highlight
+        self.allow_movement = True
         
         
         self.node: bs.Node = bs.newnode(
@@ -287,6 +288,10 @@ class Spaz(bs.Actor):
 
     def tick_movement(self):
         if not self.exists():
+            return
+        if not self.allow_movement:
+            return
+        if self.stunned:
             return
         # Ew... has to be in a seperate handler, 
         # or else changing the variables wont do anything.
@@ -975,8 +980,7 @@ class Spaz(bs.Actor):
 
             
             # oww :(
-            self.max_run_speed *= 0.02
-            self.max_walk_speed *= 0.02
+            
             if msg.node_knockout_message:
                 self.node.handlemessage("knockout", msg.duration*10)
             
@@ -994,8 +998,7 @@ class Spaz(bs.Actor):
                 )
             
             def return_():
-                self.max_run_speed /= 0.02
-                self.max_walk_speed /= 0.02
+                
                 self.stunned = False
 
             bs.timer(msg.duration, return_)

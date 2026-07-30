@@ -81,12 +81,12 @@ class AgentSurvivor(CharacterMoveset):
                 self.clone.on_move_left_right(self.spaz.input_x)
                 self.clone.on_move_up_down(self.spaz.input_y)
                 self.clone.on_run(self.spaz.input_run)
-                bs.timer(0.0011, bs.Call(self.spaz.safesetattr, self.spaz.node, 'move_left_right', 0))
-                bs.timer(0.0011, bs.Call(self.spaz.safesetattr, self.spaz.node, 'move_up_down', 0))
-                bs.timer(0.0011, bs.Call(self.spaz.safesetattr, self.spaz.node, 'run', 0))
+                self.spaz.allow_movement = False
+        
                
                 
             else:
+                self.spaz.allow_movement = True
                 self.clone.on_move_left_right(0)
                 self.clone.on_move_up_down(0)
                 self.clone.on_run(0)
