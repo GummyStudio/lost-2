@@ -144,6 +144,9 @@ class Spaz(bs.Actor):
         
 
         media = factory.get_media(character)
+
+        self.color = color
+        self.highlight = highlight
         
         
         self.node: bs.Node = bs.newnode(

@@ -806,6 +806,10 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         spaz.handlemessage(bs.StandMessage(spawn))
         spaz.node.name = player.getname()
         spaz.node.name_color = player.color
+        player.actor = spaz
+        assignspazinput(spaz, player)
+
+        return # testing rn so fuck off lol
         # variables
         mats = spaz.node.materials
         asymf = AsymFactory.get()
@@ -817,8 +821,8 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         mats = tuple(mats_list)
         spaz.node.materials = mats
         # tada, should be able to hit people now :3
-        assignspazinput(spaz, player)
-        player.actor = spaz
+        
+        
 
         
     
@@ -1127,8 +1131,8 @@ class Match(bs.Activity[bs.Player, bs.Team]):
         super().on_transition_in()
         mapss = [
             maps.StepRightUp,
-            #maps.MonkeyFace,
-            #maps.CragCastle,
+            maps.MonkeyFace,
+            maps.CragCastle,
         ]
         map = random.choice(mapss)
         map.preload()

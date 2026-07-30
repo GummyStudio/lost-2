@@ -75,7 +75,7 @@ def register_appearances() -> None:
     )
     from lost.survivors import (
         ZoeSurvivor, PirateSurvivor, MellSurvivor, 
-        KronkSurvivor, BearSurvivor
+        KronkSurvivor, BearSurvivor, AgentSurvivor
     )
     
    
@@ -418,6 +418,35 @@ def register_appearances() -> None:
     t.moveset = BonesKiller
     bs.app.classic.killers.append('Bones')
 
+    # Agent ###################################
+    t = Appearance('Agent Johnson')
+    t.color_texture = 'agentColor'
+    t.color_mask_texture = 'agentColorMask'
+    t.icon_texture = 'agentIcon'
+    t.icon_mask_texture = 'agentIconColorMask'
+    t.head_mesh = 'agentHead'
+    t.torso_mesh = 'agentTorso'
+    t.pelvis_mesh = 'agentPelvis'
+    t.upper_arm_mesh = 'agentUpperArm'
+    t.forearm_mesh = 'agentForeArm'
+    t.hand_mesh = 'agentHand'
+    t.upper_leg_mesh = 'agentUpperLeg'
+    t.lower_leg_mesh = 'agentLowerLeg'
+    t.toes_mesh = 'agentToes'
+    agent_sounds = ['agent1', 'agent2', 'agent3', 'agent4']
+    agent_hit_sounds = ['agentHit1', 'agentHit2']
+    t.jump_sounds = agent_sounds
+    t.attack_sounds = agent_sounds
+    t.impact_sounds = agent_hit_sounds
+    t.death_sounds = ['agentDeath']
+    t.pickup_sounds = agent_sounds
+    t.fall_sounds = ['agentFall']
+    t.style = 'agent'
+    t.default_color = (0.3, 0.3, 0.33)
+    t.default_highlight = (1, 0.5, 0.3)
+    t.moveset = AgentSurvivor
+    bs.app.classic.survivors.append('Agent Johnson')
+
 
 
     return
@@ -564,32 +593,7 @@ def register_appearances() -> None:
     t.default_color = (0.5, 0.5, 0.5)
     t.default_highlight = (1, 0, 0)
 
-    # Agent ###################################
-    t = Appearance('Agent Johnson')
-    t.color_texture = 'agentColor'
-    t.color_mask_texture = 'agentColorMask'
-    t.icon_texture = 'agentIcon'
-    t.icon_mask_texture = 'agentIconColorMask'
-    t.head_mesh = 'agentHead'
-    t.torso_mesh = 'agentTorso'
-    t.pelvis_mesh = 'agentPelvis'
-    t.upper_arm_mesh = 'agentUpperArm'
-    t.forearm_mesh = 'agentForeArm'
-    t.hand_mesh = 'agentHand'
-    t.upper_leg_mesh = 'agentUpperLeg'
-    t.lower_leg_mesh = 'agentLowerLeg'
-    t.toes_mesh = 'agentToes'
-    agent_sounds = ['agent1', 'agent2', 'agent3', 'agent4']
-    agent_hit_sounds = ['agentHit1', 'agentHit2']
-    t.jump_sounds = agent_sounds
-    t.attack_sounds = agent_sounds
-    t.impact_sounds = agent_hit_sounds
-    t.death_sounds = ['agentDeath']
-    t.pickup_sounds = agent_sounds
-    t.fall_sounds = ['agentFall']
-    t.style = 'agent'
-    t.default_color = (0.3, 0.3, 0.33)
-    t.default_highlight = (1, 0.5, 0.3)
+    
 
     # Jumpsuit ###################################
     t = Appearance('Lee')
