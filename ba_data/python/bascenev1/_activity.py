@@ -187,6 +187,34 @@ class Activity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         self.lobby = None
         self._stats: bascenev1.Stats | None = None
         self._customdata: dict | None = {}
+        self.dancing_players = []
+        self.homero = _bascenev1.newnode(
+            'sound', 
+            attrs={
+                'sound': _bascenev1.getsound('homeroLoop'),
+                'volume': 0.0,
+                'music': True,
+            }
+        )
+        self._music_tick_timer = _bascenev1.Timer(
+            0.1, babase.WeakCall(self._music_tick), repeat=True
+        )
+    
+    def _music_tick(self):
+        if self.is_transitioning_out():
+            self.dancing_players = []
+            return
+                
+        if self.dancing_players:
+            if self.homero:
+                node = self.homero
+                list_players = self.dancing_players
+                node.volume = 10.0
+                node.position = list_players[0].node.position
+        else:
+            if self.homero:
+                node = self.homero
+                node.volume = 0.0
 
     def __del__(self) -> None:
         # If the activity has been run then we should have already cleaned

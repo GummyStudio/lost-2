@@ -121,7 +121,7 @@ class MaskedManKiller(CharacterMoveset):
     move_speed = 0.8
     run_speed = 1.0
 
-    ability1_cooldown = 2
+    ability1_cooldown = 1.5
     ability2_cooldown = 15
     ability3_cooldown = 18
 
@@ -208,9 +208,9 @@ class MaskedManKiller(CharacterMoveset):
                 spread=0.35,
             )
         self.play('prepare')
-        time = 1.1
+        time = 0.7
         self.spaz.node.handlemessage('celebrate_l', time*1000)
-        bs.timer(1.4, shoot)
+        bs.timer(time, shoot)
 
     def ability1(self) -> None:
         self._punched_nodes = set()
@@ -365,10 +365,10 @@ class MaskedManKiller(CharacterMoveset):
         dele = node.getdelegate(bs.Actor)
 
         if self.node_not_punched_nodes(node) and len(self._punched_nodes) == 0:
-            dmg = 5
+            dmg = 15
             self._last_used_1 = (
                 self._last_used_1 - 
-                (self.ability1_cooldown - 0.4)
+                (self.ability1_cooldown - 0.2)
             )
             self.handle_bashes()
             node.handlemessage(

@@ -75,7 +75,7 @@ def register_appearances() -> None:
     )
     from lost.survivors import (
         ZoeSurvivor, PirateSurvivor, MellSurvivor, 
-        KronkSurvivor, BearSurvivor
+        KronkSurvivor
     )
     
    
@@ -362,32 +362,32 @@ def register_appearances() -> None:
     bs.app.classic.killers.append('Grumbledorf')
 
     # Bear ###################################
-    t = Appearance('Bernard')
-    t.color_texture = 'bearColor'
-    t.color_mask_texture = 'bearColorMask'
-    t.icon_texture = 'bearIcon'
-    t.icon_mask_texture = 'bearIconColorMask'
-    t.head_mesh = 'bearHead'
-    t.torso_mesh = 'bearTorso'
-    t.pelvis_mesh = 'bearPelvis'
-    t.upper_arm_mesh = 'bearUpperArm'
-    t.forearm_mesh = 'bearForeArm'
-    t.hand_mesh = 'bearHand'
-    t.upper_leg_mesh = 'bearUpperLeg'
-    t.lower_leg_mesh = 'bearLowerLeg'
-    t.toes_mesh = 'bearToes'
-    bear_sounds = ['bear1', 'bear2', 'bear3', 'bear4']
-    bear_hit_sounds = ['bearHit1', 'bearHit2']
-    t.jump_sounds = bear_sounds
-    t.attack_sounds = bear_sounds
-    t.impact_sounds = bear_hit_sounds
-    t.death_sounds = ['bearDeath']
-    t.pickup_sounds = bear_sounds
-    t.fall_sounds = ['bearFall']
-    t.style = 'bear'
-    t.default_color = (0.7, 0.5, 0.0)
-    t.moveset = BearSurvivor
-    bs.app.classic.survivors.append('Bernard')
+    # t = Appearance('Bernard')
+    # t.color_texture = 'bearColor'
+    # t.color_mask_texture = 'bearColorMask'
+    # t.icon_texture = 'bearIcon'
+    # t.icon_mask_texture = 'bearIconColorMask'
+    # t.head_mesh = 'bearHead'
+    # t.torso_mesh = 'bearTorso'
+    # t.pelvis_mesh = 'bearPelvis'
+    # t.upper_arm_mesh = 'bearUpperArm'
+    # t.forearm_mesh = 'bearForeArm'
+    # t.hand_mesh = 'bearHand'
+    # t.upper_leg_mesh = 'bearUpperLeg'
+    # t.lower_leg_mesh = 'bearLowerLeg'
+    # t.toes_mesh = 'bearToes'
+    # bear_sounds = ['bear1', 'bear2', 'bear3', 'bear4']
+    # bear_hit_sounds = ['bearHit1', 'bearHit2']
+    # t.jump_sounds = bear_sounds
+    # t.attack_sounds = bear_sounds
+    # t.impact_sounds = bear_hit_sounds
+    # t.death_sounds = ['bearDeath']
+    # t.pickup_sounds = bear_sounds
+    # t.fall_sounds = ['bearFall']
+    # t.style = 'bear'
+    # t.default_color = (0.7, 0.5, 0.0)
+    # t.moveset = BearSurvivor
+    # bs.app.classic.survivors.append('Bernard')
 
 
     return
