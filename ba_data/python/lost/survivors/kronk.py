@@ -48,7 +48,7 @@ class KronkSurvivor(CharacterMoveset):
         def punch():
             self.spaz.max_walk_speed /= 0.2
             self.spaz.max_run_speed /= 0.1
-            self.spaz.impulse(x=5 if self.has_parry_counter else 2, y=1)
+            self.spaz.impulse(x=12 if self.has_parry_counter else 7, y=1)
             self.spaz.node.punch_pressed = True
             self.spaz.node.punch_pressed = False
             
@@ -107,8 +107,8 @@ class KronkSurvivor(CharacterMoveset):
                     )
                 )
                 node.handlemessage(StunMessage(duration=3.5, knockback_settings={
-                    'x': 13,
-                    'y': 6,
+                    'x': 18,
+                    'y': 9,
                     'direction': node.velocity
                 }))
                 self.play_sound('punch_parry', position=self.spaz.node.position)
