@@ -220,6 +220,10 @@ class Actor:
         if activity is None and doraise:
             raise babase.ActivityNotFoundError()
         return activity
+    
+    def safesetattr(self, node, attr, value):
+        if node:
+            setattr(node, attr, value)
 
 
      # universal impusle

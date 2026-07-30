@@ -737,7 +737,7 @@ class CragCastle(bs.Map):
         gnode = bs.getactivity().globalsnode
         gnode.shadow_ortho = True
         gnode.shadow_offset = (0, 0, -5.0)
-        gnode.tint = (1.15, 1.05, 0.75)
+        gnode.tint = (1.15*0.5, 1.05*0.5, 0.75*0.5)
         gnode.ambient_color = (1.15, 1.05, 0.75)
         gnode.vignette_outer = (0.6, 0.65, 0.6)
         gnode.vignette_inner = (0.95, 0.95, 0.95)

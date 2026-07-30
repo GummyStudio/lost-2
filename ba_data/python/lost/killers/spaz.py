@@ -107,7 +107,7 @@ class SpazKiller(CharacterMoveset):
         self._punched_nodes = set()
         
         self.spaz.node.punch_pressed = True
-        try: bs.timer(0.6, bs.Call(setattr, self.spaz.node, 'punch_pressed', False))
+        try: bs.timer(0.6, bs.Call(self.spaz.safesetattr, self.spaz.node, 'punch_pressed', False))
         except: pass
         self.play_sound('punch', position=self.spaz.node.position)
 

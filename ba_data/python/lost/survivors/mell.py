@@ -26,7 +26,7 @@ class HealingItem(bs.Actor):
         self.impulse(x=7, y=4)
         self.active = False
         bs.timer(1.6, self.activate)
-        try: bs.timer(40, bs.Call(setattr, self.node, 'flashing', True))
+        try: bs.timer(40, bs.Call(self.safesetattr, self.node, 'flashing', True))
         except: pass
         bs.timer(45, bs.WeakCall(self.handlemessage, bs.DieMessage()))
     

@@ -121,7 +121,7 @@ class NinjaKiller(CharacterMoveset):
         self.play_sound('swing')
         self._punched_nodes = set()
         self.spaz.node.punch_pressed = True
-        try: bs.timer(0.6, bs.Call(setattr, self.spaz.node, 'punch_pressed', False))
+        try: bs.timer(0.6, bs.Call(self.spaz.safesetattr, self.spaz.node, 'punch_pressed', False))
         except: pass
         if self.fire_mode:
             self._last_used_1 = bs.time() + 3

@@ -1366,6 +1366,7 @@ class Match(bs.Activity[bs.Player, bs.Team]):
             player.actor.node.is_area_of_interest = True
         # Set the BG...
         self.map.background.color_texture = bs.gettexture('spectureBG')
+        self.globalsnode.tint = (1.55, 1, 1)
     
     def handlemessage(self, msg):
         if isinstance(msg, bs.PlayerDiedMessage):

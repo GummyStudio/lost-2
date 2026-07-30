@@ -167,7 +167,7 @@ class MaskedManKiller(CharacterMoveset):
                 return
             self.spaz.node.punch_pressed = True
             try: 
-                bs.timer(0, bs.Call(setattr, self.spaz.node, 'punch_pressed', False))
+                bs.timer(0, bs.Call(self.spaz.safesetattr, self.spaz.node, 'punch_pressed', False))
             except: 
                 pass
             x = self.spaz.node.move_left_right
@@ -219,7 +219,7 @@ class MaskedManKiller(CharacterMoveset):
         
         self.spaz.node.punch_pressed = True
         try: 
-            bs.timer(0, bs.Call(setattr, self.spaz.node, 'punch_pressed', False))
+            bs.timer(0, bs.Call(self.spaz.safesetattr, self.spaz.node, 'punch_pressed', False))
         except: 
             pass
     

@@ -29,6 +29,7 @@ class AgentSurvivor(CharacterMoveset):
         self.clone: Spaz = None
         bs.timer(0.001, self.handle_clone, repeat=True)
         self.controling_clone = False
+        self.kill_clone_timer = None
 
     @property
     def clone_mode(self):
@@ -53,6 +54,11 @@ class AgentSurvivor(CharacterMoveset):
         elif self.clone_mode == 'Body Block':
             if not ((bs.time() - self.last_clone_move) >= 0.1):
                 return
+            
+            # If we dont exist anymore, just go back to random.
+            if not self.spaz.is_alive():
+                self.mode = 0
+                return
             self.last_clone_move = bs.time()
             spaz_pos = self.spaz.node.position
             clone_pos = self.clone.node.position
@@ -71,12 +77,14 @@ class AgentSurvivor(CharacterMoveset):
             
         elif self.clone_mode == 'Control':
             if self.controling_clone:
-                self.spaz.node.move_left_right = 0
-                self.spaz.node.move_up_down = 0
-                self.spaz.node.run = 0
+                
                 self.clone.on_move_left_right(self.spaz.input_x)
                 self.clone.on_move_up_down(self.spaz.input_y)
                 self.clone.on_run(self.spaz.input_run)
+                bs.timer(0.0011, bs.Call(self.spaz.safesetattr, self.spaz.node, 'move_left_right', 0))
+                bs.timer(0.0011, bs.Call(self.spaz.safesetattr, self.spaz.node, 'move_up_down', 0))
+                bs.timer(0.0011, bs.Call(self.spaz.safesetattr, self.spaz.node, 'run', 0))
+               
                 
             else:
                 self.clone.on_move_left_right(0)
@@ -87,6 +95,7 @@ class AgentSurvivor(CharacterMoveset):
         if self.clone:
             self.clone.handlemessage(bs.DieMessage())
             self.clone = None
+            self.kill_clone_timer = None
 
     def ability1(self):
         self.controling_clone = not self.controling_clone
@@ -125,7 +134,7 @@ class AgentSurvivor(CharacterMoveset):
                 self.spaz.node.position[2],
             )
         ))
-        bs.timer(15, self.kill_clone)
+        self.kill_clone_timer = bs.Timer(15, self.kill_clone)
     def ability3(self):
         if self.mode+1 == len(self.modes):
             self.mode = 0
