@@ -277,6 +277,10 @@ class Spaz(bs.Actor):
             self.node.name = ''
         
         bs.timer(0.001, self.tick_movement, repeat=True)
+        self._wiggle_count = 0
+        self._next_wiggle_left = True
+        self.wiggle_reset_timer = None
+        self.wiggling = False
 
     def tick_movement(self):
         if not self.exists():
@@ -665,6 +669,73 @@ class Spaz(bs.Actor):
             return
         self.input_y = value
 
+    def remove_from_dancin(self):
+        try:
+            self.getactivity().dancing_players.remove(self)
+        except Exception as e: 
+            print(f"Couldn't remove {self} from wiggle dance list: {e}")
+            pass
+    
+    def _stop_wiggle_sequence(self):
+        self.wiggledancetimer = None
+        self.wiggling = False
+        self._wiggle_count = 0
+        self.remove_from_dancin()
+    
+    def _start_wiggle_sequence(self):
+        if self.wiggling == True:
+            self._wiggleresettimer = bs.Timer(
+                0.5, 
+                self._stop_wiggle_sequence
+            )
+            return
+        self._wiggledancetimer = bs.Timer(
+            0.01, lambda: (
+                self.node.handlemessage('celebrate', int(50))
+            ),
+            repeat=True
+        )
+        pnum = 0
+        self.wiggling = True
+        bs.getsound('drumRollShort').play(position=self.node.position)
+        self.getactivity().dancing_players.append(self)
+    
+    def left_right_callback(self, value: float):
+        if value > 0.3:
+            self.last_last_x = value
+        def resetwiggle():
+            self._wiggle_count = 0
+        def increase():
+            self._wiggle_count += 1
+            self.wiggle_reset_timer = bs.Timer(0.3, resetwiggle)
+        # detect any significant fast changes to the value
+        left = self._next_wiggle_left
+        deadzone = 1
+        # value goes to right deadzone
+        if value >= deadzone:
+            if not left:
+                increase()
+                self._next_wiggle_left = True
+        # value goes to the left deadzone
+        if value <= -deadzone:
+            if left:
+                increase()
+                self._next_wiggle_left = False
+            
+        # start doin it if we wiggled around so much
+        if self._wiggle_count > 7:
+            self._start_wiggle_sequence()
+            if random.random() < 0.1:
+                bs.emitfx(
+                    position=self.node.position,
+                    velocity=self.node.velocity,
+                    count=50,
+                    scale=0.8,
+                    spread=0.6,
+                    chunk_type='spark',
+                )
+            self._wiggleresettimer = bs.Timer(0.5, self._stop_wiggle_sequence)
+
     def on_move_left_right(self, value: float) -> None:
         """
         Called to set the left/right joystick amount on this spaz;
@@ -675,6 +746,7 @@ class Spaz(bs.Actor):
         if not self.node:
             return
         self.input_x = value
+        self.left_right_callback(value)
 
     def on_punched(self, damage: int) -> None:
         """Called when this spaz gets punched."""
