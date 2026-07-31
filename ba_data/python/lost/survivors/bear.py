@@ -2,6 +2,7 @@ import bascenev1 as bs # pyright: ignore[reportMissingImports]
 import babase # pyright: ignore[reportMissingImports] # shut UPPPPP vs code dont cry because i only imported survivors folder
 from lost.lost import CharacterMoveset, DamageMessage, AsymFactory, StunMessage # pyright: ignore[reportMissingImports]
 from lost.killers.maskedman import Beam as shooter# pyright: ignore[reportMissingImports] # dont feel like copypasting allat lol
+from bascenev1lib.actor.popuptext import PopupText
 
 class BearSurvivor(CharacterMoveset):
     is_killer = False
@@ -9,7 +10,7 @@ class BearSurvivor(CharacterMoveset):
 
     move_speed = 0.80 # 0.7 if gun or bash equipped
     run_speed = 0.95 # ditto
-    ability1_cooldown = 2.0
+    ability1_cooldown = 20.0
     ability2_cooldown = 2.0
     ability3_cooldown = 0.2
 
@@ -55,7 +56,8 @@ class BearSurvivor(CharacterMoveset):
         else:
             pass
     def bash_flash(self, color, charge_amount):
-    
+        if self.bash_charges == -1:
+            return
         if charge_amount >= 3:
             charge_amount = 3 # make sure we don't get an error for not having a sound for charge 5
         
@@ -80,12 +82,7 @@ class BearSurvivor(CharacterMoveset):
 
         self.bash_charges += 1
         
-        
         # JOHN SWITCHCASE because i can't fucking chain bs.timers??? This shit sucks.
-        # gummy: dude fuck off im rewriting all ts becuase yousuck ass
-        # budfdie: sorry bro its 5am i cant code for shit at this hours
-        # gummy: ok no problem bro i spare you :3
-        # and then we make out furiously and passionately
         if self.bash_charges == 1:
             bs.timer(1,bs.Call(self.bash_flash, (1,1,0), 2)) # yellow
         elif self.bash_charges == 2:
@@ -122,12 +119,6 @@ class BearSurvivor(CharacterMoveset):
             self.gun_equipped = False
             self.move_speed *= 1.142857
             self.run_speed *= 1.35714
-            
-            
-    def ability3_extra_conditions(self):
-        if not self.gun_equipped and not self.bash_equipped:
-            return False
-
 
     def ability3(self):
         
@@ -135,7 +126,7 @@ class BearSurvivor(CharacterMoveset):
         # Bash: Will give debuffs according to its charge
         # Shoot: Will give debuffs and then stun on second use
         
-        if self.gun_equipped:
+        if self.gun_equipped == True:
             self.gun_equipped = False
             def shoot(): # taken strait outta masked man!
                 if not self.spaz.node:
@@ -189,9 +180,10 @@ class BearSurvivor(CharacterMoveset):
             bs.timer(time, shoot)
             self.ability2_cooldown = 41
             self._last_used_2 = bs.time()-1
-        elif self.bash_equipped:
+        elif self.bash_equipped == True:
+            self.bash_equipped = False
             self.stored_bash_charges = self.bash_charges
-            self.bash_charges = 0
+            self.bash_charges = -1
             self._punched_nodes = set()
         
             self.spaz.node.punch_pressed = True
@@ -202,8 +194,29 @@ class BearSurvivor(CharacterMoveset):
                 self.spaz.impulse(x=4.5, y=1)
                 self.spaz.max_walk_speed /= 0.1
             bs.timer(0.1, revert)
+        else:
+            PopupText(
+                'Nothing in your\nhands to fire.',
+                position=self.spaz.node.position,
+                scale=1.0
+            ).autoretain()
     
     def handle_spaz_punched_something(self, collision: bs.Collision) -> bool:
+        if self.stored_bash_charges == 0: # too early
+            walk_slwdn = 0.8
+            run_slwdn = 0.9
+        elif self.stored_bash_charges == 1: # eh
+            walk_slwdn = 0.6
+            run_slwdn = 0.8
+        elif self.stored_bash_charges == 2: # p good
+            walk_slwdn = 0.5
+            run_slwdn = 0.6
+        elif self.stored_bash_charges == 3: # perfect
+            walk_slwdn = 0.4
+            run_slwdn = 0.5
+        elif self.stored_bash_charges >= 4: # too late
+            walk_slwdn = 0.8
+            run_slwdn = 0.9
         node = collision.opposingnode
 
         if node.getnodetype() != 'spaz':
@@ -212,7 +225,7 @@ class BearSurvivor(CharacterMoveset):
         if self.node_not_punched_nodes(node) and len(self._punched_nodes) == 0:
             node.handlemessage(
                 DamageMessage(
-                    damage=10,
+                    damage=30,
                     spaz=self.spaz,
                     type='gh_bash',
                     hurt_sound='bash_hit',
@@ -223,10 +236,10 @@ class BearSurvivor(CharacterMoveset):
             def revert():
                 if not node:
                     return
-                node.getdelegate(bs.Actor).max_walk_speed /= 0.5
-                node.getdelegate(bs.Actor).max_run_speed /= 0.2
-            node.getdelegate(bs.Actor).max_walk_speed *= 0.5
-            node.getdelegate(bs.Actor).max_run_speed *= 0.2
+                node.getdelegate(bs.Actor).max_walk_speed /= walk_slwdn
+                node.getdelegate(bs.Actor).max_run_speed /= run_slwdn
+            node.getdelegate(bs.Actor).max_walk_speed *= walk_slwdn
+            node.getdelegate(bs.Actor).max_run_speed *= run_slwdn
             bs.timer(2, revert)
 
         return False

@@ -387,7 +387,7 @@ def register_appearances() -> None:
     t.style = 'bear'
     t.default_color = (0.7, 0.5, 0.0)
     t.moveset = BearSurvivor
-    #bs.app.classic.survivors.append('Bernard')
+    bs.app.classic.survivors.append('Bernard')
 
     # Skeleton ################################
     t = Appearance('Bones')
