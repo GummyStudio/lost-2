@@ -1376,6 +1376,8 @@ class Match(bs.Activity[bs.Player, bs.Team]):
                 show_lms_texture('wizard')
             elif list(self.killers)[0].actor.character == 'Bones':
                 show_lms_texture('bones')
+            elif list(self.killers)[0].actor.character == 'Taobao Mascot':
+                show_lms_texture('ali')
             else:
                 show_lms_texture('spaz')
 
