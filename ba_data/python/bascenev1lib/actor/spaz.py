@@ -295,18 +295,21 @@ class Spaz(bs.Actor):
         # Ew... has to be in a seperate handler, 
         # or else changing the variables wont do anything.
         
-        # Can we move?
+        # are we allowed to move?
         if (
             self.allow_movement
             and not self.stunned
         ):
-            self.node.move_up_down = self.input_y * self.max_walk_speed
-            self.node.move_left_right = self.input_x * self.max_walk_speed
-            self.node.run = self.input_run * self.max_run_speed
+            
+            self.node.hold_position_pressed = False
         else:
-            self.node.move_up_down = 0
-            self.node.move_left_right = 0
-            self.node.run = 0
+            # otherwise dont move.
+            self.node.hold_position_pressed = True
+
+        
+        self.node.move_up_down = self.input_y * self.max_walk_speed
+        self.node.move_left_right = self.input_x * self.max_walk_speed
+        self.node.run = self.input_run * self.max_run_speed
 
 
 
@@ -945,16 +948,16 @@ class Spaz(bs.Actor):
             if msg.hurt_sound:
                 msg.hurt_sound.play()
             PopupText(
-                str(msg.damage),
+                str(msg.visual_damage*self.damage_mult) if msg.visual_damage else str(msg.damage),
                 position=self.node.position,
             ).autoretain()
             # Don't do this if were a killer
             if not self.is_killer:
-                self.speed_boost(0.5)
+                self.speed_boost(0.05*(msg.damage/2))
             # were deaddd...
             if self.hitpoints <= 0:
                 if self.moveset:
-                    self.moveset.spaz_lost_all_hp()
+                    self.moveset.spaz_lost_all_hp(type=msg.hittype)
             
             # Tell their moveset that they did damage
             if msg.spaz:

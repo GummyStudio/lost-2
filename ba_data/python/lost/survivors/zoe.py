@@ -113,15 +113,15 @@ class ZoeSurvivor(CharacterMoveset):
         ) 
         self.spaz.node.connectattr('position', self.light, 'position')
     
-    def die(self):
-        super().spaz_lost_all_hp()
+    def die(self, type):
+        super().spaz_lost_all_hp(type=type)
         self.light.delete()
         
 
-    def spaz_lost_all_hp(self):
+    def spaz_lost_all_hp(self, type):
         # First off, if were on a second life die.
         if self.second_life:
-            self.die()
+            self.die(type)
             return
         
         # If we arent, check if oblation is at full, then respawn.
@@ -129,7 +129,7 @@ class ZoeSurvivor(CharacterMoveset):
             self.respawn()
         else:
             # Otherwise die...
-            self.die()
+            self.die(type)
 
     
     

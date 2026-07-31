@@ -468,6 +468,35 @@ def register_appearances() -> None:
     sal.style = "ninja"
     sal.moveset = survivors.SalvatoreSurvivor
     bs.app.classic.survivors.append('Salvatore')
+
+    # Ali ###################################
+    t = Appearance('Taobao Mascot')
+    t.color_texture = 'aliColor'
+    t.color_mask_texture = 'aliColorMask'
+    t.icon_texture = 'aliIcon'
+    t.icon_mask_texture = 'aliIconColorMask'
+    t.head_mesh = 'aliHead'
+    t.torso_mesh = 'aliTorso'
+    t.pelvis_mesh = 'aliPelvis'
+    t.upper_arm_mesh = 'aliUpperArm'
+    t.forearm_mesh = 'aliForeArm'
+    t.hand_mesh = 'aliHand'
+    t.upper_leg_mesh = 'aliUpperLeg'
+    t.lower_leg_mesh = 'aliLowerLeg'
+    t.toes_mesh = 'aliToes'
+    ali_sounds = ['ali1', 'ali2', 'ali3', 'ali4']
+    ali_hit_sounds = ['aliHit1', 'aliHit2']
+    t.jump_sounds = ali_sounds
+    t.attack_sounds = ali_sounds
+    t.impact_sounds = ali_hit_sounds
+    t.death_sounds = ['aliDeath']
+    t.pickup_sounds = ali_sounds
+    t.fall_sounds = ['aliFall']
+    t.style = 'ali'
+    t.default_color = (0.00392, 0.01569, 0.25098)
+    t.default_highlight = (1, 1, 1)
+    t.moveset = killers.AliKiller
+    bs.app.classic.killers.append('Taobao Mascot')
     
 
 

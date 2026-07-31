@@ -51,7 +51,8 @@ class DamageMessage:
                  damage: float = 0, 
                  spaz: Spaz = None,
                 type: str = 'normal',
-                 hurt_sound: str | None = None
+                 hurt_sound: str | None = None,
+                 visual_damage: float | None = None
         ):
         self.damage = damage
         self.spaz = spaz # the person who hit us
@@ -60,6 +61,7 @@ class DamageMessage:
             self.hurt_sound = getattr(AsymFactory.get(), hurt_sound, None)
         else:
             self.hurt_sound = None
+        self.visual_damage = visual_damage
         
 
 
@@ -322,11 +324,18 @@ class CharacterMoveset:
     def ability3(self):
         raise NotImplementedError(f'{self.__class__.__qualname__}.ability3 in moveset not changed')
 
-    def spaz_lost_all_hp(self):
+    def spaz_lost_all_hp(self, type):
         # By default we die here.
         self.spaz.handlemessage(
-            bs.DieMessage(how=bs.DeathType.IMPACT)
+            bs.DieMessage(how=bs.DeathType.GENERIC)
         )
+        if self.spaz.exists():
+
+            # Special case: died to specific things will lead to interaction
+            if type in ['ali_slam']:
+                self.spaz.impulse(x=2, y=17, direction=self.spaz.node.velocity)
+                self.spaz.shatter(True)
+
     def handle_spaz_was_stunned(self, type):
         """ wjhat do we do when we get stunned? """
     def handle_spaz_punched_something(self, collision: bs.Collision):
