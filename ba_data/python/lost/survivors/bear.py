@@ -98,19 +98,19 @@ class Beam(bs.Actor): # strait from naked man
                     type='gh_bullet',
                 )
             )
-            if owner.landed_first_shot:
+            if self.owner.moveset.landed_first_shot:
                 actor.handlemessage(
                     StunMessage(
                     duration=3, knockback_settings={
                         'x': 7,
                         'y': 5,
-                        'direction': node.velocity
+                        'direction': toucher.velocity
                         }
                     )
                 )
-                owner.landed_first_shot = False
+                self.owner.moveset.landed_first_shot = False
             else:
-                owner.landed_first_shot = True
+                self.owner.moveset.landed_first_shot = True
             self.handlemessage(bs.DieMessage())
             
         elif isinstance(msg, bs.OutOfBoundsMessage):

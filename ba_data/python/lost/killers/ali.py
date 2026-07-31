@@ -155,10 +155,10 @@ class AliKiller(CharacterMoveset):
         self.spaz.allow_movement = False
         
         
-        dir_x = self.spaz.input_x * 0.15
+        dir_x = self.spaz.input_x #* 0.15
         dir_y = -1.0
-        dir_z = self.spaz.input_y * -0.15
-        target_speed = 10.0 
+        dir_z = -self.spaz.input_y #* 0.15
+        target_speed = 13.0 
   
         cur_vx, cur_vy, cur_vz = self.spaz.node.velocity
         current_speed_in_dir = (cur_vx * dir_x) + (cur_vy * dir_y) + (cur_vz * dir_z)
@@ -167,7 +167,7 @@ class AliKiller(CharacterMoveset):
         impulse_scale = max(0.0, speed_difference / target_speed)
 
         self.spaz.impulse(
-            x=2 * impulse_scale, 
+            x=3 * impulse_scale, 
             y=-1 * impulse_scale, 
             direction=(dir_x, dir_y, dir_z)
         )

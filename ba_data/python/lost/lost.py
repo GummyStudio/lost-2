@@ -818,7 +818,7 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         player.actor = spaz
         assignspazinput(spaz, player)
 
-        return # testing rn so fuck off lol
+        #return # testing rn so fuck off lol
         # variables
         mats = spaz.node.materials
         asymf = AsymFactory.get()
