@@ -1,8 +1,123 @@
+from typing import override, Any
 import bascenev1 as bs # pyright: ignore[reportMissingImports]
 import babase # pyright: ignore[reportMissingImports] # shut UPPPPP vs code dont cry because i only imported survivors folder
-from lost.lost import CharacterMoveset, DamageMessage, AsymFactory, StunMessage # pyright: ignore[reportMissingImports]
-from lost.killers.maskedman import Beam as shooter# pyright: ignore[reportMissingImports] # dont feel like copypasting allat lol
+from lost.lost import CharacterMoveset, DamageMessage, AsymFactory, StunMessage, Lobby, KillerDetectedMessage # importing lobby so i can cancel cd
 from bascenev1lib.actor.popuptext import PopupText
+import random
+from bascenev1lib.gameutils import SharedObjects
+import bascenev1 as bs
+import babase
+
+class Beam(bs.Actor): # strait from naked man
+    def __init__(
+        self,
+        position: tuple[float],
+        owner: bs.Actor,
+    ):
+        super().__init__()
+        self.mesh = bs.getmesh('bomb')
+        self.tex = bs.gettexture('bonesColorMask')
+        self.scale = 0.9
+        self.bscale = 1.2
+        self.owner = owner
+        self.hurtpoints = random.randint(300, 1000)
+        shared = SharedObjects.get()
+        asymf = AsymFactory.get()
+        self.node = bs.newnode(
+            'prop',
+            delegate=self,
+            attrs={
+                'body': 'sphere',
+                'body_scale': self.bscale,
+                'position': position,
+                'mesh': self.mesh,
+                'mesh_scale': 0,
+                'light_mesh': self.mesh,
+                'shadow_size': self.bscale,
+                'color_texture': self.tex,
+                'reflection': 'powerup',
+                'reflection_scale': [1.0],
+                'gravity_scale': 0,
+                'materials': (
+                    asymf.survivor_trap_object_material, 
+                    shared.object_material,
+                    asymf.no_wall_collide,
+                ),
+            },
+        )
+        self.dying = False
+        bs.animate(self.node, 'mesh_scale', {0: 0, 0.2: self.scale})
+        
+    @override
+    def handlemessage(self, msg: Any) -> Any:
+        if self.expired:
+            return None
+            
+        if isinstance(msg, bs.DieMessage):
+            self.dying = True
+            if msg.immediate:
+                self.node.delete()
+            else:
+                bs.animate(self.node, 'mesh_scale', {0: self.scale, 0.1: 0})
+                bs.timer(0.1, self.node.delete)
+                
+        elif isinstance(msg, KillerDetectedMessage):
+            collision = bs.getcollision()
+            toucher = collision.opposingnode
+            if not toucher:
+                return None
+            ishittable = toucher.getnodetype() in ['spaz']
+            if self.dying:
+                return
+            if not ishittable:
+                return None
+            actor = toucher.getdelegate(bs.Actor)
+            other_beam = toucher.getdelegate(Beam)
+            if (
+                not actor
+                or not actor.is_alive()
+                or actor is self.owner
+                or other_beam
+                or self.dying
+            ):
+                return None
+            bs.emitfx(
+                position=self.node.position,
+                chunk_type='spark',
+                velocity=self.node.velocity,
+                count=65,
+                scale=2.0,
+                spread=0.8,
+            )
+            dmg = 20
+            # ew.
+            actor.handlemessage(
+                DamageMessage(
+                    damage=int(dmg),
+                    spaz=self.owner,
+                    type='gh_bullet',
+                )
+            )
+            if owner.landed_first_shot:
+                actor.handlemessage(
+                    StunMessage(
+                    duration=3, knockback_settings={
+                        'x': 7,
+                        'y': 5,
+                        'direction': node.velocity
+                        }
+                    )
+                )
+                owner.landed_first_shot = False
+            else:
+                owner.landed_first_shot = True
+            self.handlemessage(bs.DieMessage())
+            
+        elif isinstance(msg, bs.OutOfBoundsMessage):
+            self.handlemessage(bs.DieMessage(immediate=True))
+        else:
+            return super().handlemessage(msg)
+        return None
 
 class BearSurvivor(CharacterMoveset):
     is_killer = False
@@ -37,6 +152,7 @@ class BearSurvivor(CharacterMoveset):
         
         self.gun_equipped = False
         self.has_shot_before = False
+        self.landed_first_shot = False
         self.bash_equipped = False
         self.bash_charges = 0
         self.stored_bash_charges = 0 # this one is never changed, except when using bash again, good for using functions
@@ -100,14 +216,15 @@ class BearSurvivor(CharacterMoveset):
     def small_slowdown(self):
         self.move_speed /= 1.2
         self.run_speed /= 1.2
-        bs.timer(0.6, small_slowdown_recover) # type: ignore
+        bs.timer(0.6, self.small_slowdown_recover) # type: ignore
     def small_slowdown_recover(self):
         self.move_speed *= 1.2
         self.run_speed *= 1.2
+
     def ability2(self):
         
         # -- Shoot -- Gunhound will start holding her shotgun, although she cannot sprint in this state.
-
+        self.has_shot_before = False
         if self.gun_equipped == False and self.bash_equipped == False:
             self.play_sound('gun_equip')
             self.gun_equipped = True
@@ -128,58 +245,67 @@ class BearSurvivor(CharacterMoveset):
         
         if self.gun_equipped == True:
             self.gun_equipped = False
-            def shoot(): # taken strait outta masked man!
-                if not self.spaz.node:
-                    return
-                self.spaz.node.punch_pressed = True
-                try: 
-                    bs.timer(0, bs.Call(self.spaz.safesetattr, self.spaz.node, 'punch_pressed', False))
-                except: 
-                    pass
-                x = self.spaz.node.move_left_right
-                z = -self.spaz.node.move_up_down
-                pos = self.spaz.node.torso_position
-                pos = (
-                    pos[0] + x,
-                    pos[1],
-                    pos[2] + z,
-                )
-                beam = shooter.Beam(
-                    position=pos,
-                    owner=self.spaz,
-                    tex_text='bonesColorMask' # first red thing i saw ok
-                ).autoretain()
-                beam.node.velocity = (x*20, 0, z*20)
-                mag = -460
-                ppos = self.spaz.node.position
-                punchdir = self.spaz.node.velocity
-                self.spaz.node.handlemessage(
-                    'kick_back',
-                    ppos[0],
-                    ppos[1],
-                    ppos[2],
-                    punchdir[0],
-                    punchdir[1],
-                    punchdir[2],
-                    mag,
-                )
-                direction = bs.Vec3(x, 0.1, z)
-                direction = direction * 5
-                pos = self.spaz.node.torso_position
-                bs.emitfx(
-                    position=pos,
-                    chunk_type='spark',
-                    velocity=direction,
-                    count=30,
-                    scale=0.7,
-                    spread=0.35,
-                )
-            self.play_sound('gun_shoot')
-            time = 0.4
-            self.spaz.node.handlemessage('celebrate_l', time*1000)
-            bs.timer(time, shoot)
-            self.ability2_cooldown = 41
-            self._last_used_2 = bs.time()-1
+            def do_literally_everything():
+                def shoot(): # taken strait outta masked man!
+                    if not self.spaz.node:
+                        return
+                    self.spaz.node.punch_pressed = True
+                    try: 
+                        bs.timer(0, bs.Call(self.spaz.safesetattr, self.spaz.node, 'punch_pressed', False))
+                    except: 
+                        pass
+                    x = self.spaz.node.move_left_right
+                    z = -self.spaz.node.move_up_down
+                    pos = self.spaz.node.torso_position
+                    pos = (
+                        pos[0] + x,
+                        pos[1],
+                        pos[2] + z,
+                    )
+                    beam = Beam(
+                        position=pos,
+                        owner=self.spaz
+                    ).autoretain()
+                    beam.node.velocity = (x*20, 0, z*20)
+                    mag = -460
+                    ppos = self.spaz.node.position
+                    punchdir = self.spaz.node.velocity
+                    self.spaz.node.handlemessage(
+                        'kick_back',
+                        ppos[0],
+                        ppos[1],
+                        ppos[2],
+                        punchdir[0],
+                        punchdir[1],
+                        punchdir[2],
+                        mag,
+                    )
+                    direction = bs.Vec3(x, 0.1, z)
+                    direction = direction * 5
+                    pos = self.spaz.node.torso_position
+                    bs.emitfx(
+                        position=pos,
+                        chunk_type='spark',
+                        velocity=direction,
+                        count=30,
+                        scale=0.7,
+                        spread=0.35,
+                    )
+                self.play_sound('gun_shoot')
+                time = 0.4
+                self.spaz.node.handlemessage('celebrate_l', time*1000)
+                def bee_ess_tmer():
+                    bs.timer(time, shoot)
+                bee_ess_tmer()
+            do_literally_everything()
+            if self.has_shot_before == False:
+                bs.timer(1,do_literally_everything)
+                self.has_shot_before = True
+            if isinstance(bs.getactivity(), Lobby):
+                pass
+            else:
+                self.ability2_cooldown = 41
+                self._last_used_2 = bs.time()-1
         elif self.bash_equipped == True:
             self.bash_equipped = False
             self.stored_bash_charges = self.bash_charges
