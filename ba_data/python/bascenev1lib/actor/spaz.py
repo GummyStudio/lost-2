@@ -286,6 +286,7 @@ class Spaz(bs.Actor):
         self._next_wiggle_left = True
         self.wiggle_reset_timer = None
         self.wiggling = False
+        self.damage_mult = 1
 
     def tick_movement(self):
         if not self.exists():
@@ -930,6 +931,8 @@ class Spaz(bs.Actor):
                     position=self.node.position,
                 )
                 return
+            # multiply.
+            msg.damage *= self.damage_mult
             # Ask our moveset if we can can take damage
             if self.moveset:
                 if not self.moveset.handle_recieved_damage():
@@ -953,7 +956,7 @@ class Spaz(bs.Actor):
                 if self.moveset:
                     self.moveset.spaz_lost_all_hp()
             
-            # Tell their moveset that we took damage
+            # Tell their moveset that they did damage
             if msg.spaz:
                 if msg.spaz.moveset:
                     msg.spaz.moveset.handle_spaz_did_damage(msg.hittype)

@@ -28,6 +28,7 @@ class MusicType(Enum):
     LMS3 = 'Creation of Hatred'
     LMS4 = 'You and I, Forever.'
     LMS5 = 'Blood Stained Ears'
+    LMS6 = 'DEAD RINGER'
     LOBBY = 'lobby'
     
 

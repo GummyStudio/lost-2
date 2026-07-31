@@ -43,6 +43,7 @@ ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
     MusicType.LMS3: AssetSoundtrackEntry('lms3Music'),
     MusicType.LMS4: AssetSoundtrackEntry('lms4Music'),
     MusicType.LMS5: AssetSoundtrackEntry('lms5Music'),
+    MusicType.LMS6: AssetSoundtrackEntry('lms6Music'),
     MusicType.LOBBY: AssetSoundtrackEntry('lobbyMusic'),
     MusicType.KILLER_SELECT: AssetSoundtrackEntry('killerSelectMusic'),
 }

@@ -69,15 +69,8 @@ def register_appearances() -> None:
     # This is quite ugly but will be going away so not worth cleaning up.
     # pylint: disable=too-many-locals
     # pylint: disable=too-many-statements
-    from lost.killers import (
-        SpazKiller, NinjaKiller, MaskedManKiller,
-        WizardKiller, BonesKiller
-    )
-    from lost.survivors import (
-        ZoeSurvivor, PirateSurvivor, MellSurvivor, 
-        KronkSurvivor, BearSurvivor, AgentSurvivor
-    )
-    
+    from lost import survivors, killers
+   
    
 
     # Spaz #######################################
@@ -114,7 +107,7 @@ def register_appearances() -> None:
     t.style = 'cyborg'
     t.default_color = (0.6, 0.6, 0.6)
     t.default_highlight = (0.2, 0.2, 0.2)
-    t.moveset = SpazKiller
+    t.moveset = killers.SpazKiller
     bs.app.classic.killers.append('Spaz')
 
 
@@ -152,7 +145,7 @@ def register_appearances() -> None:
     t.style = 'female'
     t.default_color = (0.6, 0.6, 0.6)
     t.default_highlight = (0, 1, 0)
-    t.moveset = ZoeSurvivor
+    t.moveset = survivors.ZoeSurvivor
     bs.app.classic.survivors.append('Zoe')
 
     # Pirate #######################################
@@ -189,7 +182,7 @@ def register_appearances() -> None:
     t.style = 'pirate'
     t.default_color = (1, 0.2, 0.1)
     t.default_highlight = (1, 1, 0)
-    t.moveset = PirateSurvivor
+    t.moveset = survivors.PirateSurvivor
     bs.app.classic.survivors.append('Jack Morgan')
 
     # Chef ###########################################
@@ -228,7 +221,7 @@ def register_appearances() -> None:
     t.style = 'mel'
     t.default_color = (1, 1, 1)
     t.default_highlight = (0.1, 0.6, 0.1)
-    t.moveset = MellSurvivor
+    t.moveset = survivors.MellSurvivor
     bs.app.classic.survivors.append('Mel')
 
      # Barbarian #####################################
@@ -267,7 +260,7 @@ def register_appearances() -> None:
     t.style = 'kronk'
     t.default_color = (0.4, 0.5, 0.4)
     t.default_highlight = (1, 0.5, 0.3)
-    t.moveset = KronkSurvivor
+    t.moveset = survivors.KronkSurvivor
     bs.app.classic.survivors.append('Kronk')
 
 
@@ -299,7 +292,7 @@ def register_appearances() -> None:
     t.style = 'agent'
     t.default_color = (0, 0, 1.0)#(1, 1, 1)
     t.default_highlight = (1, 1, 1)
-    t.moveset = NinjaKiller
+    t.moveset = killers.NinjaKiller
     bs.app.classic.killers.append('Snake Shadow')
 
      # Bunny ###################################
@@ -328,7 +321,7 @@ def register_appearances() -> None:
     t.style = 'cyborg'
     t.default_color = (0.7, 0.4, 0.1)
     t.default_highlight = (0.35, 0.4, 0.5)
-    t.moveset = MaskedManKiller
+    t.moveset = killers.MaskedManKiller
     bs.app.classic.killers.append('Easter Bunny')
     
 
@@ -358,7 +351,7 @@ def register_appearances() -> None:
     t.style = 'cyborg'
     t.default_color = (0.2, 0.2, 0.2)
     t.default_highlight = (0.06, 0.15, 0.4)
-    t.moveset = WizardKiller
+    t.moveset = killers.WizardKiller
     bs.app.classic.killers.append('Grumbledorf')
 
     # Bear ###################################
@@ -386,7 +379,7 @@ def register_appearances() -> None:
     t.fall_sounds = ['bearFall']
     t.style = 'bear'
     t.default_color = (0.7, 0.5, 0.0)
-    t.moveset = BearSurvivor
+    t.moveset = survivors.BearSurvivor
     bs.app.classic.survivors.append('Bernard')
 
     # Skeleton ################################
@@ -415,7 +408,7 @@ def register_appearances() -> None:
     t.style = 'bones'
     t.default_color = (0.6, 0.9, 1)
     t.default_highlight = (0.6, 0.9, 1)
-    t.moveset = BonesKiller
+    t.moveset = killers.BonesKiller
     bs.app.classic.killers.append('Bones')
 
     # Agent ###################################
@@ -444,9 +437,38 @@ def register_appearances() -> None:
     t.style = 'agent'
     t.default_color = (0.3, 0.3, 0.33)
     t.default_highlight = (1, 0.5, 0.3)
-    t.moveset = AgentSurvivor
+    t.moveset = survivors.AgentSurvivor
     bs.app.classic.survivors.append('Agent Johnson')
 
+    # Salvatore #######################################
+    sal = Appearance("Salvatore")
+    sal.color_texture = "salColor"
+    sal.color_mask_texture = "salColorMask"
+    sal.default_color = (1, 1, 1)
+    sal.default_highlight = (0, 1, 0)
+    sal.icon_texture = "salIcon"
+    sal.icon_mask_texture = "salIconColorMask"
+    sal.head_mesh = "salHead"
+    sal.torso_mesh = "salTorso"
+    sal.pelvis_mesh = "salPelvis"
+    sal.upper_arm_mesh = "salUpperArm"
+    sal.forearm_mesh = "salForeArm"
+    sal.hand_mesh = "salHand"
+    sal.upper_leg_mesh = "salUpperLeg"
+    sal.lower_leg_mesh = "salLowerLeg"
+    sal.toes_mesh = "salToes"
+    sal_sounds = ["ali1", "ali2", "ali3", "ali4"]
+    sal_hit_sounds = ["aliHit1", "aliHit2"]
+    sal.attack_sounds = sal_sounds
+    sal.jump_sounds = sal_sounds
+    sal.impact_sounds = sal_hit_sounds
+    sal.death_sounds = ["aliDeath"]
+    sal.pickup_sounds = sal_sounds
+    sal.fall_sounds = ["aliFall"]
+    sal.style = "ninja"
+    sal.moveset = survivors.SalvatoreSurvivor
+    bs.app.classic.survivors.append('Salvatore')
+    
 
 
     return

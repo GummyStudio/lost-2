@@ -1348,6 +1348,13 @@ class Match(bs.Activity[bs.Player, bs.Team]):
             self.session.start_timer(86)
             bs.setmusic(bs.MusicType.LMS5)    
             show_lms_texture('ninja-vs-mel')
+        elif (
+            list(self.survivors)[0].actor.character == 'Salvatore' and
+            list(self.killers)[0].actor.character == 'Spaz'
+        ):
+            self.session.start_timer(90)
+            bs.setmusic(bs.MusicType.LMS6)    
+            show_lms_texture('spaz-vs-sal')
         else:
 
             self.session.start_timer(69)
@@ -1356,6 +1363,10 @@ class Match(bs.Activity[bs.Player, bs.Team]):
                 show_lms_texture('snakeshadow')
             elif list(self.killers)[0].actor.character == 'Easter Bunny':
                 show_lms_texture('bunny')
+            elif list(self.killers)[0].actor.character == 'Grumbledorf':
+                show_lms_texture('wizard')
+            elif list(self.killers)[0].actor.character == 'Bones':
+                show_lms_texture('bones')
             else:
                 show_lms_texture('spaz')
 
