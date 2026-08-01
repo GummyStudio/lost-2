@@ -532,6 +532,13 @@ class LostSession(bs.Session):
 
     use_team_colors = False
     use_team = False
+
+    mapss = [
+            #maps.StepRightUp,
+            #maps.MonkeyFace,
+            #maps.CragCastle,
+            maps.BlockFortress,
+        ]
     def __init__(self):
         depsets: list[bs.DependencySet] = []
         self.last_results = None
@@ -546,6 +553,8 @@ class LostSession(bs.Session):
 
         # Start up the lobby activity.
         self.setactivity(bs.newactivity(Lobby))
+        #for map in self.mapss:
+        #    map.preload()
 
         
     
@@ -1138,12 +1147,8 @@ class Match(bs.Activity[bs.Player, bs.Team]):
     
     def on_transition_in(self):
         super().on_transition_in()
-        mapss = [
-            maps.StepRightUp,
-            maps.MonkeyFace,
-            maps.CragCastle,
-        ]
-        map = random.choice(mapss)
+        
+        map = random.choice(self.session.mapss)
         map.preload()
         self.map = map()
     

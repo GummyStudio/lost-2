@@ -158,7 +158,7 @@ class AliKiller(CharacterMoveset):
         dir_x = self.spaz.input_x #* 0.15
         dir_y = -1.0
         dir_z = -self.spaz.input_y #* 0.15
-        target_speed = 13.0 
+        target_speed = 16.0 
   
         cur_vx, cur_vy, cur_vz = self.spaz.node.velocity
         current_speed_in_dir = (cur_vx * dir_x) + (cur_vy * dir_y) + (cur_vz * dir_z)
@@ -167,8 +167,8 @@ class AliKiller(CharacterMoveset):
         impulse_scale = max(0.0, speed_difference / target_speed)
 
         self.spaz.impulse(
-            x=3 * impulse_scale, 
-            y=-1 * impulse_scale, 
+            x=4.5 * impulse_scale, 
+            y=-1.5 * impulse_scale, 
             direction=(dir_x, dir_y, dir_z)
         )
 
@@ -307,11 +307,11 @@ class AliKiller(CharacterMoveset):
         if self.node_not_punched_nodes(node) and len(self._punched_nodes) == 0:
             node.handlemessage(
                 DamageMessage(
-                    damage=3 if self.is_clone else 25,
+                    damage=3 if self.is_clone else 23,
                     spaz=self.spaz,
                     type='ali_punch',
                     hurt_sound=None,
-                    visual_damage=25 if self.is_clone else None
+                    visual_damage=23 if self.is_clone else None
                     # hehe cloner
                     
                 )

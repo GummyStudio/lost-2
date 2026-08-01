@@ -130,7 +130,7 @@ class BonesKiller(CharacterMoveset):
     move_speed = 0.85
     run_speed = 1.0
 
-    ability1_cooldown = 1.65
+    ability1_cooldown = 1
     ability2_cooldown = 20
     ability3_cooldown = 18
 
@@ -306,9 +306,9 @@ class BonesKiller(CharacterMoveset):
         if self.node_not_punched_nodes(node) and len(self._punched_nodes) == 0:
             node.handlemessage(
                 DamageMessage(
-                    damage=int(24*(1.5 if self.buffed else 1)),
+                    damage=int(13*(2.8 if self.buffed else 1)),
                     spaz=self.spaz,
-                    type='spaz_punch',
+                    type='bones_punch',
                     hurt_sound=None,
                 )
             )

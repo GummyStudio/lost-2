@@ -30,7 +30,8 @@ def register_all_maps() -> None:
         StepRightUp,
         Courtyard,
         Rampage,
-        MonkeyFace
+        MonkeyFace,
+        BlockFortress
     ]:
         bs.register_map(maptype)
 
@@ -727,11 +728,18 @@ class CragCastle(bs.Map):
             'terrain',
             attrs={
                 'mesh': self.preloaddata['killer_door'],
-                'lighting': False,
+                'lighting': True,
                 'opacity': 0.5,
                 'color_texture': bs.gettexture('bonesColorMask'),
                 'collision_mesh': self.preloaddata['killer_door_collide'],
                 'materials': [AsymFactory.get().killer_door_material]
+            },
+        )
+        bs.newnode(
+            'terrain',
+            attrs={
+                'collision_mesh': bs.getcollisionmesh('cragCastleInvisWalls'),
+                'materials': [shared.footing_material]
             },
         )
         gnode = bs.getactivity().globalsnode
@@ -1403,14 +1411,14 @@ class MonkeyFace(bs.Map):
                 ],
             },
         )
-        self.railing = bs.newnode(
-            'terrain',
-            attrs={
-                'collision_mesh': self.preloaddata['railing_collision_mesh'],
-                'materials': [shared.railing_material],
-                'bumper': True,
-            },
-        )
+        #self.railing = bs.newnode(
+        #    'terrain',
+        #    attrs={
+        #        'collision_mesh': self.preloaddata['railing_collision_mesh'],
+        #        'materials': [shared.railing_material],
+        #        'bumper': True,
+        #    },
+        #)
 
         from lost.lost import AsymFactory
 
@@ -1425,9 +1433,88 @@ class MonkeyFace(bs.Map):
                 'materials': [AsymFactory.get().killer_door_material]
             },
         )
+
+        bs.newnode(
+            'terrain',
+            attrs={
+                'collision_mesh': bs.getcollisionmesh('monkeyfaceInvisWalls'),
+                'materials': [shared.footing_material]
+            },
+        )
+
         gnode = bs.getactivity().globalsnode
-        gnode.tint = (1.1, 1.2, 1.2)
+        gnode.tint = (1.1*0.5, 1.2*0.5, 1.2*0.5)
         gnode.ambient_color = (1.2, 1.3, 1.3)
         gnode.vignette_outer = (0.60, 0.62, 0.66)
         gnode.vignette_inner = (0.97, 0.95, 0.93)
         gnode.vr_camera_offset = (-1.4, 0, 0)
+
+class BlockFortress(bs.Map):
+    """A simple square shaped map with a raised edge."""
+
+    from bascenev1lib.mapdata import block_fortress as defs
+
+    name = 'Block Fortress'
+
+    @classmethod
+    def get_play_types(cls) -> list[str]:
+        """Return valid play types for this map."""
+        return ['melee', 'keep_away', 'king_of_the_hill']
+
+    @classmethod
+    def get_preview_texture_name(cls) -> str:
+        return 'arenaPreview'
+
+    @classmethod
+    def on_preload(cls) -> Any:
+        data: dict[str, Any] = {
+            'mesh': bs.getmesh('arenaLevel'),
+            'collision_mesh': bs.getcollisionmesh('arenaLevelCollide'),
+            'tex': bs.gettexture('arenaLevelColor'),
+            'bgtex': bs.gettexture('arenaBG'),
+            'bgmesh': bs.getmesh('thePadBG'),
+            'killer_door': bs.getmesh('arenaLevelKillerWalls'),
+            'killer_door_collide': bs.getcollisionmesh('arenaLevelKillerWalls')
+        }
+        return data
+
+    def __init__(self) -> None:
+        super().__init__()
+        shared = SharedObjects.get()
+        # Main Level
+        self.level = bs.newnode(
+            'terrain',
+            delegate=self,
+            attrs={
+                'collision_mesh': self.preloaddata['collision_mesh'],
+                'mesh': self.preloaddata['mesh'],
+                'color_texture': self.preloaddata['tex'],
+                'materials': [shared.footing_material]
+            })
+        # Background
+        self.background = bs.newnode(
+            'terrain',
+            attrs={
+                'mesh': self.preloaddata['bgmesh'],
+                'lighting': False,
+                'background': True,
+                'color_texture': self.preloaddata['bgtex']
+            })
+        from lost.lost import AsymFactory
+
+        self.killer_doors = bs.newnode(
+            'terrain',
+            attrs={
+                'mesh': self.preloaddata['killer_door'],
+                'lighting': False,
+                'opacity': 0.5,
+                'color_texture': bs.gettexture('bonesColorMask'),
+                'collision_mesh': self.preloaddata['killer_door_collide'],
+                'materials': [AsymFactory.get().killer_door_material]
+            },
+        )
+        gnode = bs.getactivity().globalsnode
+        gnode.tint = (0.8*0.5, 0.8*0.5, 0.8*0.5)
+        gnode.ambient_color = (0.6, 0.6, 0.6)
+        gnode.vignette_outer = (1, 1, 1)
+        gnode.vignette_inner = (0.95, 0.95, 0.95)
