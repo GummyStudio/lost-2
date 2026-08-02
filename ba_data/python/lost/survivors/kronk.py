@@ -1,7 +1,66 @@
 import bascenev1 as bs
 import babase
-from lost.lost import CharacterMoveset, DamageMessage, AsymFactory, StunMessage
+from lost.lost import CharacterMoveset, DamageMessage, AsymFactory, StunMessage, KillerDetectedMessage
+import random
 
+class DashHitbox(bs.Actor):
+    def __init__(self,position, moveset):
+        super().__init__()
+        self.moveset = moveset
+        self.node = bs.newnode(
+                'prop',
+                delegate=self,
+                attrs={
+                    'position': position,
+                    'velocity': (0,0,0),
+                    'body': 'sphere',
+                    'body_scale': 2,
+                    'mesh_scale': 0.0,
+                    'shadow_size': 0.44,
+                    'materials': [AsymFactory.get().survivor_trap_object_material],
+                },
+            )
+        self.active = True
+        
+       
+        bs.timer(0.11, bs.WeakCall(self.handlemessage, bs.DieMessage()))
+    
+    def on_expire(self):
+        self.owner = None
+        self.moveset = None
+        
+    
+    def exists(self):
+        return bool(self.node)
+
+    def is_alive(self):
+        return bool(self.node)
+
+        
+
+   
+
+    def handlemessage(self, msg):
+        if isinstance(msg, bs.OutOfBoundsMessage):
+            self.handlemessage(bs.DieMessage())
+        elif isinstance(msg, KillerDetectedMessage):
+            if not self.moveset:
+                return
+            if not self.active:
+                return
+            if not self.is_alive():
+                return
+            self.active = False
+            
+            node = bs.getcollision().opposingnode
+            # tell da owner we got em
+            self.moveset.dash_hit_spaz(node.getdelegate(bs.Actor))
+            self.handlemessage(bs.DieMessage())
+        elif isinstance(msg, bs.DieMessage):
+            self.active = False
+            self.node.delete()
+        return super().handlemessage(msg)
+    
 class KronkSurvivor(CharacterMoveset):
     is_killer = False
     hitpoints = 115
@@ -10,11 +69,11 @@ class KronkSurvivor(CharacterMoveset):
     run_speed = 0.9
     ability1_cooldown = 55
     ability2_cooldown = 22
-    ability3_cooldown = 0.0
+    ability3_cooldown = 35
 
     ability1_icon = babase.charstr(babase.SpecialChar.SKULL)
     ability2_icon = babase.charstr(babase.SpecialChar.PAUSE_BUTTON)
-    ability3_icon = ''
+    ability3_icon = 'C'
 
     def __init__(self, spaz):
         super().__init__(spaz)
@@ -24,19 +83,36 @@ class KronkSurvivor(CharacterMoveset):
             'punch_windup': bs.getsound('Punchwindup'),
             'punch_hit': bs.getsound('Guest1337punch'),
             'punch_parry': bs.getsound('Guestparry'),
+            'dash_sfx': bs.getsound('kronkFall'),
+            'dash_hit': bs.getsound('Chargehit'),
+            'dash_stop': bs.getsound('Chargingtimeout'),
         }
         self.factory = AsymFactory.get()
         
         self.is_blocking = False
         self.has_parry_counter = False
         self.block_timer = None
+        self.is_dashing = False 
+        self.dash_timer = None
+        self.dash_sfx = bs.Node(None)
+        self.cancel_dash_timer = None
+    
+    def create_dash_sfx(self):
+        self.dash_sfx = bs.newnode('sound', attrs={
+            'sound': self.sfx.get('dash_sfx'), 'volume': 5,
+        })
 
     def ability1_extra_conditions(self):
-        return not self.is_blocking
+        return not self.is_dashing and not self.is_blocking
+    def ability2_extra_conditions(self):
+        return not self.is_dashing and not self.is_blocking
+    def ability3_extra_conditions(self):
+        return not self.is_dashing and not self.is_blocking
 
     
 
     def ability1(self):
+        self._punched_nodes = set()
         self.play_sound('punch_windup')
         punch_dur = 0.5
         if self.has_parry_counter:
@@ -71,7 +147,7 @@ class KronkSurvivor(CharacterMoveset):
         self.block_timer = None
        
 
-    def handle_recieved_damage(self):
+    def handle_recieved_damage(self, damage, type):
         if self.is_blocking:
             self._stop_blocking()
             self.has_parry_counter = True
@@ -92,7 +168,7 @@ class KronkSurvivor(CharacterMoveset):
         if node.getnodetype() != 'spaz':
             return False
 
-        if self.node_not_punched_nodes(node) and len(self._punched_nodes) == 0:
+        if self.node_not_punched_nodes(node):# and len(self._punched_nodes) == 0: hehe 
             self._punched_nodes.add(node)
             if self.has_parry_counter:
                 
@@ -126,11 +202,94 @@ class KronkSurvivor(CharacterMoveset):
                     y=-0.2,
                     direction=node.velocity
                 )
+                def revert():
+                    if not node:
+                        return
+                    node.getdelegate(bs.Actor).max_walk_speed /= 0.5
+                    node.getdelegate(bs.Actor).max_run_speed /= 0.2
+                node.getdelegate(bs.Actor).max_walk_speed *= 0.5
+                node.getdelegate(bs.Actor).max_run_speed *= 0.2
+                bs.timer(0.6, revert)
                 self.play_sound('punch_hit', position=self.spaz.node.position)
 
         return False
 
+    def cancel_dash(self):
+        self._last_used_3 = bs.time()
+        self.is_dashing = False
+        self.dash_timer = None
+        self.spaz.allow_movement = True
+        self.dash_sfx.delete()
+        self.cancel_dash_timer = None
+        self.play_sound('dash_stop')
+    
+    def dash(self):
+        if not self.spaz.exists():
+            self.dash_sfx.delete()
+            return
+        if not self.is_dashing:
+            self.cancel_dash()
+            return
+    
+        # make sure its false
+        self.spaz.allow_movement = False
+        
+        
+        dir_x = self.spaz.input_x* 0.35
+        dir_y = -1.0
+        dir_z = -self.spaz.input_y * 0.35
+        target_speed = 5.0 
+  
+        cur_vx, cur_vy, cur_vz = self.spaz.node.velocity
+        current_speed_in_dir = (cur_vx * dir_x) + (cur_vy * dir_y) + (cur_vz * dir_z)
+        speed_difference = target_speed - current_speed_in_dir
+
+        impulse_scale = max(0.0, speed_difference / target_speed)
+
+        self.spaz.impulse(
+            x=4.5 * impulse_scale, 
+            y=-2 * impulse_scale, 
+            direction=(dir_x, dir_y, dir_z)
+        )
+
+    
+        # and create le hitox
+        DashHitbox(self.spaz.node.position, self).autoretain()
+    
+  
+    
+    def dash_hit_spaz(self, spaz):
+        if not self.is_dashing:
+            return
+        if not spaz:
+            return
+        self.play_sound(
+            'dash_hit'
+        )
+        
+        spaz.handlemessage(
+            DamageMessage(
+                damage=5,
+                type='kronk_dash'
+            )
+        )
+        spaz.impulse(
+                    x=8.5,
+                    y=0.2,
+                    direction=self.spaz.node.velocity
+                )
+        self.cancel_dash()
+            
+            
+
     def ability3(self):
-        pass
+        self.spaz.allow_movement = False
+        self.is_dashing = True
+        self.create_dash_sfx()
+        self.dash_timer = bs.Timer(0.1, self.dash, repeat=True)
+        self.spaz.handlemessage(bs.CelebrateMessage(1.2))
+        self.cancel_dash_timer = bs.Timer(1.2, self.cancel_dash)
+        
+
 
    

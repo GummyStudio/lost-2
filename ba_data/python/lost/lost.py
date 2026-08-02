@@ -352,7 +352,7 @@ class CharacterMoveset:
     def handle_spaz_did_damage(self, type):
         """ what the character does when they deal damage. """
 
-    def handle_recieved_damage(self):
+    def handle_recieved_damage(self, damage: float, type: str):
         """ can we recieve damage? Return True if yes, return False if No"""
         return True
 
@@ -372,6 +372,9 @@ class CharacterMoveset:
 class AsymFactory:
     """
     basically what im gonna do is just put everythingin here
+
+
+    (that was a fucking lie)
     """
     
 
@@ -524,6 +527,19 @@ class AsymFactory:
         self.no_collision = bs.Material()
         # collide with nothin
         self.no_collision.add_actions(('modify_part_collision', 'collide', False))
+
+        self.destroy_on_wall_collide = bs.Material()
+        # destroy when colliding with a wall
+        self.destroy_on_wall_collide.add_actions(
+            conditions=(
+                'they_have_material',
+                SharedObjects.get().footing_material
+            ),
+            actions=(
+                ('modify_part_collision', 'collide', True),
+                ('message', 'our_node', 'at_connect', bs.DieMessage()),
+            ),
+        )
         
 
 
@@ -1400,7 +1416,7 @@ class Match(bs.Activity[bs.Player, bs.Team]):
             player.actor.node.is_area_of_interest = True
         # Set the BG...
         self.map.background.color_texture = bs.gettexture('spectureBG')
-        self.globalsnode.tint = (1.55, 1, 1)
+        self.globalsnode.tint = (1, 0.8, 0.8)
     
     def handlemessage(self, msg):
         if isinstance(msg, bs.PlayerDiedMessage):

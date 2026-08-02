@@ -948,7 +948,7 @@ class Spaz(bs.Actor):
 
             # Ask our moveset if we can can take damage
             if self.moveset:
-                if not self.moveset.handle_recieved_damage():
+                if not self.moveset.handle_recieved_damage(msg.damage, msg.hittype):
                     return
             self.node.handlemessage('hurt_sound')
             self.hitpoints -= (msg.damage * 10)
