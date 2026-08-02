@@ -228,6 +228,7 @@ class CharacterMoveset:
                 ui['timer'].text = ''
     
     def play_sound(self, sfx: str, volume=1, position=None):
+        sfx_inc = None
         if not self.spaz:
             return
         if not self.spaz.is_alive():
@@ -235,8 +236,12 @@ class CharacterMoveset:
         if position is None:
             position = self.spaz.node.position
         if self.sfx.get(sfx, None):
-            self.sfx.get(sfx).play(volume, position=position)
+            sfx_inc = self.sfx.get(sfx)
+            sfx_inc.play(volume, position=position)
+        
+        return sfx
     
+
     def expire(self):
         self.spaz = None
         self._ui_update_timer = None
