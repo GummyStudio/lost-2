@@ -14,6 +14,8 @@ from bascenev1lib.gameutils import SharedObjects
 if TYPE_CHECKING:
     from typing import Any
 
+killer_door_color = 'killerdoorColor'
+
 
 def register_all_maps() -> None:
     """Registering all maps."""
@@ -730,7 +732,7 @@ class CragCastle(bs.Map):
                 'mesh': self.preloaddata['killer_door'],
                 'lighting': True,
                 'opacity': 0.5,
-                'color_texture': bs.gettexture('bonesColorMask'),
+                'color_texture': bs.gettexture(killer_door_color),
                 'collision_mesh': self.preloaddata['killer_door_collide'],
                 'materials': [AsymFactory.get().killer_door_material]
             },
@@ -1082,7 +1084,7 @@ class StepRightUp(bs.Map):
                 'mesh': self.preloaddata['killer_door'],
                 'lighting': False,
                 'opacity': 0.5,
-                'color_texture': bs.gettexture('bonesColorMask'),
+                'color_texture': bs.gettexture(killer_door_color),
                 'collision_mesh': self.preloaddata['killer_door_collide'],
                 'materials': [AsymFactory.get().killer_door_material]
             },
@@ -1428,7 +1430,7 @@ class MonkeyFace(bs.Map):
                 'mesh': self.preloaddata['killer_door'],
                 'lighting': False,
                 'opacity': 0.5,
-                'color_texture': bs.gettexture('bonesColorMask'),
+                'color_texture': bs.gettexture(killer_door_color),
                 'collision_mesh': self.preloaddata['killer_door_collide'],
                 'materials': [AsymFactory.get().killer_door_material]
             },
@@ -1508,7 +1510,7 @@ class BlockFortress(bs.Map):
                 'mesh': self.preloaddata['killer_door'],
                 'lighting': False,
                 'opacity': 0.5,
-                'color_texture': bs.gettexture('bonesColorMask'),
+                'color_texture': bs.gettexture(killer_door_color),
                 'collision_mesh': self.preloaddata['killer_door_collide'],
                 'materials': [AsymFactory.get().killer_door_material]
             },

@@ -27,6 +27,12 @@ POWERUP_WEAR_OFF_TIME = 20000
 BASE_PUNCH_POWER_SCALE = 1.2
 BASE_PUNCH_COOLDOWN = 400
 
+from decimal import Decimal, ROUND_DOWN
+
+def truncate_decimal(number, decimals=2):
+    mask = Decimal('10') ** -decimals
+    return float(Decimal(str(number)).quantize(mask, rounding=ROUND_DOWN))
+
 
 class PickupMessage:
     """We wanna pick something up."""
@@ -936,6 +942,10 @@ class Spaz(bs.Actor):
                 return
             # multiply.
             msg.damage *= self.damage_mult
+            damage_string = str(truncate_decimal(
+                msg.visual_damage*self.damage_mult if msg.visual_damage else msg.damage
+                , 2))
+
             # Ask our moveset if we can can take damage
             if self.moveset:
                 if not self.moveset.handle_recieved_damage():
@@ -948,7 +958,7 @@ class Spaz(bs.Actor):
             if msg.hurt_sound:
                 msg.hurt_sound.play()
             PopupText(
-                str(msg.visual_damage*self.damage_mult) if msg.visual_damage else str(msg.damage),
+                damage_string,
                 position=self.node.position,
             ).autoretain()
             # Don't do this if were a killer

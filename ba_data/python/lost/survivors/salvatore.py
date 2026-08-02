@@ -49,7 +49,7 @@ class SalvatoreSurvivor(CharacterMoveset):
         self.spaz.max_run_speed *= 1.44
         def stop():
             self.spaz.max_run_speed /= 1.44
-        bs.timer(10, stop)
+        bs.timer(5, stop)
     
     def slateskin(self):
         self.using_item = False
@@ -69,19 +69,20 @@ class SalvatoreSurvivor(CharacterMoveset):
         self.spaz.damage_mult *= 0.15
 
         def stop():
-            self.in_slateskin = False
-            self.spaz.speed_boost(0.5)
-            self.spaz.damage_mult /= 0.15
-            self.spaz.max_walk_speed /= 0.15
-            self.spaz.node.color_texture = self.original_tex
-            self.spaz.node.color_mask_texture = self.original_tex
-        bs.timer(10, stop)
+            if self.spaz.exists():
+                self.in_slateskin = False
+                self.spaz.speed_boost(0.5)
+                self.spaz.damage_mult /= 0.15
+                self.spaz.max_walk_speed /= 0.15
+                self.spaz.node.color_texture = self.original_tex
+                self.spaz.node.color_mask_texture = self.original_colortex
+        bs.timer(7, stop)
     
 
     def ability1(self):
         pass
     def ability2(self):
-        duration = 2
+        duration = 2.5
         self.spaz.max_run_speed *= 0.05
         self.using_item = True
         self.play_sound('drink')

@@ -220,13 +220,13 @@ class AliKiller(CharacterMoveset):
             # and stop.
             self.awaiting_dash_input = True
             # put on cool down so our guys can hav etime to react
-            self._last_used_3 = bs.time() - 33
+            self._last_used_3 = bs.time() - 34
             self.spaz.impulse(x=-2)
             self.hit_spazes.add(spaz)
 
             # Cancel if we take too long
             self.cancel_dash_timer = None
-            self.cancel_dash_timer = bs.Timer(4, self.cancel_dash)
+            self.cancel_dash_timer = bs.Timer(3.5, self.cancel_dash)
 
             
     
@@ -282,6 +282,8 @@ class AliKiller(CharacterMoveset):
             self._last_used_3 = bs.time() - 34
             self.create_dash_sfx()
             self.dash_timer = bs.Timer(0.1, self.dash, repeat=True)
+            self.cancel_dash_timer = None
+            self.cancel_dash_timer = bs.Timer(4.0, self.cancel_dash)
             
             return
 

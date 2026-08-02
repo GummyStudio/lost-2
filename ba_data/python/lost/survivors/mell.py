@@ -6,22 +6,24 @@ class HealingItem(bs.Actor):
     def __init__(self,position, velocity, node):
         super().__init__()
         self.node = bs.newnode(
-                'prop',
-                delegate=self,
-                attrs={
-                    'position': position,
-                    'velocity': velocity,
-                    'mesh': bs.getmesh('shield'),
-                    'body': 'box',
-                    'body_scale': 1.0,
-                    'mesh_scale': 0.25,
-                    'shadow_size': 0.44,
-                    'color_texture': bs.gettexture('powerupHealth'),
-                    'reflection': 'powerup',
-                    'reflection_scale': [0.0],
-                    'materials': [AsymFactory.get().killer_trap_object_material],
-                },
-            )
+            'prop',
+            delegate=self,
+            owner=node,
+            attrs={
+                'body': 'box',
+                'position': position,
+                'velocity': velocity,
+                'mesh': bs.getmesh('powerup'),
+                'light_mesh': bs.getmesh('powerupSimple'),
+                'shadow_size': 0.5,
+                'color_texture': bs.gettexture('powerupHealth'),
+                'reflection': 'powerup',
+                'reflection_scale': [1.0],
+                'materials': [AsymFactory.get().killer_trap_object_material],
+            },
+        )
+
+        
         self.owner = node
         self.impulse(x=7, y=4)
         self.active = False

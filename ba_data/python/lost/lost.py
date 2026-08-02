@@ -534,9 +534,9 @@ class LostSession(bs.Session):
     use_team = False
 
     mapss = [
-            #maps.StepRightUp,
-            #maps.MonkeyFace,
-            #maps.CragCastle,
+            maps.StepRightUp,
+            maps.MonkeyFace,
+            maps.CragCastle,
             maps.BlockFortress,
         ]
     def __init__(self):
@@ -1168,8 +1168,7 @@ class Match(bs.Activity[bs.Player, bs.Team]):
             self.end_survivors_won()
             return
 
-        # Start us a timer.
-        self.session.start_timer(210)
+        
        
         for player in self.players:
             if player != self.killer_player:
@@ -1192,6 +1191,14 @@ class Match(bs.Activity[bs.Player, bs.Team]):
             },
         )
         bs.timer(0.1, self._music_tick, repeat=True)
+
+        # Start us a timer.
+
+        # only 2 guys, reduce it.
+        if len(self.survivors) == 2:
+            self.session.start_timer(150)
+        else:
+            self.session.start_timer(210)
 
 
         # just incase theres 1 guy
