@@ -1371,43 +1371,55 @@ class Match(bs.Activity[bs.Player, bs.Team]):
             self.chase_music.delete()
             self.chase_music = None
         # Special guys
-        if (
-            list(self.survivors)[0].actor.character == 'Zoe' and
-            list(self.killers)[0].actor.character == 'Spaz'
-        ):
-            self.session.start_timer(96)
-            bs.setmusic(bs.MusicType.LMS4)  
-            show_lms_texture('spaz-vs-zoe')
-        elif (
-            list(self.survivors)[0].actor.character == 'Mel' and
-            list(self.killers)[0].actor.character == 'Snake Shadow'
-        ):
-            self.session.start_timer(86)
-            bs.setmusic(bs.MusicType.LMS5)    
-            show_lms_texture('ninja-vs-mel')
-        elif (
-            list(self.survivors)[0].actor.character == 'Salvatore' and
-            list(self.killers)[0].actor.character == 'Spaz'
-        ):
-            self.session.start_timer(90)
-            bs.setmusic(bs.MusicType.LMS6)    
-            show_lms_texture('spaz-vs-sal')
-        else:
+        try:
+            if (
+                list(self.survivors)[0].actor.character == 'Zoe' and
+                list(self.killers)[0].actor.character == 'Spaz'
+            ):
+                self.session.start_timer(96)
+                bs.setmusic(bs.MusicType.LMS4)  
+                show_lms_texture('spaz-vs-zoe')
+            elif (
+                list(self.survivors)[0].actor.character == 'Mel' and
+                list(self.killers)[0].actor.character == 'Snake Shadow'
+            ):
+                self.session.start_timer(86)
+                bs.setmusic(bs.MusicType.LMS5)    
+                show_lms_texture('ninja-vs-mel')
+            elif (
+                list(self.survivors)[0].actor.character == 'Salvatore' and
+                list(self.killers)[0].actor.character == 'Spaz'
+            ):
+                self.session.start_timer(90)
+                bs.setmusic(bs.MusicType.LMS6)    
+                show_lms_texture('spaz-vs-sal')
+            elif (
+                list(self.survivors)[0].actor.character == 'Penny' and
+                list(self.killers)[0].actor.character == 'Easter Bunny'
+            ):
+                self.session.start_timer(89)
+                bs.setmusic(bs.MusicType.LMS7)    
+                show_lms_texture('bunny-vs-penny')
+            else:
 
+                self.session.start_timer(69)
+                bs.setmusic(bs.MusicType.LMS1)
+                if list(self.killers)[0].actor.character == 'Snake Shadow':
+                    show_lms_texture('snakeshadow')
+                elif list(self.killers)[0].actor.character == 'Easter Bunny':
+                    show_lms_texture('bunny')
+                elif list(self.killers)[0].actor.character == 'Grumbledorf':
+                    show_lms_texture('wizard')
+                elif list(self.killers)[0].actor.character == 'Bones':
+                    show_lms_texture('bones')
+                elif list(self.killers)[0].actor.character == 'Taobao Mascot':
+                    show_lms_texture('ali')
+                else:
+                    show_lms_texture('spaz')
+        except:
+            # They left? default to everything
             self.session.start_timer(69)
             bs.setmusic(bs.MusicType.LMS1)
-            if list(self.killers)[0].actor.character == 'Snake Shadow':
-                show_lms_texture('snakeshadow')
-            elif list(self.killers)[0].actor.character == 'Easter Bunny':
-                show_lms_texture('bunny')
-            elif list(self.killers)[0].actor.character == 'Grumbledorf':
-                show_lms_texture('wizard')
-            elif list(self.killers)[0].actor.character == 'Bones':
-                show_lms_texture('bones')
-            elif list(self.killers)[0].actor.character == 'Taobao Mascot':
-                show_lms_texture('ali')
-            else:
-                show_lms_texture('spaz')
 
         self.lms = True
         for player in self.survivors:
