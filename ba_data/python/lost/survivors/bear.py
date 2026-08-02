@@ -204,7 +204,7 @@ class BearSurvivor(CharacterMoveset):
         elif self.bash_charges == 2:
             bs.timer(1,bs.Call(self.bash_flash, (0,1,0), 3)) # green! this is where you press atk
         elif self.bash_charges == 3:
-            bs.timer(1,bs.Call(self.bash_flash, (1,1,0), 4)) # yellow
+            bs.timer(1,bs.Call(self.bash_flash, (1,0,0), 4)) # red, the debuff is ass now
         elif self.bash_charges == 4:
             bs.timer(1,bs.Call(self.bash_flash, (1,0,0), 5)) # red, last chance to press atk...
         else:
@@ -306,12 +306,15 @@ class BearSurvivor(CharacterMoveset):
             else:
                 self.ability2_cooldown = 41
                 self._last_used_2 = bs.time()-1
+                bs.timer(38,reset_cd)
+                def reset_cd():
+                    self.ability2_cooldown = 2
         elif self.bash_equipped == True:
             self.bash_equipped = False
             self.stored_bash_charges = self.bash_charges
             self.bash_charges = -1
             self._punched_nodes = set()
-        
+            self.play_sound('bash_swing')
             self.spaz.node.punch_pressed = True
             self.spaz.node.punch_pressed = False
             self.spaz.max_walk_speed *= 0.1
@@ -354,10 +357,10 @@ class BearSurvivor(CharacterMoveset):
                     damage=30,
                     spaz=self.spaz,
                     type='gh_bash',
-                    hurt_sound='bash_hit',
+                    hurt_sound=None,
                 )
             )
-            self.play_sound('bash_swing', position=self.spaz.node.position)
+            self.play_sound('bash_hit')
             self._punched_nodes.add(node)
             def revert():
                 if not node:
