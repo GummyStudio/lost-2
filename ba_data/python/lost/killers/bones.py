@@ -27,9 +27,9 @@ class PC(bs.Actor):
                 'body_scale': 0.5,
                 'position': position,
                 'velocity': (0, 0, 0),
-                'gravity_scale': 2,
+                'gravity_scale': 0.0,
                 'materials': [
-                    AsymFactory.get().only_wall_collide,
+                    AsymFactory.get().no_collision,
                     # Give killer material so it can be placed in killer walls.
                     AsymFactory.get().killer_material
                 ],

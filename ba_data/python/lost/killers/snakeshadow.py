@@ -240,6 +240,6 @@ class NinjaKiller(CharacterMoveset):
         # Always ragdoll
         self.spaz.node.handlemessage('knockout', 20)
     
-    def handle_recieved_damage(self):
+    def handle_recieved_damage(self, damage, type):
         # fire mode no damage
         return not self.fire_mode

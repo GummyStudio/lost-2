@@ -232,6 +232,7 @@ class CharacterMoveset:
                 ui['timer'].text = ''
     
     def play_sound(self, sfx: str, volume=1, position=None):
+        sfx_inc = None
         if not self.spaz:
             return
         if not self.spaz.is_alive():
@@ -239,8 +240,12 @@ class CharacterMoveset:
         if position is None:
             position = self.spaz.node.position
         if self.sfx.get(sfx, None):
-            self.sfx.get(sfx).play(volume, position=position)
+            sfx_inc = self.sfx.get(sfx)
+            sfx_inc.play(volume, position=position)
+        
+        return sfx
     
+
     def expire(self):
         self.spaz = None
         self._ui_update_timer = None
@@ -356,7 +361,7 @@ class CharacterMoveset:
     def handle_spaz_did_damage(self, type):
         """ what the character does when they deal damage. """
 
-    def handle_recieved_damage(self):
+    def handle_recieved_damage(self, damage: float, type: str):
         """ can we recieve damage? Return True if yes, return False if No"""
         return True
 
@@ -376,6 +381,9 @@ class CharacterMoveset:
 class AsymFactory:
     """
     basically what im gonna do is just put everythingin here
+
+
+    (that was a fucking lie)
     """
     
 
@@ -528,6 +536,19 @@ class AsymFactory:
         self.no_collision = bs.Material()
         # collide with nothin
         self.no_collision.add_actions(('modify_part_collision', 'collide', False))
+
+        self.destroy_on_wall_collide = bs.Material()
+        # destroy when colliding with a wall
+        self.destroy_on_wall_collide.add_actions(
+            conditions=(
+                'they_have_material',
+                SharedObjects.get().footing_material
+            ),
+            actions=(
+                ('modify_part_collision', 'collide', True),
+                ('message', 'our_node', 'at_connect', bs.DieMessage()),
+            ),
+        )
         
 
 
@@ -1387,43 +1408,55 @@ class Match(bs.Activity[bs.Player, bs.Team]):
             self.lowHP_music.delete()
             self.lowHP_music = None
         # Special guys
-        if (
-            list(self.survivors)[0].actor.character == 'Zoe' and
-            list(self.killers)[0].actor.character == 'Spaz'
-        ):
-            self.session.start_timer(96)
-            bs.setmusic(bs.MusicType.LMS4)  
-            show_lms_texture('spaz-vs-zoe')
-        elif (
-            list(self.survivors)[0].actor.character == 'Mel' and
-            list(self.killers)[0].actor.character == 'Snake Shadow'
-        ):
-            self.session.start_timer(86)
-            bs.setmusic(bs.MusicType.LMS5)    
-            show_lms_texture('ninja-vs-mel')
-        elif (
-            list(self.survivors)[0].actor.character == 'Salvatore' and
-            list(self.killers)[0].actor.character == 'Spaz'
-        ):
-            self.session.start_timer(90)
-            bs.setmusic(bs.MusicType.LMS6)    
-            show_lms_texture('spaz-vs-sal')
-        else:
+        try:
+            if (
+                list(self.survivors)[0].actor.character == 'Zoe' and
+                list(self.killers)[0].actor.character == 'Spaz'
+            ):
+                self.session.start_timer(96)
+                bs.setmusic(bs.MusicType.LMS4)  
+                show_lms_texture('spaz-vs-zoe')
+            elif (
+                list(self.survivors)[0].actor.character == 'Mel' and
+                list(self.killers)[0].actor.character == 'Snake Shadow'
+            ):
+                self.session.start_timer(86)
+                bs.setmusic(bs.MusicType.LMS5)    
+                show_lms_texture('ninja-vs-mel')
+            elif (
+                list(self.survivors)[0].actor.character == 'Salvatore' and
+                list(self.killers)[0].actor.character == 'Spaz'
+            ):
+                self.session.start_timer(90)
+                bs.setmusic(bs.MusicType.LMS6)    
+                show_lms_texture('spaz-vs-sal')
+            elif (
+                list(self.survivors)[0].actor.character == 'Penny' and
+                list(self.killers)[0].actor.character == 'Easter Bunny'
+            ):
+                self.session.start_timer(89)
+                bs.setmusic(bs.MusicType.LMS7)    
+                show_lms_texture('bunny-vs-penny')
+            else:
 
+                self.session.start_timer(69)
+                bs.setmusic(bs.MusicType.LMS1)
+                if list(self.killers)[0].actor.character == 'Snake Shadow':
+                    show_lms_texture('snakeshadow')
+                elif list(self.killers)[0].actor.character == 'Easter Bunny':
+                    show_lms_texture('bunny')
+                elif list(self.killers)[0].actor.character == 'Grumbledorf':
+                    show_lms_texture('wizard')
+                elif list(self.killers)[0].actor.character == 'Bones':
+                    show_lms_texture('bones')
+                elif list(self.killers)[0].actor.character == 'Taobao Mascot':
+                    show_lms_texture('ali')
+                else:
+                    show_lms_texture('spaz')
+        except:
+            # They left? default to everything
             self.session.start_timer(69)
             bs.setmusic(bs.MusicType.LMS1)
-            if list(self.killers)[0].actor.character == 'Snake Shadow':
-                show_lms_texture('snakeshadow')
-            elif list(self.killers)[0].actor.character == 'Easter Bunny':
-                show_lms_texture('bunny')
-            elif list(self.killers)[0].actor.character == 'Grumbledorf':
-                show_lms_texture('wizard')
-            elif list(self.killers)[0].actor.character == 'Bones':
-                show_lms_texture('bones')
-            elif list(self.killers)[0].actor.character == 'Taobao Mascot':
-                show_lms_texture('ali')
-            else:
-                show_lms_texture('spaz')
 
         self.lms = True
         for player in self.survivors:
@@ -1432,7 +1465,7 @@ class Match(bs.Activity[bs.Player, bs.Team]):
             player.actor.node.is_area_of_interest = True
         # Set the BG...
         self.map.background.color_texture = bs.gettexture('spectureBG')
-        self.globalsnode.tint = (1.55, 1, 1)
+        self.globalsnode.tint = (1, 0.8, 0.8)
     
     def handlemessage(self, msg):
         if isinstance(msg, bs.PlayerDiedMessage):

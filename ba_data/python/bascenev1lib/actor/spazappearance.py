@@ -497,6 +497,36 @@ def register_appearances() -> None:
     t.default_highlight = (1, 1, 1)
     t.moveset = killers.AliKiller
     bs.app.classic.killers.append('Taobao Mascot')
+
+    # Female Bunny ###################################
+    t = Appearance('Penny')
+    t.color_texture = 'hoppiColor'
+    t.color_mask_texture = 'hoppiColorMask'
+    t.icon_texture = 'hoppiIcon'
+    t.icon_mask_texture = 'hoppiIconColor'
+    t.head_mesh = 'hoppiHead'
+    t.torso_mesh = 'hoppiTorso'
+    t.pelvis_mesh = 'bunnyPelvis'
+    t.upper_arm_mesh = 'bunnyUpperArm'
+    t.forearm_mesh = 'bunnyForeArm'
+    t.hand_mesh = 'bunnyHand'
+    t.upper_leg_mesh = 'bunnyUpperLeg'
+    t.lower_leg_mesh = 'bunnyLowerLeg'
+    t.toes_mesh = 'bunnyToes'
+    bunny_sounds = ['penny1', 'penny2', 'penny3', 'penny4']
+    bunny_hit_sounds = ['pennyHurt01', 'pennyHurt02', 'pennyHurt03']
+    t.jump_sounds = bunny_sounds
+    t.attack_sounds = bunny_sounds
+    t.impact_sounds = bunny_hit_sounds
+    t.death_sounds = ['pennyDeath']
+    t.pickup_sounds = bunny_sounds
+    t.fall_sounds = ['pennyFall']
+    t.style = 'ali'
+    t.default_color = (1, 0.3, 0.5)
+    t.default_highlight = (1, 0.5, 0.5)
+    t.moveset = survivors.PennySurvivor
+    bs.app.classic.survivors.append('Penny')
+   
     
 
 
@@ -590,32 +620,6 @@ def register_appearances() -> None:
     t.default_color = (0.3, 0.5, 0.8)
     t.default_highlight = (1, 0, 0)
 
-    # Ali ###################################
-    t = Appearance('Taobao Mascot')
-    t.color_texture = 'aliColor'
-    t.color_mask_texture = 'aliColorMask'
-    t.icon_texture = 'aliIcon'
-    t.icon_mask_texture = 'aliIconColorMask'
-    t.head_mesh = 'aliHead'
-    t.torso_mesh = 'aliTorso'
-    t.pelvis_mesh = 'aliPelvis'
-    t.upper_arm_mesh = 'aliUpperArm'
-    t.forearm_mesh = 'aliForeArm'
-    t.hand_mesh = 'aliHand'
-    t.upper_leg_mesh = 'aliUpperLeg'
-    t.lower_leg_mesh = 'aliLowerLeg'
-    t.toes_mesh = 'aliToes'
-    ali_sounds = ['ali1', 'ali2', 'ali3', 'ali4']
-    ali_hit_sounds = ['aliHit1', 'aliHit2']
-    t.jump_sounds = ali_sounds
-    t.attack_sounds = ali_sounds
-    t.impact_sounds = ali_hit_sounds
-    t.death_sounds = ['aliDeath']
-    t.pickup_sounds = ali_sounds
-    t.fall_sounds = ['aliFall']
-    t.style = 'ali'
-    t.default_color = (1, 0.5, 0)
-    t.default_highlight = (1, 1, 1)
 
     # Cyborg ###################################
     t = Appearance('B-9000')
@@ -1036,29 +1040,4 @@ def register_appearances() -> None:
     t.default_color = (0.3, 0.5, 0.8)
     t.default_highlight = (1, 0, 0)
 
-    # Bunny ###################################
-    t = Appearance('Easter Bunny')
-    t.color_texture = 'bunnyColor'
-    t.color_mask_texture = 'bunnyColorMask'
-    t.icon_texture = 'bunnyIcon'
-    t.icon_mask_texture = 'bunnyIconColorMask'
-    t.head_mesh = 'bunnyHead'
-    t.torso_mesh = 'bunnyTorso'
-    t.pelvis_mesh = 'bunnyPelvis'
-    t.upper_arm_mesh = 'bunnyUpperArm'
-    t.forearm_mesh = 'bunnyForeArm'
-    t.hand_mesh = 'bunnyHand'
-    t.upper_leg_mesh = 'bunnyUpperLeg'
-    t.lower_leg_mesh = 'bunnyLowerLeg'
-    t.toes_mesh = 'bunnyToes'
-    bunny_sounds = ['bunny1', 'bunny2', 'bunny3', 'bunny4']
-    bunny_hit_sounds = ['bunnyHit1', 'bunnyHit2']
-    t.jump_sounds = ['bunnyJump']
-    t.attack_sounds = bunny_sounds
-    t.impact_sounds = bunny_hit_sounds
-    t.death_sounds = ['bunnyDeath']
-    t.pickup_sounds = bunny_sounds
-    t.fall_sounds = ['bunnyFall']
-    t.style = 'bunny'
-    t.default_color = (1, 1, 1)
-    t.default_highlight = (1, 0.5, 0.5)
+   
