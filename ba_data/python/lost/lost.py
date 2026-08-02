@@ -1,9 +1,10 @@
 """Module for everything related to Lost."""
 import bascenev1 as bs
-import _bascenev1
+import _bascenev1 # type: ignore # Hi im vscode and I like to yell about dumb shit
 from bascenev1._activitytypes import TransitionActivity
 import random
 import babase as ba
+import _babase as _ba # type: ignore # meliner told me to do thi
 from bascenev1lib import maps
 from bascenev1lib.actor.spaz import Spaz
 from bascenev1lib.gameutils import SharedObjects
@@ -122,6 +123,9 @@ class CharacterMoveset:
 
     chase_theme_dir = 'empty'
     """ bs.getsound(cls.chase_theme_dir) """
+
+    low_theme_dir = 'empty'
+    """bs.getsound(cls.low_theme_dir)"""
 
     move_speed = 0.8
     run_speed =  1.0
@@ -1109,6 +1113,7 @@ class Match(bs.Activity[bs.Player, bs.Team]):
         self.ended = False
         self.lms = False
         self.killer_chase_theme_audio = None
+        self.killer_lowHP_theme_audio = None
         self.max_terror_radius = 40.0
         self.min_terror_radius = 2.5
         self._entries = {}
@@ -1159,7 +1164,6 @@ class Match(bs.Activity[bs.Player, bs.Team]):
             (p for p in self.players if p.sessionplayer == self.killer_target), 
             None
         )
-
         self.killer_character = self.match_data.get('chosen_killer', 'Spaz')
 
 
@@ -1190,7 +1194,17 @@ class Match(bs.Activity[bs.Player, bs.Team]):
                 'volume': 0.0,
             },
         )
+        self.lowHP_music = bs.newnode(
+            'sound',
+            attrs={
+                'sound': self.killer_lowHP_theme_audio,
+                'positional': False,
+                'music': True,
+                'volume': 0.0,
+            },
+        )
         bs.timer(0.1, self._music_tick, repeat=True)
+
 
         # Start us a timer.
 
@@ -1213,6 +1227,8 @@ class Match(bs.Activity[bs.Player, bs.Team]):
 
         min_distance = float('inf')
         in_active_chase = False
+        is_a_spaz_injured = False
+
 
         # killer nod
         killer_nodes = []
@@ -1226,7 +1242,10 @@ class Match(bs.Activity[bs.Player, bs.Team]):
                 continue
 
             survivor_pos = survivor.actor.node.position
-
+            if survivor.actor.node.health < 51:
+                is_a_spaz_injured = True
+            else:
+                is_a_spaz_injured = False
             for k_spaz in killer_nodes:
                 killer_pos = k_spaz.node.position
 
@@ -1252,9 +1271,15 @@ class Match(bs.Activity[bs.Player, bs.Team]):
             ) * 7
         else:
             target_volume = 0.0
-
+        
         current_vol = self.chase_music.volume
-        self.chase_music.volume = current_vol + (target_volume - current_vol) * 0.2
+        current_lowHP_vol = self.lowHP_music.volume
+        if is_a_spaz_injured and self.lowHP_music:
+            self.chase_music.volume = 0
+            self.lowHP_music.volume = current_lowHP_vol + (target_volume - current_lowHP_vol) * 0.2
+        else:
+            self.lowHP_music.volume = 0
+            self.chase_music.volume = current_vol + (target_volume - current_vol) * 0.2
 
 
     def end_survivors_won(self):
@@ -1303,6 +1328,10 @@ class Match(bs.Activity[bs.Player, bs.Team]):
             self.killer_chase_theme_audio = bs.getsound(
                 bs.app.classic.spaz_appearances[character].moveset.chase_theme_dir
             )
+            if bs.app.classic.spaz_appearances[character].moveset.low_theme_dir: # just pasting shi
+                self.killer_lowHP_theme_audio = bs.getsound(
+                    bs.app.classic.spaz_appearances[character].moveset.low_theme_dir
+                )
         else:
             self.survivors.add(player)
             spawn = self.map.get_ffa_start_position([])
@@ -1354,6 +1383,9 @@ class Match(bs.Activity[bs.Player, bs.Team]):
         if self.chase_music:
             self.chase_music.delete()
             self.chase_music = None
+        if self.lowHP_music:
+            self.lowHP_music.delete()
+            self.lowHP_music = None
         # Special guys
         if (
             list(self.survivors)[0].actor.character == 'Zoe' and

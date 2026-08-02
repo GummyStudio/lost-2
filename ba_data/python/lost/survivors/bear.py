@@ -306,8 +306,8 @@ class BearSurvivor(CharacterMoveset):
             else:
                 self.ability2_cooldown = 41
                 self._last_used_2 = bs.time()-1
-                bs.timer(38,reset_cd)
-                def reset_cd():
+                bs.timer(38,self.reset_cd)
+                def reset_cd(self):
                     self.ability2_cooldown = 2
         elif self.bash_equipped == True:
             self.bash_equipped = False
