@@ -4,11 +4,12 @@ import _bascenev1 # type: ignore # Hi im vscode and I like to yell about dumb sh
 from bascenev1._activitytypes import TransitionActivity
 import random
 import babase as ba
-import _babase as _ba # type: ignore # meliner told me to do thi
 from bascenev1lib import maps
 from bascenev1lib.actor.spaz import Spaz
 from bascenev1lib.gameutils import SharedObjects
-# import _bascenev1; import bascenev1 as bs;_bascenev1.getsession().start_timer(11932913915); _bascenev1.set_map_bounds((-99990, -99990, -99990, 99990, 99990, 99990)); bs.getactivity().players[0].actor.node.area_of_interest_radius = -50
+"""
+import _bascenev1; import bascenev1 as bs;_bascenev1.getsession().start_timer(11932913915); _bascenev1.set_map_bounds((-99990, -99990, -99990, 99990, 99990, 99990)); bs.getactivity().players[0].actor.node.area_of_interest_radius = -50
+"""
 import math
 
 
@@ -121,10 +122,10 @@ class CharacterMoveset:
     hitpoints = 100 # will be multiplied by ten
 
 
-    chase_theme_dir = 'empty'
+    chase_theme_dir = 'blank'
     """ bs.getsound(cls.chase_theme_dir) """
 
-    low_theme_dir = 'empty'
+    low_theme_dir = 'blank'
     """bs.getsound(cls.low_theme_dir)"""
 
     move_speed = 0.8
@@ -769,34 +770,6 @@ def assignspazinput(spaz: Spaz, player: bs.Player):
         bs.InputType.JUMP_RELEASE, spaz.on_jump_release
     )
 
-def show_lms_texture(texture_name: str, ):
-    position = (0.0, 0.0)
-    scale = (450.0, 450.0)
-    display_duration = 2.0
-    fade_duration = 0.5
-   
-    node = bs.newnode(
-        'image',
-        attrs={
-            'texture': bs.gettexture(f'LMS/{texture_name}'),
-            'attach': 'center',
-            'position': position,
-            'scale': scale,
-            'opacity': 1.0,
-            'color': (1.0, 1.0, 1.0),
-        },
-    )
-
-    def _start_fade() -> None:
-        if not node.exists():
-            return
-        
-        bs.animate(node, 'opacity', {0.0: 1.0, fade_duration: 0.0})
-        
-        bs.timer(fade_duration, node.delete)
-    bs.animate(node, 'opacity', {0.0: 0.0, display_duration*0.2: 1.0})
-    bs.timer(display_duration, _start_fade)
-
 class Lobby(bs.Activity[bs.Player, bs.Team]):
     """ where the lobby takes place. """
     allow_pausing = True
@@ -804,29 +777,18 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         self.session: LostSession
         super().__init__(settings)
         self.killers = []
-        
     
     def on_transition_in(self):
         super().on_transition_in()
         map = maps.ThePad
         map.preload()
         self.map = map()
-        
-        
-        
-
     
     def on_begin(self):
         super().on_begin()
         # Start us a timer.
         bs.setmusic(bs.MusicType.LOBBY)
         self.session.start_timer(15)
-       
-        
-
-        
-        
-
 
     def on_player_join(self, player):
         self.spawn_player(player)
@@ -1185,16 +1147,16 @@ class Match(bs.Activity[bs.Player, bs.Team]):
             (p for p in self.players if p.sessionplayer == self.killer_target), 
             None
         )
-        self.killer_character = self.match_data.get('chosen_killer', 'Spaz')
-
+        self.killer_character = self.match_data.get(
+            'chosen_killer', 
+            'Spaz'
+        )
 
         # No killer... End.
-        if self.killer_player is None:
+        if not self.killer_player:
             self.end_survivors_won()
             return
 
-        
-       
         for player in self.players:
             if player != self.killer_player:
                 self.spawn_player(player, is_killer=False)
@@ -1205,36 +1167,42 @@ class Match(bs.Activity[bs.Player, bs.Team]):
             bs.WeakCall(self._update_icons), 
             repeat=True
         )
-
+        character = self.killer_character
+        app = bs.app.classic.spaz_appearances[character]
+        low_hp_music_RRAWW = app.moveset.low_theme_dir
+        low_hp_sound = bs.getsound(app.moveset.low_theme_dir)
+        chase_sound = bs.getsound(app.moveset.chase_theme_dir)
+        self.chase_music = None
         self.chase_music = bs.newnode(
             'sound',
             attrs={
-                'sound': self.killer_chase_theme_audio,
+                'sound': chase_sound,
                 'positional': False,
                 'music': True,
                 'volume': 0.0,
             },
         )
-        self.lowHP_music = bs.newnode(
-            'sound',
-            attrs={
-                'sound': self.killer_lowHP_theme_audio,
-                'positional': False,
-                'music': True,
-                'volume': 0.0,
-            },
-        )
+        self.lowHP_music = None
+        # FIXME: None exists you absolute fucking dumbass
+        if low_hp_music_RRAWW != 'blank':
+            self.lowHP_music = bs.newnode(
+                'sound',
+                attrs={
+                    'sound': low_hp_sound,
+                    'positional': False,
+                    'music': True,
+                    'volume': 0.0,
+                },
+            )
         bs.timer(0.1, self._music_tick, repeat=True)
 
-
         # Start us a timer.
-
-        # only 2 guys, reduce it.
-        if len(self.survivors) == 2:
-            self.session.start_timer(150)
-        else:
-            self.session.start_timer(210)
-
+        # Here we want based on the amount of survivors;
+        # This should give us a pretty fair amount of time
+        # to the killer so they could get a chance at killing everyone.
+        total_survivors = len(self.survivors)
+        default_time = 60
+        self.session.start_timer(default_time * total_survivors)
 
         # just incase theres 1 guy
         bs.timer(0.5, self.check_lms)
@@ -1243,13 +1211,17 @@ class Match(bs.Activity[bs.Player, bs.Team]):
         pass
     
     def _music_tick(self):
-        if self.lms or not self.chase_music or not self.chase_music.exists():
+        if (
+            self.lms 
+            or not self.chase_music 
+            or not self.chase_music.exists()
+        ):
             return
 
+        # gummy what the fuck
         min_distance = float('inf')
         in_active_chase = False
-        is_a_spaz_injured = False
-
+        spaz_injured = False
 
         # killer nod
         killer_nodes = []
@@ -1259,27 +1231,32 @@ class Match(bs.Activity[bs.Player, bs.Team]):
 
         # check distances on survivors
         for survivor in self.survivors:
-            if not survivor.actor or not survivor.actor.node or not survivor.actor.node.exists():
+            # Don't count if they are dead
+            if (
+                not survivor.actor 
+                or not survivor.actor.is_alive()
+                or not survivor.actor.node
+            ):
                 continue
 
             survivor_pos = survivor.actor.node.position
-            if survivor.actor.node.health < 51:
-                is_a_spaz_injured = True
-            else:
-                is_a_spaz_injured = False
             for k_spaz in killer_nodes:
                 killer_pos = k_spaz.node.position
-
-                if getattr(k_spaz, 'in_chase', False) or getattr(survivor.actor, 'in_chase', False):
+                # This just looks nicer
+                # I dunno man
+                if (
+                    getattr(k_spaz, 'in_chase', False) 
+                    or getattr(survivor.actor, 'in_chase', False)
+                ):
                     in_active_chase = True
 
-                dist = math.sqrt(
-                    (survivor_pos[0] - killer_pos[0]) ** 2 +
-                    (survivor_pos[1] - killer_pos[1]) ** 2 +
-                    (survivor_pos[2] - killer_pos[2]) ** 2
-                )
+                # bs.Vec3 here is cleaner
+                diff = bs.Vec3(survivor_pos) - bs.Vec3(killer_pos)
+                dist = diff.length()
                 if dist < min_distance:
                     min_distance = dist
+                    chasing_survivor = survivor
+        spaz_injured = chasing_survivor.actor.hitpoints <= 250
 
         # Volume 
         if in_active_chase:
@@ -1294,12 +1271,16 @@ class Match(bs.Activity[bs.Player, bs.Team]):
             target_volume = 0.0
         
         current_vol = self.chase_music.volume
-        current_lowHP_vol = self.lowHP_music.volume
-        if is_a_spaz_injured and self.lowHP_music:
+        # FIXME: like really no this just looks ugly
+        current_lowHP_vol = getattr(self.lowHP_music, 'volume', 0)
+        # Play different chase music if
+        # we have it (and if the spaz is low hp)
+        if spaz_injured and self.lowHP_music:
             self.chase_music.volume = 0
             self.lowHP_music.volume = current_lowHP_vol + (target_volume - current_lowHP_vol) * 0.2
         else:
-            self.lowHP_music.volume = 0
+            if self.lowHP_music:
+                self.lowHP_music.volume = 0
             self.chase_music.volume = current_vol + (target_volume - current_vol) * 0.2
 
 
@@ -1309,33 +1290,25 @@ class Match(bs.Activity[bs.Player, bs.Team]):
         self.end(
             {
                 'whowon': 'survivors',
-                'winners': [
-                    [
-                        player.getname(full=True, icon=True) for player in
-                        self.survivors
-                    ]
-                ]
+                'winners': list(
+                    player.getname(full=True, icon=True) for player in
+                    self.survivors
+                )
             }
         )
+    
     def end_killer_won(self):
         if self.ended:
             return
         self.end(
             {
                 'whowon': 'killer',
-                'winners': [
-                    [
-                        player.getname(full=True, icon=True) for player in
-                        self.killers
-                    ]
-                ]
+                'winners': list(
+                    player.getname(full=True, icon=True) for player in
+                    self.killers
+                )
             }
         )
-
-
-        
-
-        
 
     def spawn_player(self, player: bs.Player, is_killer=False):
         # get a spawn position
@@ -1344,15 +1317,10 @@ class Match(bs.Activity[bs.Player, bs.Team]):
             spawn = self.map.get_ffa_start_position(list(self.survivors))
             # For now hard code it into spaz, sigh..
             character = self.killer_character
-            color = bs.app.classic.spaz_appearances[character].default_color
-            highlight = bs.app.classic.spaz_appearances[character].default_highlight
-            self.killer_chase_theme_audio = bs.getsound(
-                bs.app.classic.spaz_appearances[character].moveset.chase_theme_dir
-            )
-            if bs.app.classic.spaz_appearances[character].moveset.low_theme_dir: # just pasting shi
-                self.killer_lowHP_theme_audio = bs.getsound(
-                    bs.app.classic.spaz_appearances[character].moveset.low_theme_dir
-                )
+            app = bs.app.classic.spaz_appearances[character]
+            color = app.default_color
+            highlight = app.default_highlight
+
         else:
             self.survivors.add(player)
             spawn = self.map.get_ffa_start_position([])
@@ -1407,53 +1375,68 @@ class Match(bs.Activity[bs.Player, bs.Team]):
         if self.lowHP_music:
             self.lowHP_music.delete()
             self.lowHP_music = None
-        # Special guys
         try:
-            if (
-                list(self.survivors)[0].actor.character == 'Zoe' and
-                list(self.killers)[0].actor.character == 'Spaz'
-            ):
-                self.session.start_timer(96)
-                bs.setmusic(bs.MusicType.LMS4)  
-                show_lms_texture('spaz-vs-zoe')
-            elif (
-                list(self.survivors)[0].actor.character == 'Mel' and
-                list(self.killers)[0].actor.character == 'Snake Shadow'
-            ):
-                self.session.start_timer(86)
-                bs.setmusic(bs.MusicType.LMS5)    
-                show_lms_texture('ninja-vs-mel')
-            elif (
-                list(self.survivors)[0].actor.character == 'Salvatore' and
-                list(self.killers)[0].actor.character == 'Spaz'
-            ):
-                self.session.start_timer(90)
-                bs.setmusic(bs.MusicType.LMS6)    
-                show_lms_texture('spaz-vs-sal')
-            elif (
-                list(self.survivors)[0].actor.character == 'Penny' and
-                list(self.killers)[0].actor.character == 'Easter Bunny'
-            ):
-                self.session.start_timer(89)
-                bs.setmusic(bs.MusicType.LMS7)    
-                show_lms_texture('bunny-vs-penny')
+            # Special killer to survivor LMS
+            # Format here is (Killer, Survivor)
+            special_lms = {
+                ('Spaz', 'Zoe'): {
+                    'texture': 'spaz-vs-zoe',
+                    'time': 96,
+                    'music': bs.MusicType.LMS4,
+                },
+                ('Snake Shadow', 'Mel'): {
+                    'texture': 'ninja-vs-mel',
+                    'time': 86,
+                    'music': bs.MusicType.LMS5,
+                },
+                ('Spaz', 'Salvatore'): {
+                    'texture': 'spaz-vs-sal',
+                    'time': 90,
+                    'music': bs.MusicType.LMS6,
+                },
+                ('Easter Bunny', 'Penny'): {
+                    'texture': 'bunny-vs-penny',
+                    'time': 89,
+                    'music': bs.MusicType.LMS7,
+                },
+            }
+            # Should update this to support multi-killers.
+            killers = list(self.killers)
+            killer_char = killers[0].actor.character
+            # This too.
+            survivors = list(self.survivors)
+            survivor_char = survivors[0].actor.character
+            special_lms_dict = special_lms.get(
+                (killer_char, survivor_char),
+                None,
+            )
+            if special_lms_dict:
+                time = special_lms_dict.get('time')
+                music = special_lms_dict.get('music')
+                texture = special_lms_dict.get('texture')
+                self.session.start_timer(time)
+                bs.setmusic(music)
+                self.show_lms_texture(texture)
             else:
-
                 self.session.start_timer(69)
                 bs.setmusic(bs.MusicType.LMS1)
-                if list(self.killers)[0].actor.character == 'Snake Shadow':
-                    show_lms_texture('snakeshadow')
-                elif list(self.killers)[0].actor.character == 'Easter Bunny':
-                    show_lms_texture('bunny')
-                elif list(self.killers)[0].actor.character == 'Grumbledorf':
-                    show_lms_texture('wizard')
-                elif list(self.killers)[0].actor.character == 'Bones':
-                    show_lms_texture('bones')
-                elif list(self.killers)[0].actor.character == 'Taobao Mascot':
-                    show_lms_texture('ali')
-                else:
-                    show_lms_texture('spaz')
-        except:
+                # FIXME: this is OBJECTIVELY better,
+                # but we should still move to spazapps
+                textures = {
+                    'Snake Shadow': 'snakeshadow',
+                    'Easter Bunny': 'bunny',
+                    'Grumbledorf': 'wizard',
+                    'Bones': 'bones',
+                    'Taobao Mascot': 'ali',
+                    'Spaz': 'spaz',
+                }
+                
+                # Get the killer's LMS texture, but in any case
+                # just fallback to spaz.
+                texture = textures.get(killer_char, 'Spaz')
+                self.show_lms_texture(texture)
+        except Exception as e:
+            print(f'FAILED TO DO LMS; {e}')
             # They left? default to everything
             self.session.start_timer(69)
             bs.setmusic(bs.MusicType.LMS1)
@@ -1466,6 +1449,66 @@ class Match(bs.Activity[bs.Player, bs.Team]):
         # Set the BG...
         self.map.background.color_texture = bs.gettexture('spectureBG')
         self.globalsnode.tint = (1, 0.8, 0.8)
+    
+        
+    def show_lms_texture(
+        self,
+        texture_name: str, 
+        position = (0, 0)
+    ):
+        x, y = position
+        # Variables
+        scale = 1.7
+        scale_ex = scale + 0.6
+        size = (256 * scale, 256 * scale)
+        size_ex = (256 * scale_ex, 256 * scale_ex)
+        display_duration = 2.5
+        # Make a nice lil node
+        node = bs.newnode(
+            'image',
+            attrs={
+                'texture': bs.gettexture(f'LMS/{texture_name}'),
+                'position': position,
+            },
+        )
+        # Add some jitter! 
+        cmb = bs.newnode(
+            'combine', 
+            owner=node, 
+            attrs={'size': 2}
+        )
+        cmb.connectattr('output', node, 'position')
+        keys = {}
+        time_v = 0.0
+
+        # Gen some random keys for that stop-motion-y look
+        jitter_scale = 8
+        for _i in range(10):
+            keys[time_v] = (
+                x + (random.random() - 0.5) * 0.7 * jitter_scale
+            )
+            time_v += random.random() * 0.1
+        bs.animate(cmb, 'input0', keys, loop=True)
+        keys = {}
+        time_v = 0.0
+        for _i in range(10):
+            keys[time_v] = (
+                y + (random.random() - 0.5) * 0.7 * jitter_scale
+            )
+            time_v += random.random() * 0.1
+        bs.animate(cmb, 'input1', keys, loop=True)
+        bs.animate_array(
+            node,
+            'scale', 2,
+            {
+                0: (0, 0),
+                0.1: size_ex,
+                0.2: size,
+                display_duration - 0.5: size,
+                display_duration: (0, 0),
+            }
+        )
+        bs.timer(display_duration, node.delete)
     
     def handlemessage(self, msg):
         if isinstance(msg, bs.PlayerDiedMessage):
