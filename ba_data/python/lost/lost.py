@@ -1418,8 +1418,8 @@ class Match(bs.Activity[bs.Player, bs.Team]):
         # This should give us a pretty fair amount of time
         # to the killer so they could get a chance at killing everyone.
         total_survivors = len(self.survivors)
-        default_time = 60
-        self.session.start_timer(default_time * total_survivors)
+        default_time = 30
+        self.session.start_timer(60+(default_time * total_survivors))
 
         # just incase theres 1 guy
         bs.timer(0.5, self.check_lms)

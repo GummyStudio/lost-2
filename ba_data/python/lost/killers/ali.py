@@ -244,7 +244,7 @@ class AliKiller(CharacterMoveset):
         # knock em out so they cant do any sneaky blocks
         spaz.node.handlemessage('knockout', 5*(1000))
         def drop():
-            dmg = 30 + (3.5 * combo)
+            dmg = 20 + (3.5 * combo)
             spaz.handlemessage(DamageMessage(
                 damage=dmg*0.1 if self.is_clone else dmg, spaz=self.spaz, type='ali_slam',
                 visual_damage=dmg if self.is_clone else None
@@ -309,11 +309,11 @@ class AliKiller(CharacterMoveset):
         if self.node_not_punched_nodes(node) and len(self._punched_nodes) == 0:
             node.handlemessage(
                 DamageMessage(
-                    damage=3 if self.is_clone else 23,
+                    damage=3 if self.is_clone else 18,
                     spaz=self.spaz,
                     type='ali_punch',
                     hurt_sound=None,
-                    visual_damage=23 if self.is_clone else None
+                    visual_damage=18 if self.is_clone else None
                     # hehe cloner
                     
                 )

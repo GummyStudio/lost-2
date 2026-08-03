@@ -274,7 +274,7 @@ class KronkSurvivor(CharacterMoveset):
             )
         )
         spaz.impulse(
-                    x=8.5,
+                    x=90.5,
                     y=0.2,
                     direction=self.spaz.node.velocity
                 )
