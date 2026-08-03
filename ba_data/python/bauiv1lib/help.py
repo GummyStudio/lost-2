@@ -1,4 +1,3 @@
-
 """Provides help related ui."""
 from __future__ import annotations
 from typing import override
@@ -22,7 +21,7 @@ class HelpWindow(bui.MainWindow):
             root_widget=bui.containerwidget(
                 size=(width, height),
                 toolbar_visibility=None,
-                scale=1.3,
+                scale=1.1,
             ),
             transition=transition,
             origin_widget=origin_widget,

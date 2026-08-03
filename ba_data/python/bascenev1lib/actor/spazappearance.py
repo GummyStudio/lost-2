@@ -16,14 +16,14 @@ def get_appearances(include_locked: bool = False) -> list[str]:
 
     assert bs.app.classic is not None
     get_purchased = plus.get_v1_account_product_purchased
+    all_apps = list(bs.app.classic.spaz_appearances.keys())
     disallowed = []
+    # Disallow killers
     if not include_locked:
-        # Hmm yeah this'll be tough to hack...
-        disallowed.append('Spaz')
+        disallowed.extend(bs.app.classic.killers)
     return [
-        s
-        for s in list(bs.app.classic.spaz_appearances.keys())
-        if s not in disallowed
+        app for app in all_apps
+        if app not in disallowed
     ]
 
 

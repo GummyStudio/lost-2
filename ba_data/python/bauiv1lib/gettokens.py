@@ -345,7 +345,7 @@ class GetTokensWindow(bui.MainWindow):
                 toolbar_visibility=(
                     'get_tokens'
                     if uiscale is bui.UIScale.SMALL
-                    else 'menu_full'
+                    else None
                 ),
             ),
             transition=transition,

@@ -70,7 +70,7 @@ class AllSettingsWindow(bui.MainWindow):
                 toolbar_visibility=(
                     'menu_minimal'
                     if uiscale is bui.UIScale.SMALL
-                    else 'menu_full'
+                    else 'menu_minimal'
                 ),
                 scale=scale,
             ),
@@ -109,6 +109,20 @@ class AllSettingsWindow(bui.MainWindow):
             v_align='center',
             scale=1.1,
             maxwidth=130,
+        )
+        plus = bui.app.plus
+        state = plus.get_v1_account_state()
+        if state != 'signed_in':
+            acc_label = 'signed out'
+        else:
+            acc_label = plus.get_v1_account_display_string()
+        self._account_button = bui.buttonwidget(
+            parent=self._root_widget,
+            autoselect=True,
+            position=(width - 250, yoffs - (90 if uiscale is bui.UIScale.SMALL else 80)),
+            size=(150, 60),
+            label=acc_label,
+            on_activate_call=self._acc_settings,
         )
 
         bwidth = 200
@@ -265,6 +279,8 @@ class AllSettingsWindow(bui.MainWindow):
         self.main_window_replace(
             GraphicsSettingsWindow(origin_widget=self._graphics_button)
         )
+    
+
 
     def _do_audio(self) -> None:
         # pylint: disable=cyclic-import
@@ -289,7 +305,19 @@ class AllSettingsWindow(bui.MainWindow):
         self.main_window_replace(
             AdvancedSettingsWindow(origin_widget=self._advanced_button)
         )
+        
+    def _acc_settings(self) -> None:
+        # pylint: disable=cyclic-import
+        from bauiv1lib.account.settings import AccountSettingsWindow
 
+        # no-op if we're not in control.
+        if not self.main_window_has_control():
+            return
+
+        self.main_window_replace(
+            AccountSettingsWindow(origin_widget=self._graphics_button)
+        )
+        
     def _save_state(self) -> None:
         try:
             sel = self._root_widget.get_selected_child()
@@ -303,6 +331,8 @@ class AllSettingsWindow(bui.MainWindow):
                 sel_name = 'Advanced'
             elif sel == self._back_button:
                 sel_name = 'Back'
+            elif sel == self._account_button:
+                sel_name = 'Account'
             else:
                 raise ValueError(f'unrecognized selection \'{sel}\'')
             assert bui.app.classic is not None
@@ -327,6 +357,8 @@ class AllSettingsWindow(bui.MainWindow):
                 sel = self._advanced_button
             elif sel_name == 'Back':
                 sel = self._back_button
+            elif sel_name == 'Account':
+                sel = self._account_button
             else:
                 sel = self._controllers_button
             if sel is not None:

@@ -46,7 +46,7 @@ class SendInfoWindow(bui.MainWindow):
                 toolbar_visibility=(
                     'menu_minimal_no_back'
                     if uiscale is bui.UIScale.SMALL or modal
-                    else 'menu_full'
+                    else None
                 ),
                 scale=(
                     2.0

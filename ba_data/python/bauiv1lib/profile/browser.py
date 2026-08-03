@@ -57,7 +57,7 @@ class ProfileBrowserWindow(bui.MainWindow):
                 toolbar_visibility=(
                     'menu_minimal'
                     if (uiscale is bui.UIScale.SMALL or minimal_toolbar)
-                    else 'menu_full'
+                    else None
                 ),
                 scale=(
                     2.5
@@ -221,8 +221,6 @@ class ProfileBrowserWindow(bui.MainWindow):
     def _new_profile(self) -> None:
         # pylint: disable=cyclic-import
         from bauiv1lib.profile.edit import EditProfileWindow
-        from bauiv1lib.purchase import PurchaseWindow
-
         # No-op if we're not the in-control main window.
         if not self.main_window_has_control():
             return
@@ -234,19 +232,6 @@ class ProfileBrowserWindow(bui.MainWindow):
         max_non_pro_profiles = plus.get_v1_account_misc_read_val('mnpp', 5)
         assert self._profiles is not None
         assert bui.app.classic is not None
-        if (
-            bool(False)  # Phasing out pro.
-            and not bui.app.classic.accounts.have_pro_options()
-            and len(self._profiles) >= max_non_pro_profiles
-        ):
-            PurchaseWindow(
-                items=['pro'],
-                header_text=bui.Lstr(
-                    resource='unlockThisProfilesText',
-                    subs=[('${NUM}', str(max_non_pro_profiles))],
-                ),
-            )
-            return
 
         # Clamp at 100 profiles (otherwise the server will and that's less
         # elegant looking).
@@ -385,7 +370,7 @@ class ProfileBrowserWindow(bui.MainWindow):
             try:
                 char_index = spazzes.index(p_info['character'])
             except Exception:
-                char_index = spazzes.index('Spaz')
+                char_index = spazzes.index('Zoe')
 
             assert isinstance(tval, str)
             txtw = bui.textwidget(

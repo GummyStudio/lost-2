@@ -39,7 +39,7 @@ class TouchscreenSettingsWindow(bui.MainWindow):
                 toolbar_visibility=(
                     'menu_minimal'
                     if uiscale is bui.UIScale.SMALL
-                    else 'menu_full'
+                    else None
                 ),
                 stack_offset=(
                     (0, -20) if uiscale is bui.UIScale.SMALL else (0, 0)

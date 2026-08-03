@@ -71,7 +71,7 @@ class BenchmarksAndStressTestsWindow(bui.MainWindow):
                 toolbar_visibility=(
                     'menu_minimal'
                     if uiscale is bui.UIScale.SMALL
-                    else 'menu_full'
+                    else None
                 ),
             ),
             transition=transition,

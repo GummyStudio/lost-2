@@ -105,7 +105,7 @@ class PlayWindow(bui.MainWindow):
             root_widget=bui.containerwidget(
                 size=(width, height),
                 toolbar_visibility=(
-                    'menu_full'
+                    None
                     if playlist_select_context is None
                     else 'menu_minimal'
                 ),
