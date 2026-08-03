@@ -857,7 +857,7 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         super().on_begin()
         # Start us a timer.
         bs.setmusic(bs.MusicType.LOBBY)
-        self.session.start_timer(15)
+        self.session.start_timer(30)
 
     def on_player_join(self, player):
         self.spawn_player(player)
@@ -909,7 +909,7 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
     # Every activity should have this.
     def on_timer_complete(self):
         if  len(self.players) <= 1:
-            self.session.start_timer(35)
+            self.session.start_timer(50)
         else:
             self.end('roundstart')
 
@@ -1242,7 +1242,7 @@ class SurvivorIcon(bs.Actor):
         node.texture = gt(character.icon_texture)
         node.tint_color = player.color
         node.tint2_color = player.highlight
-        y_spacing = -20
+        y_spacing = -30
         self.name_node = bs.newnode(
             'text',
             owner=self.node,

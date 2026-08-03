@@ -215,23 +215,8 @@ class MainMenuWindow(bui.MainWindow):
         side_button_2_y_offs = 10.0
         side_button_2_scale = 0.5
 
-        if uiscale is bui.UIScale.SMALL:
-            # We're a generally widescreen shaped window, so bump our
-            # overall scale up a bit when screen width is wider than safe
-            # bounds to take advantage of the extra space.
-            screensize = bui.get_virtual_screen_size()
-            safesize = bui.get_virtual_safe_area_size()
-            root_widget_scale = min(1.55, 1.3 * screensize[0] / safesize[0])
-            button_y_offs = -20.0
-            self._button_height *= 1.3
-        elif uiscale is bui.UIScale.MEDIUM:
-            root_widget_scale = 1.3
-            button_y_offs = -55.0
-            self._button_height *= 1.25
-        else:
-            root_widget_scale = 1.0
-            button_y_offs = -90.0
-            self._button_height *= 1.2
+        root_widget_scale = 1.5
+        button_y_offs = -50.0
 
         bui.containerwidget(
             edit=self._root_widget,
@@ -242,23 +227,6 @@ class MainMenuWindow(bui.MainWindow):
 
         # Version/copyright info.
         thistdelay = self._tdelay + td3 * self._t_delay_inc
-        bui.textwidget(
-            parent=self._root_widget,
-            position=(self._width * 0.5, button_y_offs - 10),
-            size=(0, 0),
-            scale=0.4,
-            flatness=1.0,
-            color=(1, 1, 1, 0.3),
-            text=(
-                f'{app.env.engine_version}'
-                f' build {app.env.engine_build_number}.'
-                f' Copyright 2025 Eric Froemling.'
-            ),
-            h_align='center',
-            v_align='center',
-            # transition_delay=self._t_delay_play,
-            transition_delay=thistdelay,
-        )
 
         variant = bui.app.env.variant
         vart = type(variant)
@@ -434,61 +402,73 @@ class MainMenuWindow(bui.MainWindow):
         # Credits button.
         thistdelay = self._tdelay + td5 * self._t_delay_inc
 
-        h += side_button_width * side_button_scale * 0.5 + hspace2
-        v = button_y_offs + side_button_2_y_offs
-
-        
-        v += 1.17 * side_button_2_height * side_button_2_scale
-
+        v -= 50
+        h = self._width * 0.5
         self._credits_button = None
-
-        self._quit_button: bui.Widget | None
-        if self._have_quit_button:
-            v -= 1.1 * side_button_2_height * side_button_2_scale
-            # Nudge this a tiny bit right so we can press right from the
-            # credits button to get to it.
-            self._quit_button = quit_button = bui.buttonwidget(
-                parent=self._root_widget,
-                autoselect=self._use_autoselect,
-                position=(h + 4.0, v),
-                size=(side_button_2_width, side_button_2_height),
-                scale=side_button_2_scale,
-                label=bui.Lstr(
-                    resource=self._r
-                    + (
-                        '.quitText'
-                        if 'Mac' in app.classic.legacy_user_agent_string
-                        else '.exitGameText'
+        # I LOVE YOU FOUNTAIN SEALERS
+        this_buttons = [
+            {
+                'label': bui.Lstr(resource=f'{self._r}.quitText'),
+                'callback': self._quit,
+                'color': (1.0, 0.6, 0.6),
+            },
+            {
+                'label': bui.Lstr(resource=f'{self._r}.howToPlayText'),
+                'callback': self._howtoplay,
+            },
+        ]
+        # Regular buttons.
+        reg_button_size = (130, 40)
+        reg_button_scale = 0.9
+        spacing = reg_button_size[0] + 8
+        text_color = (1, 1, 1)
+        default_hoffs = -65
+        hoffs = default_hoffs * len(this_buttons)
+        def gen():
+            nonlocal h, hoffs, v, reg_button_size, reg_button_scale, this_buttons,thistdelay
+            for btn in this_buttons:
+                if not btn.get('callback'):
+                    raise RuntimeError('Made a menu button without callback')
+                text_color = btn.get('color')
+                if text_color:
+                    text_color = (
+                        text_color[0] + 0.3,
+                        text_color[1] + 0.3,
+                        text_color[2] + 0.3,
                     )
-                ),
-                on_activate_call=self._quit,
-                transition_delay=thistdelay,
-            )
-
-            bui.containerwidget(
-                edit=self._root_widget, cancel_button=quit_button
-            )
-            # self._tdelay += self._t_delay_inc
-            rightmost_button = quit_button
-        else:
-            rightmost_button = self._credits_button
-            self._quit_button = None
-
-            # If we're not in-game, have no quit button, and this is
-            # android, we want back presses to quit our activity.
-            if app.classic.platform == 'android':
-
-                def _do_quit() -> None:
-                    bui.quit(confirm=True, quit_type=bui.QuitType.BACK)
-
-                bui.containerwidget(
-                    edit=self._root_widget, on_cancel_call=_do_quit
+                bui.buttonwidget(
+                    parent=self._root_widget,
+                    position=(h + hoffs + (spacing * this_buttons.index(btn)), v),
+                    autoselect=self._use_autoselect,
+                    size=reg_button_size,
+                    scale=reg_button_scale,
+                    label=btn.get('label'),
+                    on_activate_call=btn.get('callback'),
+                    color=btn.get('color'),
+                    textcolor=text_color,
+                    transition_delay=thistdelay,
                 )
-        bui.widget(
-            edit=rightmost_button,
-            right_widget=bui.get_special_widget('store_button'),
-        )
+        gen()
 
+        v -= 10
+        bui.textwidget(
+            parent=self._root_widget,
+            position=(self._width * 0.5, v),
+            size=(0, 0),
+            scale=0.4,
+            flatness=1.0,
+            color=(1, 1, 1, 0.3),
+            text=(
+                f'{app.env.engine_version}'
+                f' build {app.env.engine_build_number}.'
+                f' Copyright 2025 Eric Froemling.'
+            ),
+            h_align='center',
+            v_align='center',
+            # transition_delay=self._t_delay_play,
+            transition_delay=thistdelay,
+        )
+                
     def _quit(self) -> None:
         # pylint: disable=cyclic-import
         from bauiv1lib.confirm import QuitWindow
@@ -500,7 +480,7 @@ class MainMenuWindow(bui.MainWindow):
         # Note: Normally we should go through bui.quit(confirm=True) but
         # invoking the window directly lets us scale it up from the
         # button.
-        QuitWindow(origin_widget=self._quit_button)
+        QuitWindow()
 
     def _credits(self) -> None:
         # pylint: disable=cyclic-import
@@ -539,12 +519,9 @@ class MainMenuWindow(bui.MainWindow):
                 sel_name = 'HowToPlay'
             elif sel == self._credits_button:
                 sel_name = 'Credits'
-            elif sel == self._quit_button:
-                sel_name = 'Quit'
             elif sel == self._demo_menu_button:
                 sel_name = 'DemoMenu'
             else:
-                print(f'Unknown widget in main menu selection: {sel}.')
                 sel_name = 'Start'
             bui.app.ui_v1.window_states[type(self)] = {'sel_name': sel_name}
         except Exception:
