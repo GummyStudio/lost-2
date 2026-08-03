@@ -123,7 +123,7 @@ class AccountSettingsWindow(bui.MainWindow):
                 toolbar_visibility=(
                     'menu_minimal'
                     if uiscale is bui.UIScale.SMALL
-                    else 'menu_full'
+                    else None
                 ),
                 scale=scale,
             ),
@@ -370,6 +370,9 @@ class AccountSettingsWindow(bui.MainWindow):
 
         show_manage_account_button = primary_v2_account is not None
         manage_account_button_space = 70.0
+        
+        show_profiles_button = v1_state == 'signed_in'
+        profiles_button_space = 70.0
 
         show_create_account_button = show_v2_proxy_sign_in_button
         create_account_button_space = 70.0
@@ -450,6 +453,8 @@ class AccountSettingsWindow(bui.MainWindow):
             self._sub_height += sign_in_benefits_space
         if show_manage_account_button:
             self._sub_height += manage_account_button_space
+        if show_profiles_button:
+            self._sub_height += profiles_button_space
         if show_create_account_button:
             self._sub_height += create_account_button_space
         if show_link_accounts_button:
@@ -840,7 +845,28 @@ class AccountSettingsWindow(bui.MainWindow):
                 shadow=1.0,
                 flatness=1.0,
             )
-
+            
+        if show_profiles_button:
+            button_width = 300
+            v -= profiles_button_space
+            self._profiles_button = btn = bui.buttonwidget(
+                parent=self._subcontainer,
+                position=((self._sub_width - button_width) * 0.5, v),
+                autoselect=True,
+                size=(button_width, 60),
+                label=bui.Lstr(resource='playerProfilesWindow.titleText'),
+                color=(0.55, 0.5, 0.6),
+                icon=bui.gettexture('cuteSpaz'),
+                textcolor=(0.75, 0.7, 0.8),
+                on_activate_call=bui.WeakCall(self._open_profiles),
+            )
+            if first_selectable is None:
+                first_selectable = btn
+            bui.widget(
+                edit=btn, right_widget=bui.get_special_widget('squad_button')
+            )
+            bui.widget(edit=btn, left_widget=bbtn)
+        
         if show_manage_account_button:
             button_width = 300
             v -= manage_account_button_space
@@ -1429,6 +1455,18 @@ class AccountSettingsWindow(bui.MainWindow):
 
         if self._achievements_text is not None:
             bui.textwidget(edit=self._achievements_text, text=txt_final)
+    
+    def _open_profiles(self) -> None:
+        # pylint: disable=cyclic-import
+        from bauiv1lib.profile.browser import ProfileBrowserWindow
+
+        # no-op if we're not currently in control.
+        if not self.main_window_has_control():
+            return
+
+        self.main_window_replace(
+            ProfileBrowserWindow(origin_widget=self._profiles_button)
+        )
 
     def _link_accounts_press(self) -> None:
         # pylint: disable=cyclic-import

@@ -215,8 +215,8 @@ class MainMenuWindow(bui.MainWindow):
         side_button_2_y_offs = 10.0
         side_button_2_scale = 0.5
 
-        root_widget_scale = 1.5
-        button_y_offs = -50.0
+        root_widget_scale = 1.2
+        button_y_offs = -100
 
         bui.containerwidget(
             edit=self._root_widget,
@@ -228,44 +228,6 @@ class MainMenuWindow(bui.MainWindow):
         # Version/copyright info.
         thistdelay = self._tdelay + td3 * self._t_delay_inc
 
-        variant = bui.app.env.variant
-        vart = type(variant)
-        arcade_or_demo = variant is vart.ARCADE or variant is vart.DEMO
-
-        # In kiosk mode, provide a button to get back to the kiosk menu.
-        if arcade_or_demo:
-            # h, v, scale = positions[self._p_index]
-            h = self._width * 0.5
-            v = button_y_offs
-            scale = 1.0
-            this_b_width = self._button_width * 0.4 * scale
-            # demo_menu_delay = (
-            #     0.0
-            #     if self._t_delay_play == 0.0
-            #     else max(0, self._t_delay_play + 0.1)
-            # )
-            demo_menu_delay = 0.0
-            self._demo_menu_button = bui.buttonwidget(
-                parent=self._root_widget,
-                id='demo',
-                position=(self._width * 0.5 - this_b_width * 0.5, v + 90),
-                size=(this_b_width, 45),
-                autoselect=True,
-                color=(0.45, 0.55, 0.45),
-                textcolor=(0.7, 0.8, 0.7),
-                label=bui.Lstr(
-                    resource=(
-                        'modeArcadeText'
-                        if variant is vart.ARCADE
-                        else 'modeDemoText'
-                    )
-                ),
-                transition_delay=demo_menu_delay,
-                on_activate_call=self.main_window_back,
-            )
-        else:
-            self._demo_menu_button = None
-
         # Gather button
         h = self._width * 0.5
         h = (
@@ -274,7 +236,7 @@ class MainMenuWindow(bui.MainWindow):
             - hspace
             - side_button_width * side_button_scale * 0.5
         )
-        v = button_y_offs + side_button_y_offs
+        v = button_y_offs
 
         thistdelay = self._tdelay + td2 * self._t_delay_inc
         self._gather_button = bui.buttonwidget(
@@ -408,13 +370,17 @@ class MainMenuWindow(bui.MainWindow):
         # I LOVE YOU FOUNTAIN SEALERS
         this_buttons = [
             {
-                'label': bui.Lstr(resource=f'{self._r}.quitText'),
-                'callback': self._quit,
-                'color': (1.0, 0.6, 0.6),
+                'label': bui.Lstr(resource=f'{self._r}.settingsText'),
+                'callback': self._settings,
             },
             {
                 'label': bui.Lstr(resource=f'{self._r}.howToPlayText'),
                 'callback': self._howtoplay,
+            },
+            {
+                'label': bui.Lstr(resource=f'{self._r}.quitText'),
+                'callback': self._quit,
+                'color': (1.0, 0.6, 0.6),
             },
         ]
         # Regular buttons.
@@ -424,38 +390,35 @@ class MainMenuWindow(bui.MainWindow):
         text_color = (1, 1, 1)
         default_hoffs = -65
         hoffs = default_hoffs * len(this_buttons)
-        def gen():
-            nonlocal h, hoffs, v, reg_button_size, reg_button_scale, this_buttons,thistdelay
-            for btn in this_buttons:
-                if not btn.get('callback'):
-                    raise RuntimeError('Made a menu button without callback')
-                text_color = btn.get('color')
-                if text_color:
-                    text_color = (
-                        text_color[0] + 0.3,
-                        text_color[1] + 0.3,
-                        text_color[2] + 0.3,
-                    )
-                bui.buttonwidget(
-                    parent=self._root_widget,
-                    position=(h + hoffs + (spacing * this_buttons.index(btn)), v),
-                    autoselect=self._use_autoselect,
-                    size=reg_button_size,
-                    scale=reg_button_scale,
-                    label=btn.get('label'),
-                    on_activate_call=btn.get('callback'),
-                    color=btn.get('color'),
-                    textcolor=text_color,
-                    transition_delay=thistdelay,
+        for btn in this_buttons:
+            if not btn.get('callback'):
+                raise RuntimeError('Made a menu button without callback')
+            text_color = btn.get('color')
+            if text_color:
+                text_color = (
+                    text_color[0] + 0.4,
+                    text_color[1] + 0.4,
+                    text_color[2] + 0.4,
                 )
-        gen()
+            bui.buttonwidget(
+                parent=self._root_widget,
+                position=(h + hoffs + (spacing * this_buttons.index(btn)), v),
+                autoselect=self._use_autoselect,
+                size=reg_button_size,
+                scale=reg_button_scale,
+                label=btn.get('label'),
+                on_activate_call=btn.get('callback'),
+                color=btn.get('color'),
+                textcolor=text_color,
+                transition_delay=thistdelay,
+            )
 
-        v -= 10
+        v -= 5
         bui.textwidget(
             parent=self._root_widget,
             position=(self._width * 0.5, v),
             size=(0, 0),
-            scale=0.4,
+            scale=0.7,
             flatness=1.0,
             color=(1, 1, 1, 0.3),
             text=(
@@ -464,7 +427,7 @@ class MainMenuWindow(bui.MainWindow):
                 f' Copyright 2025 Eric Froemling.'
             ),
             h_align='center',
-            v_align='center',
+            v_align='top',
             # transition_delay=self._t_delay_play,
             transition_delay=thistdelay,
         )
@@ -580,6 +543,18 @@ class MainMenuWindow(bui.MainWindow):
 
         self.main_window_replace(
             WatchWindow(origin_widget=self._watch_button),
+        )
+    
+    def _settings(self) -> None:
+        # pylint: disable=cyclic-import
+        from bauiv1lib.settings.allsettings import AllSettingsWindow
+
+        # no-op if we're not currently in control.
+        if not self.main_window_has_control():
+            return
+
+        self.main_window_replace(
+            AllSettingsWindow(origin_widget=self._gather_button)
         )
 
     def _play_press(self) -> None:

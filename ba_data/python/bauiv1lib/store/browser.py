@@ -107,7 +107,7 @@ class StoreBrowserWindow(bui.MainWindow):
                 toolbar_visibility=(
                     'menu_store'
                     if (uiscale is bui.UIScale.SMALL or minimal_toolbars)
-                    else 'menu_full'
+                    else None
                 ),
                 scale=scale,
             ),
