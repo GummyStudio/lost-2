@@ -27,6 +27,57 @@ def _lerp_color(c1, c2, t: float):
         c1[2] + (c2[2] - c1[2]) * t,
     )
 
+def lerp(a, b, t):
+    if isinstance(a, (tuple, list)):
+        return tuple(
+            lerp(x, y, t)
+            for x, y in zip(a, b)
+        )
+    return a + (b - a) * t
+
+def choppify(keys, fps=30):
+    """Given keyframes {time: value}, returns a new dict with
+    more choppy-ish keyframes based on FPS arg."""
+    times = sorted(keys)
+
+    def sample(t):
+        for i in range(len(times) - 1):
+            t1, t2 = times[i], times[i + 1]
+
+            if t1 <= t <= t2:
+                v1 = keys[t1]
+                v2 = keys[t2]
+
+                frac = (t - t1) / (t2 - t1)
+
+                # Number interpolation.
+                if isinstance(v1, (int, float)):
+                    return lerp(v1, v2, frac)
+
+                # Tuple/list interpolation.
+                return type(v1)(
+                    lerp(a, b, frac)
+                    for a, b in zip(v1, v2)
+                )
+
+        return keys[times[-1]]
+
+    result = {}
+    dt = 1.0 / fps
+    duration = times[-1]
+
+    t = 0.0
+    while t < duration:
+        value = sample(t)
+
+        result[t] = value
+        result[min(t + dt - 0.0001, duration)] = value
+
+        t += dt
+
+    result[duration] = keys[duration]
+    return result
+
 def _get_hp_color(hp: float):
     points = HP_COLORS
 
@@ -107,6 +158,9 @@ class SurvivorUnDetectedMessage:
 class KillerUnDetectedMessage:
     """ send this to any object in need to undetect a killer. """
 
+DEFAULT_ABILITY_DESC = "No description for this ability."
+DEFAULT_CHAR_DESC = "One of the many characters from Lost...\n..whoops, i don't know what this one does. Sorry."
+
 class CharacterMoveset:
     """ 
     
@@ -136,6 +190,21 @@ class CharacterMoveset:
     ability2_cooldown = 0
     ability3_cooldown = 0
     """ cooldowns """
+    
+    description: str = DEFAULT_CHAR_DESC
+    """A general description for your character;
+    This will show up in this character's info card.
+    You can fit as much info as you want here (aka, lore)
+    but try to make it not TOO long. Line breaks are 
+    automatically done."""
+    
+    ability1_description = DEFAULT_ABILITY_DESC
+    ability2_description = DEFAULT_ABILITY_DESC
+    ability3_description = DEFAULT_ABILITY_DESC
+    """Descriptions for each of your abilities;
+    These will show up in this character's info card.
+    Try to keep them short so they fit nicely.
+    Line breaks are automatically done."""
 
     ability1_icon: str
     ability2_icon: str
@@ -444,7 +513,7 @@ class AsymFactory:
                 self.killer_material
             ),
             actions=('modify_part_collision', 'collide', False),
-       )
+        )
         
         self.killer_trap_object_material = bs.Material()
         # material that detects and activates stuf
@@ -844,6 +913,80 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         else:
             self.end('roundstart')
 
+class ChooserCard(bs.Actor):
+    def __init__(
+        self, 
+        position: tuple[float],
+        size: tuple[float],
+        character: str = 'Spaz',
+    ):
+        super().__init__()
+        apps = bs.app.classic.spaz_appearances
+        character = apps[character]
+        texture = bs.gettexture(f'cards/{character.card_texture}')
+        y_spacing = -210
+        top = size[1] + y_spacing
+        bottom = -size[1] - y_spacing
+        self.node = bs.newnode(
+            'image',
+            delegate=self,
+            attrs={
+                'texture': texture,
+                'position': position,
+                'scale': size,
+            }
+        )
+        node = self.text_node = bs.newnode(
+            'text',
+            owner=self.node,
+            attrs={
+                'text': character.name,
+                'scale': 1.3,
+                'h_align': 'center',
+            }
+        )
+        mnode = bs.newnode(
+            'math',
+            owner=self.node,
+            attrs={'input1': (0, top, 0), 'operation': 'add'},
+        )
+        self.node.connectattr('position', mnode, 'input2')
+        self.node.connectattr('opacity', node, 'opacity')
+        self.node.connectattr('color', node, 'color')
+        self.node.connectattr('front', node, 'front')
+        mnode.connectattr('output', node, 'position')
+        node = self.oneliner_node = bs.newnode(
+            'text',
+            owner=self.node,
+            attrs={
+                'text': character.oneliner,
+                'scale': 1.1,
+                'h_align': 'center',
+            }
+        )
+        mnode = bs.newnode(
+            'math',
+            owner=self.node,
+            attrs={'input1': (0, bottom, 0), 'operation': 'add'},
+        )
+        self.node.connectattr('position', mnode, 'input2')
+        self.node.connectattr('opacity', node, 'opacity')
+        self.node.connectattr('color', node, 'color')
+        self.node.connectattr('front', node, 'front')
+        mnode.connectattr('output', node, 'position')
+        self.combine = None
+    
+    def exists(self):
+        return bool(self.node)
+    
+    def handlemessage(self, msg):
+        if isinstance(msg, bs.DieMessage):
+            if self.node:
+                self.node.delete()
+        else:
+            return super().handlemessage(msg)
+        return None
+
 class ChooserActivity(bs.Activity[bs.Player, bs.Team]):
     allow_pausing = True
 
@@ -867,9 +1010,12 @@ class ChooserActivity(bs.Activity[bs.Player, bs.Team]):
 
         killer_keys = bs.app.classic.killers
         self.selected_killer_id = killer_keys[0]
-        icon_scale = 260
+        self.cards = {}
         x = 0
-        y = 140
+        y = 240
+        scale = 1.6
+        self._icon_size = icon_size = (256 * scale, 256 * scale)
+        self._spacing = spacing = icon_size[0] - 40
         self._move_sound = bs.getsound('deek')
         self._done_sound = bs.getsound('punch01')
         name = self.killer_player.getname(full=True)
@@ -877,30 +1023,24 @@ class ChooserActivity(bs.Activity[bs.Player, bs.Team]):
             'text',
             attrs={
                 'scale': 1.2,
-                'text': f'- {name} is picking a killer -',
+                'text': f'- {name}; PICK YOUR BEST CARD... -',
                 'h_align': 'center',
                 'position': (x, y),
             }
         )
-        y -= (icon_scale * 0.5) + 10
-        self._icon_node = bs.newnode(
-            'image',
-            attrs={
-                'scale': (icon_scale, icon_scale),
-                'mask_texture': bs.gettexture('characterIconMask'),
-                'position': (x, y),
-            }
-        )
-        y -= (icon_scale * 0.5) + 50
-        self._icon_text = bs.newnode(
-            'text',
-            attrs={
-                'scale': 1.4,
-                'text': '',
-                'h_align': 'center',
-                'position': (x, y),
-            }
-        )
+        y -= icon_size[0] - 150
+        self._center_pos = (x, y)
+        arrow_x = x
+        arrow_y = y
+        for killer in killer_keys:
+            self.cards[killer] = ChooserCard(
+                position=(x, y),
+                size=icon_size,
+                character=killer
+            )
+            x += spacing
+        self._killer_index = len(killer_keys) - 1 * 0.5
+        self._killer_index = int(self._killer_index)
         self._update_per_choice()
 
         self.session.start_timer(15)
@@ -910,6 +1050,53 @@ class ChooserActivity(bs.Activity[bs.Player, bs.Team]):
             self.killer_player.assigninput(bs.InputType.RIGHT_PRESS, self._next_killer)
             self.killer_player.assigninput(bs.InputType.LEFT_PRESS, self._prev_killer)
             self.killer_player.assigninput(bs.InputType.PUNCH_PRESS, self._done)
+        
+        # ARROWS
+        arrow_spacing = 500
+        arrow_scale = 3.0
+        arrow_color = (1, 0.3, 0.3)
+        arrow = bs.newnode(
+            'image',
+            attrs={
+                'texture': bs.gettexture('arrow_down'),
+                'scale': (64 * arrow_scale, 32 * arrow_scale),
+                'rotate': 90,
+                'color': arrow_color,
+            }
+        )
+        keys = {
+            0: (arrow_x + arrow_spacing + 40, arrow_y),
+            0.5: (arrow_x + arrow_spacing + 28, arrow_y),
+            1: (arrow_x + arrow_spacing + 40, arrow_y),
+        }
+        keys = choppify(keys, fps=10)
+        bs.animate_array(
+            arrow,
+            'position', 2,
+            keys,
+            loop=True,
+        )
+        arrow = bs.newnode(
+            'image',
+            attrs={
+                'texture': bs.gettexture('arrow_down'),
+                'scale': (64 * arrow_scale, 32 * arrow_scale),
+                'rotate': -90,
+                'color': arrow_color,
+            }
+        )
+        keys = {
+            0: (arrow_x - arrow_spacing - 40, arrow_y),
+            0.5: (arrow_x - arrow_spacing - 28, arrow_y),
+            1: (arrow_x - arrow_spacing - 40, arrow_y),
+        }
+        keys = choppify(keys, fps=10)
+        bs.animate_array(
+            arrow,
+            'position', 2,
+            keys,
+            loop=True,
+        )
     
     def _done(self):
         self._done_sound.play()
@@ -931,44 +1118,74 @@ class ChooserActivity(bs.Activity[bs.Player, bs.Team]):
         self._move_sound.play()
 
     def _update_per_choice(self):
-        killer_keys = bs.app.classic.killers
-        if not killer_keys:
-            return
-        index = self._killer_index
-        self.selected_killer_id = bs.app.classic.killers[index]
-        # variables
-        killer = killer_keys[self._killer_index]
-        apps = bs.app.classic.spaz_appearances
-        character = apps[killer]
-        # TOO LONG
-        gt = bs.gettexture
-        # set the icon attributes stuff
-        self._icon_node.tint_texture = gt(character.icon_mask_texture)
-        self._icon_node.texture = gt(character.icon_texture)
-        self._icon_node.tint_color = character.default_color
-        self._icon_node.tint2_color = character.default_highlight
-        # get name
-        name = bs.Lstr(
-            translate=(
-                'characterNames', 
-                character.name,
-            ),
-        )
-        # text is <- NAME -> so it looks nicer
-        # (and no need for actual text!!!!)
-        left = ba.charstr(ba.SpecialChar.LEFT_ARROW)
-        right = ba.charstr(ba.SpecialChar.RIGHT_ARROW)
-        lstr = bs.Lstr(
-            value='${A} ${B} ${C}',
-            subs=[
-                ('${A}', left),
-                ('${B}', name),
-                ('${C}', right),
-            ],
-        )
-        self._icon_text.text = lstr
-        self._icon_text.color = character.default_color
-        
+        killers = bs.app.classic.killers
+        self.selected_killer_id = killers[self._killer_index]
+        card_list = list(self.cards.values())
+        chosen_card = card_list[self._killer_index]
+        base_x, y = self._center_pos
+        use_front = False
+
+        for i, card in enumerate(card_list):
+            if card is not chosen_card:
+                offset = i - self._killer_index
+                card.node.position = (base_x + offset * self._spacing, y)
+                x, y = card.node.position
+                card.node.color = (0.5, 0.5, 0.5)
+                card.node.front = False
+                if card.combine:
+                    card.combine.delete()
+                node = card.node
+                card.combine = cmb = bs.newnode(
+                    'combine',
+                    owner=node,
+                    attrs={'size': 2}
+                )
+                keys = {}
+                time_v = 0.0
+                jitter_scale = 4
+                for _i in range(10):
+                    keys[time_v] = (
+                        x + (random.random() - 0.5) * 0.7 * jitter_scale
+                    )
+                    time_v += random.random() * 0.1
+                bs.animate(cmb, 'input0', keys, loop=True)
+                keys = {}
+                time_v = 0.0
+                for _i in range(10):
+                    keys[time_v] = (
+                        y + (random.random() - 0.5) * 0.7 * jitter_scale
+                    )
+                    time_v += random.random() * 0.1
+                bs.animate(cmb, 'input1', keys, loop=True)
+                cmb.connectattr('output', node, 'position')
+            else:
+                x, y = self._center_pos
+                card.node.color = (1, 1, 1)
+                card.node.front = use_front
+                node = card.node
+                card.combine = cmb = bs.newnode(
+                    'combine',
+                    owner=node,
+                    attrs={'size': 2}
+                )
+                keys = {}
+                time_v = 0.0
+                jitter_scale = 4
+                for _i in range(10):
+                    keys[time_v] = (
+                        x + (random.random() - 0.5) * 0.7 * jitter_scale
+                    )
+                    time_v += random.random() * 0.01
+                bs.animate(cmb, 'input0', keys, loop=True)
+                keys = {}
+                time_v = 0.0
+                for _i in range(10):
+                    keys[time_v] = (
+                        y + (random.random() - 0.5) * 0.7 * jitter_scale
+                    )
+                    time_v += random.random() * 0.01
+                bs.animate(cmb, 'input1', keys, loop=True)
+                cmb.connectattr('output', node, 'position')
 
     def on_timer_complete(self):
         self.finish_selection()

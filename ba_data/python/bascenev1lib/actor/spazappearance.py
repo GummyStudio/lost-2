@@ -61,6 +61,8 @@ class Appearance:
         self.default_color: tuple[float, float, float] | None = None
         self.default_highlight: tuple[float, float, float] | None = None
         self.moveset: CharacterMoveset = None
+        self.card_texture = 'placeholder'
+        self.oneliner = 'The lost soul'
 
 
 def register_appearances() -> None:
