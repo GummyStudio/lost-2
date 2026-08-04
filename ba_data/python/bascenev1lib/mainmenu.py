@@ -65,20 +65,47 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         # Alright, let's get some actions here
         spaz = self._preview_spaz
         node = spaz.node
+        rare_actions = [
+            [
+                lambda: spaz.impulse(y=3.5),
+                lambda: bs.timer(0.05, lambda: setattr(node, 'shattered', 2)),
+                lambda: bs.getsound('lego_break').play(),
+            ]
+        ]
         actions = [
             [
                 lambda: node.handlemessage('celebrate_r', 700), # Wave
-                lambda: random.choice(node.jump_sounds).play(position=node.position), # Make a random jump sound
+                lambda: node.handlemessage('jump_sound'), # Make a random jump sound
             ],
             lambda: spaz.on_jump_press(), # Jump
             lambda: setattr(node, 'punch_pressed', True), # Punch
+            [
+                lambda: node.handlemessage('knockout', 100), # Sleep
+                lambda: node.handlemessage('hurt_sound'), # Make a impact sound
+                lambda: spaz.impulse(x=-0.5, y=2,), # Impulse up
+            ]
         ]
-        action = random.choice(actions)
+        if random.random() < 0.01:
+            action = random.choice(rare_actions)
+        else:
+            action = random.choice(actions)
         if isinstance(action, list):
             for i in action:
                 i()
         else:
             action()
+    
+    def _preview_spaz_do_ability(self, num: int):
+        if (
+            not self._preview_spaz 
+            or not self._preview_spaz.node
+        ):
+            return
+        spaz = self._preview_spaz
+        func = getattr(spaz.moveset, f'do_ability{num}', None)
+        if not func:
+            return
+        func()
     
     def spawn_character_preview(self, character: str | None):
         raw_char_str = character
@@ -117,7 +144,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         spaz.handlemessage(bs.StandMessage(spawn_pos))
         # Schedule a timer for it to do some random action..
         # (class timer so no repeats happen)
-        self._preview_spaz_random_action_timer = bs.Timer(0.65, 
+        self._preview_spaz_random_action_timer = bs.Timer(0.9, 
             bs.WeakCall(self._preview_spaz_random_action)
         )
     

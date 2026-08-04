@@ -39,6 +39,7 @@ class HelpWindow(bui.MainWindow):
         bui.containerwidget(edit=self._root_widget, cancel_button=btn)
         h = width * 0.5 + 10
         v = height - 20
+        top_text_scale = 0.9
         text = (
             "Lost is a game where you and your friends\n"
             "get put together against a single person attempting\n"
@@ -53,12 +54,13 @@ class HelpWindow(bui.MainWindow):
             size=(0, 0),
             h_align='center',
             position=(h, v),
-            maxwidth=width - 90
+            maxwidth=width - 90,
+            scale=top_text_scale,
         )
         lines = text.splitlines()
         img_scale = 0.6
         img_size = (512 * img_scale, 256 * img_scale)
-        v -= 35 * len(lines)
+        v -= 35 * len(lines) * top_text_scale
         v -= img_size[1] - 20
         bui.imagewidget(
             parent=self._root_widget,
@@ -74,6 +76,10 @@ class HelpWindow(bui.MainWindow):
         text_color = (1, 1, 1)
         default_hoffs = -65
         this_buttons = [
+            {
+                'label': 'The Basics',
+                'callback': self._open_basics,
+            },
             {
                 'label': 'Characters',
                 'callback': self._open_chars,
@@ -92,6 +98,10 @@ class HelpWindow(bui.MainWindow):
                 textcolor=text_color,
             )
             v -= reg_button_size[1]
+    
+    def _open_basics(self):
+        bui.screenmessage('Sorry not done yet :(', color=(1, 0, 0))
+        bui.getsound('error').play()
     
     def _open_chars(self):
         # pylint: disable=cyclic-import

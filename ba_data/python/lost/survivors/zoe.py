@@ -6,6 +6,13 @@ import babase
 class ZoeSurvivor(CharacterMoveset):
     is_killer = False
     hitpoints = 80
+    
+    description = (
+        "Zoe is another one of the simpler characters, "
+        "albeit part of the survivors. Zoe can gain her "
+        "second life via stabbing the killer about 4 times, "
+        "which allows her to respawn upon her death."
+    )
 
     move_speed = 0.85
     run_speed =  0.9
@@ -16,6 +23,9 @@ class ZoeSurvivor(CharacterMoveset):
     ability1_icon = babase.charstr(babase.SpecialChar.MOON)
     ability2_icon = babase.charstr(babase.SpecialChar.DOWN_ARROW)
     ability3_icon = ''
+    
+    ability1_description = "Stabs a killer to stun them. 4 stabs grants you a single extra life."
+    ability2_description = "Dashes forward."
 
     def __init__(self, spaz):
         super().__init__(spaz)

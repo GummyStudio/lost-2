@@ -310,33 +310,52 @@ class CharactersWindow(bui.MainWindow):
             and i != ''
         ]
         ability_scale = 1.05
-        ability_x_offs = 20
+        ability_x_offs = 30
+        button_size = (32, 32)
         for i in abilities_nums:
             description = getattr(character.moveset, f'ability{i}_description', 'INVALID ABILITY')
             icon = getattr(character.moveset, f'ability{i}_icon', 'X')
+            cooldown = getattr(character.moveset, f'ability{i}_cooldown', '')
             description = textwrap.fill(
                 description, 
                 width=text_maxwidth / ability_scale,
                 replace_whitespace=False
             )
-            icon_widget = bui.textwidget(
+            icon_widget = bui.buttonwidget(
                 parent=self._root_widget,
-                position=(0 + ability_x_offs, v),
-                size=(0, 0),
-                text=icon,
+                position=(
+                    ability_x_offs * ability_scale - 5, 
+                    v - button_size[1] * ability_scale
+                ),
+                size=button_size,
+                label=icon,
                 scale=ability_scale,
+                button_type='square',
+                color=(0.37, 0.39, 0.49),
+                textcolor=(1, 1, 1),
+                on_activate_call=bs.WeakCall(self._do_ability, i),
+            )
+            cooldown_widget = bui.textwidget(
+                parent=self._root_widget,
+                position=(ability_x_offs + button_size[0] * 0.5, v + 10),
+                size=(0, 0),
+                text=f'{cooldown}s',
+                color=(0.8, 0.8, 0.8),
+                scale=ability_scale - 0.4,
+                h_align='center',
             )
             description_widget = bui.textwidget(
                 parent=self._root_widget,
                 text=description,
                 size=(0, 0),
-                position=(35 * ability_scale + ability_x_offs, v),
+                position=(ability_x_offs + 38 * ability_scale, v),
                 scale=ability_scale,
             )
             self._widgets_to_clear.append(icon_widget)
             self._widgets_to_clear.append(description_widget)
+            self._widgets_to_clear.append(cooldown_widget)
             lines = description.splitlines()
-            v -= text_height * len(lines) * ability_scale + 5
+            v -= text_height * len(lines) * ability_scale + 15
         
     def _add_to_character_index(self, value: int):
         self._character_index = (
@@ -348,6 +367,11 @@ class CharactersWindow(bui.MainWindow):
         self._add_to_character_index(-1)
     def _next(self):
         self._add_to_character_index(1)
+    
+    def _do_ability(self, num: int):
+        activity = bs.get_foreground_host_activity()
+        with activity.context:
+            activity._preview_spaz_do_ability(num)
     
     def _set_tab(self, tab_id: TabID):
         self._character_index = 0
