@@ -75,6 +75,7 @@ class LandMineTrap(bs.Actor):
 class SpazKiller(CharacterMoveset):
     is_killer = True
     chase_theme_dir = 'spazChasetheme'
+    lowHP_theme_dir = 'spazLowHPtheme'
     hitpoints = 1500
 
     move_speed = 0.8
