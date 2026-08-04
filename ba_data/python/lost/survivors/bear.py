@@ -240,6 +240,9 @@ class BearSurvivor(CharacterMoveset):
             self.gun_equipped = False
             self.move_speed *= 1.142857
             self.run_speed *= 1.35714
+    
+    def reset_cd(self):
+        self.ability2_cooldown = 2
 
     def ability3(self):
         
@@ -310,9 +313,8 @@ class BearSurvivor(CharacterMoveset):
             else:
                 self.ability2_cooldown = 41
                 self._last_used_2 = bs.time()-1
-                bs.timer(38,self.reset_cd)
-                def reset_cd(self):
-                    self.ability2_cooldown = 2
+                # Just makin sure ;3
+                bs.timer(38, bs.WeakCall(self.reset_cd))
         elif self.bash_equipped == True:
             self.bash_equipped = False
             self.stored_bash_charges = self.bash_charges
