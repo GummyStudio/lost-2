@@ -368,7 +368,7 @@ class MaskedManKiller(CharacterMoveset):
             dmg = 10
             self._last_used_1 = (
                 self._last_used_1 - 
-                (self.ability1_cooldown - 0.5)
+                (self.ability1_cooldown - 0.13)
             )
             self.handle_bashes()
             node.handlemessage(

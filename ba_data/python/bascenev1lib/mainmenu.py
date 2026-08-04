@@ -16,6 +16,7 @@ from bascenev1 import _map
 
 from bascenev1lib.actor.spaz import Spaz
 from bascenev1lib.maps import ThePad
+from lost.lost import AsymFactory, assignspazinput
 
 if TYPE_CHECKING:
     from typing import Any
@@ -55,6 +56,35 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         self._preview_spaz: Spaz | None = None
         self._map_type = _map.get_map_class('The Pad')
         self._map_type.preload()
+        self._killer_dummy: Spaz | None = None
+        self._survivor_dummy: Spaz | None = None
+        self._killed_dummies = False
+        self._chosen_player_char = 'Zoe'
+    
+    def on_player_join(self, player):
+        self.spawn_player(player)
+    
+    def on_player_leave(self, player):
+        player.actor.handlemessage(bs.DieMessage(how=bs.DeathType.LEFT_GAME))
+    
+    def spawn_player(self, player: bs.Player):
+        # get a spawn position
+        spawn = self.map.get_ffa_start_position([])
+        char = self._chosen_player_char
+        spaz = Spaz(
+            character=char,
+            color=player.color,
+            highlight=player.highlight,
+            source_player=player,
+            start_invincible=False,
+            is_killer=char in bs.app.classic.killers,
+        )
+        spaz.handlemessage(bs.StandMessage(spawn))
+        spaz.node.name = player.getname()
+        spaz.node.name_color = player.color
+        player.actor = spaz
+        assignspazinput(spaz, player)
+
     
     def _preview_spaz_random_action(self):
         if (
@@ -143,6 +173,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             color=color,
             highlight=highlight,
             start_invincible=False,
+            is_killer=character.name in bs.app.classic.killers,
         )
         # Tell it to stand somewhere we can see it.
         spawn_pos = (
@@ -157,6 +188,86 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             bs.WeakCall(self._preview_spaz_random_action)
         )
     
+    def kill_playtest_dummies(self):
+        if self._killer_dummy:
+            self._killer_dummy.handlemessage(bs.DieMessage(True))
+        if self._survivor_dummy:
+            self._survivor_dummy.handlemessage(bs.DieMessage(True))
+        self._killed_dummies = True
+    
+    def spawn_playtest_dummies(self):
+        if self._killed_dummies:
+            return
+        spawn_pos = (0, 3.5, -4)
+        spacing = 0.8
+        apps = bs.app.classic.spaz_appearances
+        killer_char = random.choice(bs.app.classic.killers)
+        killer_char = apps[killer_char]
+        survivor_char = random.choice(bs.app.classic.survivors)
+        survivor_char = apps[survivor_char]
+        if not self._killer_dummy:
+            color = killer_char.default_color or (
+                random.random(), 
+                random.random(), 
+                random.random()
+            )
+            highlight = killer_char.default_highlight or (
+                random.random(), 
+                random.random(), 
+                random.random()
+            )
+            spaz = self._killer_dummy = Spaz(
+                character=killer_char.name,
+                color=color,
+                highlight=highlight,
+                start_invincible=False,
+                is_killer=True,
+            )
+            spaz.handlemessage(
+                bs.StandMessage(
+                    (spawn_pos[0] + spacing, spawn_pos[1], spawn_pos[2])
+                )
+            )
+            asymf = AsymFactory.get()
+            spaz.node.name = killer_char.name
+            spaz.node.name_color = color
+            spaz.node.add_death_action(bs.WeakCall(self.spawn_playtest_dummies))
+            spaz.node.is_area_of_interest = True
+            
+        if not self._survivor_dummy:
+            color = survivor_char.default_color or (
+                random.random(), 
+                random.random(), 
+                random.random()
+            )
+            highlight = survivor_char.default_highlight or (
+                random.random(), 
+                random.random(), 
+                random.random()
+            )
+            spaz = self._survivor_dummy = Spaz(
+                character=survivor_char.name,
+                color=color,
+                highlight=highlight,
+                start_invincible=False,
+                is_killer=False,
+            )
+            spaz.handlemessage(
+                bs.StandMessage(
+                    (spawn_pos[0] - spacing, spawn_pos[1], spawn_pos[2])
+                )
+            )
+            asymf = AsymFactory.get()
+            spaz.node.name = survivor_char.name
+            spaz.node.name_color = color
+            spaz.node.add_death_action(bs.WeakCall(self.spawn_playtest_dummies))
+            spaz.node.is_area_of_interest = True
+    
+    def start_playtest(self, character: str):
+        self._chosen_player_char = character
+        self.spawn_playtest_dummies()
+        self.globalsnode.camera_mode = 'follow'
+
     @property
     def map(self) -> _map.Map:
         """The map being used for this game.
@@ -985,7 +1096,7 @@ class MainMenuSession(bs.Session):
         # Any ending activity leads us into the main menu one.
         self.setactivity(bs.newactivity(MainMenuActivity))
 
-    @override
-    def on_player_request(self, player: bs.SessionPlayer) -> bool:
-        # Reject all player requests.
-        return False
+    # @override
+    # def on_player_request(self, player: bs.SessionPlayer) -> bool:
+        # # Reject all player requests.
+        # return False

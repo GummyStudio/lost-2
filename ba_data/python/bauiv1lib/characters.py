@@ -90,6 +90,16 @@ class CharactersWindow(bui.MainWindow):
             on_activate_call=self.main_window_back,
         )
         bui.containerwidget(edit=self._root_widget, cancel_button=btn)
+        btn = bui.buttonwidget(
+            parent=self._root_widget,
+            position=(width - 30, height - 50),
+            size=(40, 40),
+            scale=1.25,
+            button_type='square',
+            label=bui.charstr(bui.SpecialChar.PLAY_BUTTON),
+            extra_touch_border_scale=2.0,
+            on_activate_call=self.start_playtest,
+        )
         tabrow_width = width * 0.9
         tabdefs = [
             (
@@ -383,6 +393,19 @@ class CharactersWindow(bui.MainWindow):
         self._tab_row.update_appearance(tab_id)
         self._update_ui()
     
+    def start_playtest(self):
+        ba.pushcall(lambda: _ba.set_camera_manual(False))
+        activity = bs.get_foreground_host_activity()
+        character = self._characters_list[
+            self._character_index
+        ]
+        character = bs.app.classic.spaz_appearances[character]
+        with activity.context:
+            activity.spawn_character_preview(None)
+            activity.start_playtest(character.name)
+        bui.screenmessage('Join the game to continue...')
+        self.close()
+    
     @override
     def main_window_back(self):
         activity = bs.get_foreground_host_activity()
@@ -390,6 +413,12 @@ class CharactersWindow(bui.MainWindow):
             activity.spawn_character_preview(None)
         ba.pushcall(lambda: _ba.set_camera_manual(False))
         super().main_window_back()
+    
+    def close(self):
+        bui.containerwidget(
+            edit=self._root_widget,
+            transition='out_right',
+        )
         
     @override
     def get_main_window_state(self) -> bui.MainWindowState:
