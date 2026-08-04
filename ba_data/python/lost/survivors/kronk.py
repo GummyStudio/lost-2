@@ -64,6 +64,17 @@ class DashHitbox(bs.Actor):
 class KronkSurvivor(CharacterMoveset):
     is_killer = False
     hitpoints = 115
+    
+    description = (
+        "Kronk is a sentinel class, "
+        "helping his teammates by simply "
+        "beating up the killer."
+        "{'type': 'separator'}"
+        "Or well, in this case, just stunning them."
+    )
+    ability1_description = "Punches a killer to slightly stun and damage them."
+    ability2_description = "Attempt to block an attack. Punch shortly afterwards to do a parry and strongly stun the killer."
+    ability3_description = "Charge forward to hit and stun a killer."
 
     move_speed = 0.85
     run_speed = 0.9

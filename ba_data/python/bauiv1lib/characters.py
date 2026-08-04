@@ -61,13 +61,16 @@ class CharactersWindow(bui.MainWindow):
             4.5, 
             -5,
         ]
+        activity = bs.get_foreground_host_activity()
         calls = [
             lambda: _ba.set_camera_manual(True),
             lambda: _ba.set_camera_position(*camera_pos),
             lambda: _ba.set_camera_target(*camera_target),
+            lambda: activity._word_actors.clear()
         ]
         for call in calls:
-            ba.pushcall(call)
+            with activity.context:
+                call()
         self._widgets_to_clear = []
         super().__init__(
             root_widget=bui.containerwidget(
@@ -90,6 +93,16 @@ class CharactersWindow(bui.MainWindow):
             on_activate_call=self.main_window_back,
         )
         bui.containerwidget(edit=self._root_widget, cancel_button=btn)
+        btn = bui.buttonwidget(
+            parent=self._root_widget,
+            position=(width - 30, height - 50),
+            size=(40, 40),
+            scale=1.25,
+            button_type='square',
+            label=bui.charstr(bui.SpecialChar.PLAY_BUTTON),
+            extra_touch_border_scale=2.0,
+            on_activate_call=self.start_playtest,
+        )
         tabrow_width = width * 0.9
         tabdefs = [
             (
@@ -114,7 +127,7 @@ class CharactersWindow(bui.MainWindow):
             unlit_color=default_tab_color,
         )
         index_buttons_h = width * 0.5
-        index_buttons_spacing = width - 240
+        index_buttons_spacing = width - 220
         index_buttons_v = height * 0.5
         index_buttons_size = (60, 60)
         index_buttons_scale = 1.2
@@ -138,6 +151,7 @@ class CharactersWindow(bui.MainWindow):
             on_activate_call=self._prev,
             color=index_buttons_color,
             textcolor=index_buttons_textcolor,
+            button_type='square',
         )
         self._right_index_btn = bui.buttonwidget(
             parent=self._root_widget,
@@ -157,11 +171,12 @@ class CharactersWindow(bui.MainWindow):
             on_activate_call=self._next,
             color=index_buttons_color,
             textcolor=index_buttons_textcolor,
+            button_type='square',
         )
         v = height - 10
         self._char_name_text = bui.textwidget(
             parent=self._root_widget,
-            text='SOMEONE',
+            text='',
             h_align='center',
             position=(h, v),
             size=(0, 0),
@@ -383,13 +398,33 @@ class CharactersWindow(bui.MainWindow):
         self._tab_row.update_appearance(tab_id)
         self._update_ui()
     
+    def start_playtest(self):
+        ba.pushcall(lambda: _ba.set_camera_manual(False))
+        activity = bs.get_foreground_host_activity()
+        character = self._characters_list[
+            self._character_index
+        ]
+        character = bs.app.classic.spaz_appearances[character]
+        with activity.context:
+            activity.spawn_character_preview(None)
+            activity.start_playtest(character.name)
+        bui.screenmessage('Join the game to continue...')
+        self.close()
+    
     @override
     def main_window_back(self):
         activity = bs.get_foreground_host_activity()
         with activity.context:
             activity.spawn_character_preview(None)
+            activity._remake_title()
         ba.pushcall(lambda: _ba.set_camera_manual(False))
         super().main_window_back()
+    
+    def close(self):
+        bui.containerwidget(
+            edit=self._root_widget,
+            transition='out_right',
+        )
         
     @override
     def get_main_window_state(self) -> bui.MainWindowState:

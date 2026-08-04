@@ -16,6 +16,7 @@ from bascenev1 import _map
 
 from bascenev1lib.actor.spaz import Spaz
 from bascenev1lib.maps import ThePad
+from lost.lost import AsymFactory, assignspazinput
 
 if TYPE_CHECKING:
     from typing import Any
@@ -55,6 +56,45 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         self._preview_spaz: Spaz | None = None
         self._map_type = _map.get_map_class('The Pad')
         self._map_type.preload()
+        self._killer_dummy: Spaz | None = None
+        self._survivor_dummy: Spaz | None = None
+        self._killed_dummies = False
+        self._chosen_player_char = 'Zoe'
+        self.killers = []
+        self.survivors = []
+    
+    def on_player_join(self, player):
+        self.spawn_player(player)
+    
+    def on_player_leave(self, player):
+        player.actor.handlemessage(bs.DieMessage(how=bs.DeathType.LEFT_GAME))
+    
+    def spawn_player_if_exists(self, player: bs.Player):
+        if player and player.exists():
+            self.spawn_player(player)
+    
+    def spawn_player(self, player: bs.Player):
+        # get a spawn position
+        spawn = self.map.get_ffa_start_position([])
+        char = self._chosen_player_char
+        spaz = Spaz(
+            character=char,
+            color=player.color,
+            highlight=player.highlight,
+            source_player=player,
+            start_invincible=False,
+            is_killer=char in bs.app.classic.killers,
+        )
+        spaz.handlemessage(bs.StandMessage(spawn))
+        spaz.node.name = player.getname()
+        spaz.node.name_color = player.color
+        # ug
+        spaz.node.add_death_action(
+            bs.WeakCall(self.spawn_player_if_exists, player)
+        )
+        player.actor = spaz
+        assignspazinput(spaz, player)
+
     
     def _preview_spaz_random_action(self):
         if (
@@ -143,6 +183,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             color=color,
             highlight=highlight,
             start_invincible=False,
+            is_killer=character.name in bs.app.classic.killers,
         )
         # Tell it to stand somewhere we can see it.
         spawn_pos = (
@@ -157,6 +198,86 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             bs.WeakCall(self._preview_spaz_random_action)
         )
     
+    def kill_playtest_dummies(self):
+        if self._killer_dummy:
+            self._killer_dummy.handlemessage(bs.DieMessage(True))
+        if self._survivor_dummy:
+            self._survivor_dummy.handlemessage(bs.DieMessage(True))
+        self._killed_dummies = True
+    
+    def spawn_playtest_dummies(self):
+        if self._killed_dummies:
+            return
+        spawn_pos = (0, 3.5, -4)
+        spacing = 0.8
+        apps = bs.app.classic.spaz_appearances
+        killer_char = random.choice(bs.app.classic.killers)
+        killer_char = apps[killer_char]
+        survivor_char = random.choice(bs.app.classic.survivors)
+        survivor_char = apps[survivor_char]
+        if not self._killer_dummy:
+            color = killer_char.default_color or (
+                random.random(), 
+                random.random(), 
+                random.random()
+            )
+            highlight = killer_char.default_highlight or (
+                random.random(), 
+                random.random(), 
+                random.random()
+            )
+            spaz = self._killer_dummy = Spaz(
+                character=killer_char.name,
+                color=color,
+                highlight=highlight,
+                start_invincible=False,
+                is_killer=True,
+            )
+            spaz.handlemessage(
+                bs.StandMessage(
+                    (spawn_pos[0] + spacing, spawn_pos[1], spawn_pos[2])
+                )
+            )
+            asymf = AsymFactory.get()
+            spaz.node.name = killer_char.name
+            spaz.node.name_color = color
+            spaz.node.add_death_action(bs.WeakCall(self.spawn_playtest_dummies))
+            spaz.node.is_area_of_interest = True
+            
+        if not self._survivor_dummy:
+            color = survivor_char.default_color or (
+                random.random(), 
+                random.random(), 
+                random.random()
+            )
+            highlight = survivor_char.default_highlight or (
+                random.random(), 
+                random.random(), 
+                random.random()
+            )
+            spaz = self._survivor_dummy = Spaz(
+                character=survivor_char.name,
+                color=color,
+                highlight=highlight,
+                start_invincible=False,
+                is_killer=False,
+            )
+            spaz.handlemessage(
+                bs.StandMessage(
+                    (spawn_pos[0] - spacing, spawn_pos[1], spawn_pos[2])
+                )
+            )
+            asymf = AsymFactory.get()
+            spaz.node.name = survivor_char.name
+            spaz.node.name_color = color
+            spaz.node.add_death_action(bs.WeakCall(self.spawn_playtest_dummies))
+            spaz.node.is_area_of_interest = True
+    
+    def start_playtest(self, character: str):
+        self._chosen_player_char = character
+        self.spawn_playtest_dummies()
+        self.globalsnode.camera_mode = 'follow'
+
     @property
     def map(self) -> _map.Map:
         """The map being used for this game.
@@ -211,9 +332,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         gnode.ambient_color = (1.06, 1.04, 1.03)
         gnode.vignette_outer = (0.45, 0.55, 0.54)
         gnode.vignette_inner = (0.99, 0.98, 0.98)
-
-        self._update_timer = bs.Timer(0.1, self._update, repeat=True)
-        self._update()
+        self._remake_title()
 
         # Hopefully this won't hitch but lets space these out anyway.
         bs.add_clean_frame_callback(bs.WeakCall(self._start_preloads))
@@ -231,199 +350,221 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
 
         app.classic.invoke_main_menu_ui()
 
-    def _update(self) -> None:
+    def _remake_title(self) -> None:
         # pylint: disable=too-many-locals
         # pylint: disable=too-many-statements
         app = bs.app
         assert app.classic is not None
-
-        # Update logo in case it changes.
-        if self._logo_node:
-            custom_texture = self._get_custom_logo_tex_name()
-            if custom_texture != self._custom_logo_tex_name:
-                self._custom_logo_tex_name = custom_texture
-                self._logo_node.texture = bs.gettexture(
-                    custom_texture if custom_texture is not None else 'logo'
-                )
-                self._logo_node.mesh_opaque = (
-                    None if custom_texture is not None else bs.getmesh('logo')
-                )
-                self._logo_node.mesh_transparent = (
-                    None
-                    if custom_texture is not None
-                    else bs.getmesh('logoTransparent')
-                )
-
-        # If language has changed, recreate our logo text/graphics.
-        lang = app.lang.language
-        if lang != self._language:
-            self._language = lang
-            y = 20
-            base_scale = 1.1
-            self._word_actors = []
-            base_delay = 0.8
+        y = 20
+        base_scale = 1.2
+        self._word_actors = []
+        base_delay = 0.8
+        delay = base_delay
+        delay_inc = 0.02
+        # disable for the creepypasta ish logo
+        # enable if you want. i dunno :3
+        cool_logo = bs.app.config.get('LOSTCOOLERFUCKINMENU', False)
+        # Come on faster after the first time.
+        if self._did_initial_transition:
+            base_delay = 0.0
             delay = base_delay
             delay_inc = 0.02
+        if cool_logo:
+            base_scale += 0.7
+            base_x = -115
+            x = base_x - 20
+            spacing = 100
+            y_extra = -30
+            xv1 = x
+            delay1 = delay
+            for shadow in (True, False):
+                x = xv1
+                delay = delay1
+                delay += delay_inc
+                delay += delay_inc
+                self._make_word(
+                    'L',
+                    x,
+                    y + y_extra,
+                    scale=base_scale,
+                    delay=delay,
+                    vr_depth_offset=14,
+                    shadow=shadow,
+                )
+                x += spacing * 0.85
+                delay += delay_inc
+                x += spacing * 0.85
+                delay += delay_inc
+                self._make_word(
+                    's',
+                    x,
+                    y + y_extra,
+                    delay=delay,
+                    scale=base_scale,
+                    vr_depth_offset=7,
+                    shadow=shadow,
+                )
+                x += spacing * 0.5
+                delay += delay_inc
+                self._make_word(
+                    't',
+                    x,
+                    y + y_extra,
+                    delay=delay,
+                    scale=base_scale,
+                    shadow=shadow,
+                )
+            self._make_logo(
+                xv1 + (spacing * 0.95),
+                y + y_extra + 170,
+                delay=delay,
+                scale=base_scale - 1.35,
+            )
+            two_x = 0
+            two_y = y + y_extra - 10
+            image2 = bs.NodeActor(
+                bs.newnode(
+                    'image',
+                    attrs={
+                        'texture': bs.gettexture('scorchBig'),
+                        'position': (two_x, two_y),
+                        'opacity': 0,
+                    }
+                )
+            )
+            image = bs.NodeActor(
+                bs.newnode(
+                    'image',
+                    attrs={
+                        'texture': bs.gettexture('lost2'),
+                    }
+                )
+            )
+            self._word_actors.append(image)
+            self._word_actors.append(image2)
+            hit_time = 0.1
+            bs.animate_array(
+                image.node,
+                'scale', 2,
+                {
+                    0: (1024 * base_scale, 1024 * base_scale),
+                    hit_time: (64 * base_scale, 64 * base_scale),
+                    hit_time + 0.2: (128 * base_scale, 128 * base_scale),
+                },
+                offset=delay,
+            )
+            bs.animate(
+                image.node,
+                'opacity',
+                {
+                    0: 0,
+                    hit_time - 0.1: 0,
+                    hit_time: 1,
+                },
+                offset=delay,
+            )
+            def make_shaky_effect():
+                if self._did_initial_transition:
+                    return
+                cmb = bs.newnode('combine', owner=image2.node, attrs={'size': 2})
+                cmb.connectattr('output', image2.node, 'scale')
+                end_time = 0.3
+                keys = {
+                    0: 0,
+                    end_time: 1024,
+                }
+                bs.animate(
+                    image2.node,
+                    'opacity',
+                    {
+                        0: 0,
+                        0.01: 0.7,
+                        end_time - 0.1: 0.7,
+                        end_time: 0,
+                    }
+                )
+                        
+                bs.animate(cmb, 'input0', keys)
+                bs.animate(cmb, 'input1', keys)
+            
+            cmb = bs.newnode('combine', owner=image.node, attrs={'size': 2})
+            cmb.connectattr('output', image.node, 'position')
+            keys = {}
+            time_v = 0.0
+            jitter_scale = 5 
+            key_steps = 15
+            speed = 0.07
+            x = two_x
+            y = two_y
 
-            # Come on faster after the first time.
-            if self._did_initial_transition:
-                base_delay = 0.0
-                delay = base_delay
-                delay_inc = 0.02
-
-            # We draw higher in kiosk mode (make sure to test this
-            # when making adjustments) for now we're hard-coded for
-            # a few languages.. should maybe look into generalizing this?..
-            if (
-                app.locale.current_locale.resolved
-                is LocaleResolved.CHINESE_SIMPLIFIED
-            ):
-                base_x = -270.0
-                x = base_x - 20.0
-                spacing = 85.0 * base_scale
-                y_extra = 0.0
-                self._make_logo(
-                    x - 110 + 50,
-                    113 + y + 1.2 * y_extra,
-                    0.34 * base_scale,
-                    delay=base_delay + 0.1,
-                    custom_texture='chTitleChar1',
-                    jitter_scale=2.0,
-                    vr_depth_offset=-30,
+            # Gen some random keys for that stop-motion-y look
+            for _i in range(key_steps):
+                keys[time_v] = (
+                    x + (random.random() - 0.5) * 0.7 * jitter_scale
                 )
-                x += spacing
+                time_v += random.random() * speed
+            bs.animate(cmb, 'input0', keys, loop=True)
+            keys = {}
+            time_v = 0.0
+            for _i in range(key_steps):
+                keys[time_v * self._ts] = (
+                    y + (random.random() - 0.5) * 0.7 * jitter_scale
+                )
+                time_v += random.random() * speed
+            bs.animate(cmb, 'input1', keys, loop=True)
+            bs.timer(delay + hit_time, make_shaky_effect)
+        else:
+            base_x = -90
+            x = base_x - 20
+            spacing = 55 * base_scale
+            y_extra = -20
+            xv1 = x
+            delay1 = delay
+            for shadow in (True, False):
+                x = xv1
+                delay = delay1
                 delay += delay_inc
-                self._make_logo(
-                    x - 10 + 50,
-                    110 + y + 1.2 * y_extra,
-                    0.31 * base_scale,
-                    delay=base_delay + 0.15,
-                    custom_texture='chTitleChar2',
-                    jitter_scale=2.0,
-                    vr_depth_offset=-30,
-                )
-                x += 2.0 * spacing
                 delay += delay_inc
-                self._make_logo(
-                    x + 180 - 140,
-                    110 + y + 1.2 * y_extra,
-                    0.3 * base_scale,
-                    delay=base_delay + 0.25,
-                    custom_texture='chTitleChar3',
-                    jitter_scale=2.0,
-                    vr_depth_offset=-30,
+                self._make_word(
+                    'L',
+                    x,
+                    y + y_extra,
+                    scale=base_scale,
+                    delay=delay,
+                    vr_depth_offset=14,
+                    shadow=shadow,
                 )
-                x += spacing
+                x += spacing * 0.9
                 delay += delay_inc
-                self._make_logo(
-                    x + 241 - 120,
-                    110 + y + 1.2 * y_extra,
-                    0.31 * base_scale,
-                    delay=base_delay + 0.3,
-                    custom_texture='chTitleChar4',
-                    jitter_scale=2.0,
-                    vr_depth_offset=-30,
+                self._make_word(
+                    'o',
+                    x,
+                    y + y_extra,
+                    delay=delay,
+                    scale=base_scale,
+                    shadow=shadow,
                 )
-                x += spacing
+                x += spacing * 0.9
                 delay += delay_inc
-                self._make_logo(
-                    x + 300 - 90,
-                    105 + y + 1.2 * y_extra,
-                    0.34 * base_scale,
-                    delay=base_delay + 0.35,
-                    custom_texture='chTitleChar5',
-                    jitter_scale=2.0,
-                    vr_depth_offset=-30,
+                self._make_word(
+                    's',
+                    x,
+                    y + y_extra,
+                    delay=delay,
+                    scale=base_scale,
+                    vr_depth_offset=7,
+                    shadow=shadow,
                 )
-                self._make_logo(
-                    base_x + 155,
-                    146 + y + 1.2 * y_extra,
-                    0.28 * base_scale,
-                    delay=base_delay + 0.2,
-                    rotate=-7,
+                x += spacing * 0.9
+                delay += delay_inc
+                self._make_word(
+                    't',
+                    x,
+                    y + y_extra,
+                    delay=delay,
+                    scale=base_scale,
+                    shadow=shadow,
                 )
-            else:
-                base_x = -170
-                x = base_x - 20
-                spacing = 55 * base_scale
-                y_extra = 0
-                xv1 = x
-                delay1 = delay
-                for shadow in (True, False):
-                    x = xv1
-                    delay = delay1
-                    self._make_word(
-                        '',
-                        x - 50,
-                        y - 23 + 0.8 * y_extra,
-                        scale=1.3 * base_scale,
-                        delay=delay,
-                        vr_depth_offset=3,
-                        shadow=shadow,
-                    )
-                    x += spacing
-                    delay += delay_inc
-                    self._make_word(
-                        '',
-                        x,
-                        y + y_extra,
-                        delay=delay,
-                        scale=base_scale,
-                        shadow=shadow,
-                    )
-                    x += spacing * 1.25
-                    delay += delay_inc
-                    self._make_word(
-                        '',
-                        x,
-                        y + y_extra - 10,
-                        delay=delay,
-                        scale=1.1 * base_scale,
-                        vr_depth_offset=5,
-                        shadow=shadow,
-                    )
-                    x += spacing * 0.85
-                    delay += delay_inc
-                    self._make_word(
-                        'L',
-                        x,
-                        y - 25 + 0.8 * y_extra,
-                        scale=1.35 * base_scale,
-                        delay=delay,
-                        vr_depth_offset=14,
-                        shadow=shadow,
-                    )
-                    x += spacing
-                    delay += delay_inc
-                    self._make_word(
-                        'o',
-                        x,
-                        y + y_extra,
-                        delay=delay,
-                        scale=base_scale,
-                        shadow=shadow,
-                    )
-                    x += spacing * 0.9
-                    delay += delay_inc
-                    self._make_word(
-                        's',
-                        x,
-                        y + y_extra,
-                        delay=delay,
-                        scale=base_scale,
-                        vr_depth_offset=7,
-                        shadow=shadow,
-                    )
-                    x += spacing * 0.9
-                    delay += delay_inc
-                    self._make_word(
-                        't',
-                        x,
-                        y + y_extra,
-                        delay=delay,
-                        scale=base_scale,
-                        shadow=shadow,
-                    )
                    
 
     def _make_word(
@@ -573,25 +714,15 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         ltex = bs.gettexture(
             custom_texture if custom_texture is not None else 'logo'
         )
-        mopaque = None if custom_texture is not None else bs.getmesh('logo')
-        mtrans = (
-            None
-            if custom_texture is not None
-            else bs.getmesh('logoTransparent')
-        )
         logo_attrs = {
             'position': (x, y),
             'texture': ltex,
-            'mesh_opaque': mopaque,
-            'mesh_transparent': mtrans,
             'vr_depth': -10 + vr_depth_offset,
             'rotate': rotate,
             'attach': 'center',
             'tilt_translate': 0.21,
             'absolute_scale': True,
         }
-        if custom_texture is None:
-            logo_attrs['scale'] = (2000.0, 2000.0)
         logo = bs.NodeActor(bs.newnode('image', attrs=logo_attrs))
         self._logo_node = logo.node
         self._word_actors.append(logo)
@@ -985,7 +1116,7 @@ class MainMenuSession(bs.Session):
         # Any ending activity leads us into the main menu one.
         self.setactivity(bs.newactivity(MainMenuActivity))
 
-    @override
-    def on_player_request(self, player: bs.SessionPlayer) -> bool:
-        # Reject all player requests.
-        return False
+    # @override
+    # def on_player_request(self, player: bs.SessionPlayer) -> bool:
+        # # Reject all player requests.
+        # return False

@@ -12,6 +12,17 @@ class ZoeSurvivor(CharacterMoveset):
         "albeit part of the survivors. Zoe can gain her "
         "second life via stabbing the killer about 4 times, "
         "which allows her to respawn upon her death."
+        "\n{'type': 'edit_text', 'color': (0, 0.8, 1)}"
+        "Lore"
+        "{'type': 'edit_text', 'color': 'default'}"
+        "She was the loving wife to her husband, Spaz. After recent"
+        " events unfortunate events, her husband disapeared."
+        " she had to raise her child, Salvatore for years alone."
+        " After Salvatore's 20th birthday. She went to sleep until suddenly"
+        " Waking up in a strange place... She weilded a cursed knife which allows a second life if she stabs the killer. "
+        "But suddenly, She found her husband. No eyes. Metalic texture."
+        "{'type': 'edit_text', 'color': (1, 0, 0)}"
+        " She knew it wasnt him. "
     )
 
     move_speed = 0.85

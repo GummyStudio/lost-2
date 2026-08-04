@@ -31,7 +31,7 @@ class HelpWindow(bui.MainWindow):
             position=(10, height - 50),
             size=(40, 40),
             scale=1.25,
-            label='X',
+            label=bui.charstr(bui.SpecialChar.PLAY_STATION_CROSS_BUTTON),
             extra_touch_border_scale=2.0,
             autoselect=True,
             on_activate_call=self.main_window_back,
@@ -100,8 +100,16 @@ class HelpWindow(bui.MainWindow):
             v -= reg_button_size[1]
     
     def _open_basics(self):
-        bui.screenmessage('Sorry not done yet :(', color=(1, 0, 0))
-        bui.getsound('error').play()
+        # pylint: disable=cyclic-import
+        from bauiv1lib.thebasics import TheBasicsWindow
+
+        # no-op if we're not currently in control.
+        if not self.main_window_has_control():
+            return
+
+        self.main_window_replace(
+            TheBasicsWindow(transition='in_scale')
+        )
     
     def _open_chars(self):
         # pylint: disable=cyclic-import

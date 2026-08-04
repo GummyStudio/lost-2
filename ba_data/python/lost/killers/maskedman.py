@@ -116,7 +116,22 @@ class MaskedManKiller(CharacterMoveset):
     """who is this kid!"""
     is_killer = True
     chase_theme_dir = 'coolone'
-    hitpoints = 2000
+    hitpoints = 170
+    
+    description = (
+        "{'type': 'edit_text', 'color': (1, 0.4, 0)}"
+        '"Just what lies beyond that mask..?"' 
+        "{'type': 'edit_text', 'color': 'default'}"
+        "Easter Bunny is a quite mixed killer, "
+        "having both a ranged ability, a agility ability, "
+        "and a... combo M1???"
+        "{'type': 'edit_text', 'color': (0.6, 0.6, 0.6)}"
+        "...i'd doubt anyone gets the reference for this guy."
+    )
+    
+    ability1_description = "Punches a survivor to deal damage to them. Also resets cooldown if successfully hits."
+    ability2_description = "Charge up and shoot a fast projectile."
+    ability3_description = "Boosts yourself upwards."
 
     move_speed = 0.8
     run_speed = 1.0
@@ -365,10 +380,10 @@ class MaskedManKiller(CharacterMoveset):
         dele = node.getdelegate(bs.Actor)
 
         if self.node_not_punched_nodes(node) and len(self._punched_nodes) == 0:
-            dmg = 15
+            dmg = 10
             self._last_used_1 = (
                 self._last_used_1 - 
-                (self.ability1_cooldown - 0.2)
+                (self.ability1_cooldown - 0.13)
             )
             self.handle_bashes()
             node.handlemessage(

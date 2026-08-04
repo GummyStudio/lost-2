@@ -110,6 +110,8 @@ def register_appearances() -> None:
     t.default_color = (0.6, 0.6, 0.6)
     t.default_highlight = (0.2, 0.2, 0.2)
     t.moveset = killers.SpazKiller
+    t.card_texture = 'spaz'
+    t.oneliner = "The Corrupted"
     bs.app.classic.killers.append('Spaz')
 
 

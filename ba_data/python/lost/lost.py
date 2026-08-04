@@ -159,7 +159,7 @@ class KillerUnDetectedMessage:
     """ send this to any object in need to undetect a killer. """
 
 DEFAULT_ABILITY_DESC = "No description for this ability."
-DEFAULT_CHAR_DESC = "One of the many characters from Lost...\n..whoops, i don't know what this one does. Sorry."
+DEFAULT_CHAR_DESC = "One of the many characters from Lost...{'type': 'separator'}..whoops, i don't know what this one does. Sorry."
 
 class CharacterMoveset:
     """ 
@@ -352,18 +352,21 @@ class CharacterMoveset:
         )  
     
     def do_ability1(self):
+        from bascenev1lib.mainmenu import MainMenuActivity
         if self.can_do_ability1():
-            if not isinstance(bs.getactivity(), Lobby):
+            if not isinstance(bs.getactivity(), (Lobby, MainMenuActivity)):
                 self._last_used_1 = bs.time()
             self.ability1()
     def do_ability2(self):
+        from bascenev1lib.mainmenu import MainMenuActivity
         if self.can_do_ability2():
-            if not isinstance(bs.getactivity(), Lobby):
+            if not isinstance(bs.getactivity(), (Lobby, MainMenuActivity)):
                 self._last_used_2 = bs.time()
             self.ability2()
     def do_ability3(self):
+        from bascenev1lib.mainmenu import MainMenuActivity
         if self.can_do_ability3():
-            if not isinstance(bs.getactivity(), Lobby):
+            if not isinstance(bs.getactivity(), (Lobby, MainMenuActivity)):
                 self._last_used_3 = bs.time()
             self.ability3()
 
@@ -858,7 +861,7 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         super().on_begin()
         # Start us a timer.
         bs.setmusic(bs.MusicType.LOBBY)
-        self.session.start_timer(30)
+        self.session.start_timer(15)
 
     def on_player_join(self, player):
         self.spawn_player(player)
@@ -896,10 +899,6 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         mats = tuple(mats_list)
         spaz.node.materials = mats
         # tada, should be able to hit people now :3
-        
-        
-
-        
     
     def handlemessage(self, msg):
         if isinstance(msg, bs.PlayerDiedMessage):
@@ -910,7 +909,7 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
     # Every activity should have this.
     def on_timer_complete(self):
         if  len(self.players) <= 1:
-            self.session.start_timer(50)
+            self.session.start_timer(40)
         else:
             self.end('roundstart')
 

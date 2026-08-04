@@ -382,12 +382,6 @@ class ClassicAppSubsystem(babase.AppSubsystem):
         if reset_ui:
             babase.app.ui_v1.clear_main_window()
 
-        if isinstance(bascenev1.get_foreground_host_session(), MainMenuSession):
-            # It may be possible we're on the main menu but the screen
-            # is faded so fade back in.
-            babase.fade_screen(True)
-            return
-
         _benchmark.stop_stress_test()  # Stop stress-test if in progress.
 
         # If we're in a host-session, tell them to end. This lets them
