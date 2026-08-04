@@ -132,7 +132,11 @@ class BearSurvivor(CharacterMoveset):
     ability1_icon = babase.charstr(babase.SpecialChar.OCULUS_LOGO)
     ability2_icon = babase.charstr(babase.SpecialChar.FIREBALL)
     ability3_icon = babase.charstr(babase.SpecialChar.PLAY_BUTTON)
-
+    description = "Bernard is a ranged-type sentinel, able to stun the killer if he aims both of his bullets right. He can also support teammates by slowing the killer with his bash."
+    
+    ability1_description = "Start charging your bash and flashing colors. Green is best."
+    ability2_description = "Equip or unequip your shotgun. Land 2 shots to stun for 3 seconds."
+    ability3_description = "The 'Use weapon' button. Use this ability to use the previous two abilities."
 
     def __init__(self, spaz):
         super().__init__(spaz)
