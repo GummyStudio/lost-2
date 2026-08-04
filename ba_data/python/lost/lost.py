@@ -159,7 +159,7 @@ class KillerUnDetectedMessage:
     """ send this to any object in need to undetect a killer. """
 
 DEFAULT_ABILITY_DESC = "No description for this ability."
-DEFAULT_CHAR_DESC = "One of the many characters from Lost...\n..whoops, i don't know what this one does. Sorry."
+DEFAULT_CHAR_DESC = "One of the many characters from Lost...{'type': 'separator'}..whoops, i don't know what this one does. Sorry."
 
 class CharacterMoveset:
     """ 

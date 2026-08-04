@@ -81,6 +81,14 @@ class NinjaKiller(CharacterMoveset):
     is_killer = True
     chase_theme_dir = 'ninjaChasetheme'
     hitpoints = 450
+    
+    description = (
+        "Snake Shadow is a killer that both hits and goes pretty fast, "
+        "but doesn't do as much damage. However, get him angry.. and he'll hit HARD."
+    )
+    ability1_description = "Punches a survivor to deal small damage to them."
+    ability2_description = "Throws a mine that shortly disappears but stuns if it hits anyone."
+    ability3_description = "Initiates rage mode which increases overall speed and punch cooldown."
 
     move_speed = 0.8
     run_speed =  1.0
@@ -92,6 +100,8 @@ class NinjaKiller(CharacterMoveset):
     ability1_icon = babase.charstr(babase.SpecialChar.LEFT_BUTTON)
     ability2_icon = babase.charstr(babase.SpecialChar.FIREBALL)
     ability3_icon = babase.charstr(babase.SpecialChar.OUYA_BUTTON_A)
+    
+    
 
     def __init__(self, spaz):
         super().__init__(spaz)
