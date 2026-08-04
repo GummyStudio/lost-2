@@ -61,13 +61,16 @@ class CharactersWindow(bui.MainWindow):
             4.5, 
             -5,
         ]
+        activity = bs.get_foreground_host_activity()
         calls = [
             lambda: _ba.set_camera_manual(True),
             lambda: _ba.set_camera_position(*camera_pos),
             lambda: _ba.set_camera_target(*camera_target),
+            lambda: activity._word_actors.clear()
         ]
         for call in calls:
-            ba.pushcall(call)
+            with activity.context:
+                call()
         self._widgets_to_clear = []
         super().__init__(
             root_widget=bui.containerwidget(
@@ -413,6 +416,7 @@ class CharactersWindow(bui.MainWindow):
         activity = bs.get_foreground_host_activity()
         with activity.context:
             activity.spawn_character_preview(None)
+            activity._remake_title()
         ba.pushcall(lambda: _ba.set_camera_manual(False))
         super().main_window_back()
     
