@@ -858,7 +858,7 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         super().on_begin()
         # Start us a timer.
         bs.setmusic(bs.MusicType.LOBBY)
-        self.session.start_timer(30)
+        self.session.start_timer(15)
 
     def on_player_join(self, player):
         self.spawn_player(player)
@@ -896,10 +896,6 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         mats = tuple(mats_list)
         spaz.node.materials = mats
         # tada, should be able to hit people now :3
-        
-        
-
-        
     
     def handlemessage(self, msg):
         if isinstance(msg, bs.PlayerDiedMessage):
@@ -910,7 +906,7 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
     # Every activity should have this.
     def on_timer_complete(self):
         if  len(self.players) <= 1:
-            self.session.start_timer(50)
+            self.session.start_timer(40)
         else:
             self.end('roundstart')
 
