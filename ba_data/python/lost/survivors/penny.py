@@ -141,6 +141,17 @@ class PennySurvivor(CharacterMoveset):
     ability2_cooldown = 0.0
     ability3_cooldown = 16
 
+    description = (
+       
+        'Penny is a frail bunny with only 60 HP. But with a max shatterpoints (SP) of 35. '
+        'Starting with 20 that '
+        'can be gained by hitting the killer, the shatterpoints makes a shield that reduces damage by 40% until it is depleted. '
+        ''
+    )
+    ability1_description = "Punches the killer, reducing their speed. If the killer has resonance, they will be stunned for a duration based on resonance and Penny will gain SP."
+    ability3_description = "Penny throws a crystal bomb that explodes after 5 seconds, increasing their resonance by 1."
+
+
     ability1_icon = babase.charstr(babase.SpecialChar.LEFT_BUTTON)
     ability2_icon = ''
     ability3_icon = babase.charstr(babase.SpecialChar.LOGO)
