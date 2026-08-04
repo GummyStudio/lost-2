@@ -9,7 +9,7 @@ class AgentSurvivor(CharacterMoveset):
     hitpoints = 100
     
     description = (
-        "Agent Johnson is a trickster who can fool the killer "
+        "Agent Johnson is a survivalist who can trick the killer "
         "by making clones of himself and controlling them or their behavior."
     )
     ability1_description = "Starts controlling the clone if it is in 'C' mode."

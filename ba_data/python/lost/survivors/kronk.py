@@ -66,8 +66,9 @@ class KronkSurvivor(CharacterMoveset):
     hitpoints = 115
     
     description = (
-        "Kronk is a surprisingly aggressive support class, "
-        "helping his teammates by simply beating up the killer."
+        "Kronk is a sentinel class, "
+        "helping his teammates by simply "
+        "beating up the killer."
         "{'type': 'separator'}"
         "Or well, in this case, just stunning them."
     )

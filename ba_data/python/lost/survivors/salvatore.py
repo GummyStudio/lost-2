@@ -11,7 +11,7 @@ class SalvatoreSurvivor(CharacterMoveset):
         "{'type': 'edit_text', 'color': (0.8, 0.9, 1)}"
         '"You want a REALLY easy character? I\'ll give you a easy character!!"'
         "{'type': 'edit_text', 'color': 'default'}"
-        'Salvatore is a character that is completely solo and relies on 2 very, VERY simple abilities. '
+        'Salvatore is a character that is completely solo (Survivalist) and relies on 2 very, VERY simple abilities. '
         'The only plausible way he can attempt to support his team is by body blocking. '
         'Despite this, both abilities are very useful against the killer on their own.'
     )

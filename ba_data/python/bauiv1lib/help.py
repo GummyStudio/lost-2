@@ -100,8 +100,16 @@ class HelpWindow(bui.MainWindow):
             v -= reg_button_size[1]
     
     def _open_basics(self):
-        bui.screenmessage('Sorry not done yet :(', color=(1, 0, 0))
-        bui.getsound('error').play()
+        # pylint: disable=cyclic-import
+        from bauiv1lib.thebasics import TheBasicsWindow
+
+        # no-op if we're not currently in control.
+        if not self.main_window_has_control():
+            return
+
+        self.main_window_replace(
+            TheBasicsWindow(transition='in_scale')
+        )
     
     def _open_chars(self):
         # pylint: disable=cyclic-import
