@@ -116,7 +116,7 @@ class MaskedManKiller(CharacterMoveset):
     """who is this kid!"""
     is_killer = True
     chase_theme_dir = 'coolone'
-    hitpoints = 2000
+    hitpoints = 170
 
     move_speed = 0.8
     run_speed = 1.0
@@ -368,7 +368,7 @@ class MaskedManKiller(CharacterMoveset):
             dmg = 15
             self._last_used_1 = (
                 self._last_used_1 - 
-                (self.ability1_cooldown - 0.2)
+                (self.ability1_cooldown - 0.5)
             )
             self.handle_bashes()
             node.handlemessage(
