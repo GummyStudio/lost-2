@@ -65,7 +65,9 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         # Alright, let's get some actions here
         spaz = self._preview_spaz
         node = spaz.node
+        # Include some actions that happen randomly for funsies.
         rare_actions = [
+            # explode into a bunch of pieces
             [
                 lambda: spaz.impulse(y=3.5),
                 lambda: bs.timer(0.05, lambda: setattr(node, 'shattered', 2)),
@@ -73,17 +75,24 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             ]
         ]
         actions = [
+            # wave
             [
-                lambda: node.handlemessage('celebrate_r', 700), # Wave
-                lambda: node.handlemessage('jump_sound'), # Make a random jump sound
+                lambda: node.handlemessage('celebrate_r', 700),
+                lambda: node.handlemessage('jump_sound'),
             ],
-            lambda: spaz.on_jump_press(), # Jump
-            lambda: setattr(node, 'punch_pressed', True), # Punch
+            # jump
+            lambda: spaz.on_jump_press(),
+            # punch
             [
-                lambda: node.handlemessage('knockout', 100), # Sleep
-                lambda: node.handlemessage('hurt_sound'), # Make a impact sound
-                lambda: spaz.impulse(x=-0.5, y=2,), # Impulse up
-            ]
+                lambda: setattr(node, 'punch_pressed', True),
+                lambda: bs.timer(0, lambda: setattr(node, 'punch_pressed', False)),
+            ],
+            # hurt thingy
+            [
+                lambda: node.handlemessage('knockout', 100),
+                lambda: node.handlemessage('hurt_sound'),
+                lambda: spaz.impulse(x=-0.5, y=2,),
+            ],
         ]
         if random.random() < 0.01:
             action = random.choice(rare_actions)
