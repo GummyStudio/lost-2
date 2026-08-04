@@ -12,6 +12,10 @@ from typing import TYPE_CHECKING, override
 from bacommon.locale import LocaleResolved
 import bascenev1 as bs
 import bauiv1 as bui
+from bascenev1 import _map
+
+from bascenev1lib.actor.spaz import Spaz
+from bascenev1lib.maps import ThePad
 
 if TYPE_CHECKING:
     from typing import Any
@@ -48,6 +52,85 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         self._news: NewsDisplay | None = None
         self._attract_mode_timer: bs.Timer | None = None
         self._logo_rotate_timer: bs.Timer | None = None
+        self._preview_spaz: Spaz | None = None
+        self._map_type = _map.get_map_class('The Pad')
+        self._map_type.preload()
+    
+    def _preview_spaz_random_action(self):
+        if (
+            not self._preview_spaz 
+            or not self._preview_spaz.node
+        ):
+            return
+        # Alright, let's get some actions here
+        spaz = self._preview_spaz
+        node = spaz.node
+        actions = [
+            [
+                lambda: node.handlemessage('celebrate_r', 700), # Wave
+                lambda: random.choice(node.jump_sounds).play(position=node.position), # Make a random jump sound
+            ],
+            lambda: spaz.on_jump_press(), # Jump
+            lambda: setattr(node, 'punch_pressed', True), # Punch
+        ]
+        action = random.choice(actions)
+        if isinstance(action, list):
+            for i in action:
+                i()
+        else:
+            action()
+    
+    def spawn_character_preview(self, character: str | None):
+        raw_char_str = character
+        if character:
+            character = bs.app.classic.spaz_appearances[character]
+        # Kill the existing previous Spaz
+        if self._preview_spaz:
+            self._preview_spaz.handlemessage(bs.DieMessage(True))
+        if not character:
+            return
+        # Get their color, but if it doesn't exist
+        # then make up a random one
+        color = character.default_color or (
+            random.random(), 
+            random.random(), 
+            random.random()
+        )
+        highlight = character.default_highlight or (
+            random.random(), 
+            random.random(), 
+            random.random()
+        )
+        # Spawn a nice little Spaz.
+        self._preview_spaz = spaz = Spaz(
+            character=raw_char_str,
+            color=color,
+            highlight=highlight,
+            start_invincible=False,
+        )
+        # Tell it to stand somewhere we can see it.
+        spawn_pos = (
+            -0.7,
+            4.5, 
+            3.1,
+        )
+        spaz.handlemessage(bs.StandMessage(spawn_pos))
+        # Schedule a timer for it to do some random action..
+        # (class timer so no repeats happen)
+        self._preview_spaz_random_action_timer = bs.Timer(0.65, 
+            bs.WeakCall(self._preview_spaz_random_action)
+        )
+    
+    @property
+    def map(self) -> _map.Map:
+        """The map being used for this game.
+
+        Raises a bascenev1.MapNotFoundError if the map does not currently
+        exist.
+        """
+        if self._map is None:
+            raise babase.MapNotFoundError
+        return self._map
 
     @override
     def on_transition_in(self) -> None:
@@ -80,46 +163,10 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                 },
             )
         )
-        if not self._did_initial_transition and self.my_name is not None:
-            assert self.my_name.node
-            bs.animate(self.my_name.node, 'opacity', {2.3: 0, 3.0: 1.0})
-
-        # Throw in test build info.
-        self.beta_info = self.beta_info_2 = None
-        if env.variant is type(env.variant).TEST_BUILD:
-            pos = (230, 35)
-            self.beta_info = bs.NodeActor(
-                bs.newnode(
-                    'text',
-                    attrs={
-                        'v_attach': 'center',
-                        'h_align': 'center',
-                        'color': (1, 1, 1, 1),
-                        'shadow': 0.5,
-                        'flatness': 0.5,
-                        'scale': 1,
-                        'vr_depth': -60,
-                        'position': pos,
-                        'text': '',
-                    },
-                )
-            )
-            if not self._did_initial_transition:
-                assert self.beta_info.node
-                bs.animate(self.beta_info.node, 'opacity', {1.3: 0, 1.8: 1.0})
-
-        mesh = bs.getmesh('thePadLevel')
-        trees_mesh = bs.getmesh('trees')
-        bottom_mesh = bs.getmesh('thePadLevelBottom')
-        color_texture = bs.gettexture('thePadLevelColor')
-        trees_texture = bs.gettexture('treesColor')
-        bgtex = bs.gettexture('menuBG')
-        bgmesh = bs.getmesh('thePadBG')
-
-        # Load these last since most platforms don't use them.
-        vr_bottom_fill_mesh = bs.getmesh('thePadVRFillBottom')
-        vr_top_fill_mesh = bs.getmesh('thePadVRFillTop')
-
+        
+        # Make our map.
+        self._map = self._map_type()
+        
         gnode = self.globalsnode
         gnode.camera_mode = 'rotate'
 
@@ -128,76 +175,6 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         gnode.ambient_color = (1.06, 1.04, 1.03)
         gnode.vignette_outer = (0.45, 0.55, 0.54)
         gnode.vignette_inner = (0.99, 0.98, 0.98)
-
-        self.bottom = bs.NodeActor(
-            bs.newnode(
-                'terrain',
-                attrs={
-                    'mesh': bottom_mesh,
-                    'lighting': False,
-                    'reflection': 'soft',
-                    'reflection_scale': [0.45],
-                    'color_texture': color_texture,
-                },
-            )
-        )
-        self.vr_bottom_fill = bs.NodeActor(
-            bs.newnode(
-                'terrain',
-                attrs={
-                    'mesh': vr_bottom_fill_mesh,
-                    'lighting': False,
-                    'vr_only': True,
-                    'color_texture': color_texture,
-                },
-            )
-        )
-        self.vr_top_fill = bs.NodeActor(
-            bs.newnode(
-                'terrain',
-                attrs={
-                    'mesh': vr_top_fill_mesh,
-                    'vr_only': True,
-                    'lighting': False,
-                    'color_texture': bgtex,
-                },
-            )
-        )
-        self.terrain = bs.NodeActor(
-            bs.newnode(
-                'terrain',
-                attrs={
-                    'mesh': mesh,
-                    'color_texture': color_texture,
-                    'reflection': 'soft',
-                    'reflection_scale': [0.3],
-                },
-            )
-        )
-        self.trees = bs.NodeActor(
-            bs.newnode(
-                'terrain',
-                attrs={
-                    'mesh': trees_mesh,
-                    'lighting': False,
-                    'reflection': 'char',
-                    'reflection_scale': [0.1],
-                    'color_texture': trees_texture,
-                },
-            )
-        )
-        self.bgterrain = bs.NodeActor(
-            bs.newnode(
-                'terrain',
-                attrs={
-                    'mesh': bgmesh,
-                    'color': (0.92, 0.91, 0.9),
-                    'lighting': False,
-                    'background': True,
-                    'color_texture': bgtex,
-                },
-            )
-        )
 
         self._update_timer = bs.Timer(0.1, self._update, repeat=True)
         self._update()

@@ -10,7 +10,7 @@ class HelpWindow(bui.MainWindow):
 
     def __init__(
         self,
-        transition: str | None = 'in_right',
+        transition: str | None = 'in_scale',
         origin_widget: bui.Widget | None = None,
     ):
         # pylint: disable=too-many-statements
@@ -30,15 +30,15 @@ class HelpWindow(bui.MainWindow):
             parent=self._root_widget,
             position=(10, height - 50),
             size=(40, 40),
-            scale=1.4,
+            scale=1.25,
             label='X',
             extra_touch_border_scale=2.0,
             autoselect=True,
             on_activate_call=self.main_window_back,
         )
         bui.containerwidget(edit=self._root_widget, cancel_button=btn)
-        h = width * 0.5
-        v = height - 50
+        h = width * 0.5 + 10
+        v = height - 20
         text = (
             "Lost is a game where you and your friends\n"
             "get put together against a single person attempting\n"
@@ -56,8 +56,18 @@ class HelpWindow(bui.MainWindow):
             maxwidth=width - 90
         )
         lines = text.splitlines()
+        img_scale = 0.6
+        img_size = (512 * img_scale, 256 * img_scale)
         v -= 35 * len(lines)
-        v -= 50
+        v -= img_size[1] - 20
+        bui.imagewidget(
+            parent=self._root_widget,
+            texture=bui.gettexture('helpwindow_art'),
+            position=(h - img_size[0] * 0.5, v),
+            size=img_size,
+        )
+        v -= img_size[1] * 0.5 - 20
+        
         # Regular buttons.
         reg_button_size = (width - 60, 60)
         reg_button_scale = 0.9
@@ -66,7 +76,7 @@ class HelpWindow(bui.MainWindow):
         this_buttons = [
             {
                 'label': 'Characters',
-                'callback': print,
+                'callback': self._open_chars,
             },
         ]
         for btn in this_buttons:
@@ -82,6 +92,18 @@ class HelpWindow(bui.MainWindow):
                 textcolor=text_color,
             )
             v -= reg_button_size[1]
+    
+    def _open_chars(self):
+        # pylint: disable=cyclic-import
+        from bauiv1lib.characters import CharactersWindow
+
+        # no-op if we're not currently in control.
+        if not self.main_window_has_control():
+            return
+
+        self.main_window_replace(
+            CharactersWindow(transition='in_right')
+        )
 
     @override
     def get_main_window_state(self) -> bui.MainWindowState:

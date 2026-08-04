@@ -474,6 +474,7 @@ class AsymFactory:
     def __init__(self) -> None:
 
         self.player_death_sound = bs.getsound('playerDeath')
+        self.lms_image_shake_sound = bs.getsound('scoreHit01')
         # Killer material.
         self.killer_material = bs.Material()
 
@@ -1688,32 +1689,37 @@ class Match(bs.Activity[bs.Player, bs.Team]):
                 'position': position,
             },
         )
-        # Add some jitter! 
-        cmb = bs.newnode(
-            'combine', 
-            owner=node, 
-            attrs={'size': 2}
-        )
-        cmb.connectattr('output', node, 'position')
-        keys = {}
-        time_v = 0.0
+        def do_shake():
+            AsymFactory.get().lms_image_shake_sound.play(
+                volume=1.5
+            )
+            cmb = bs.newnode(
+                'combine', 
+                owner=node, 
+                attrs={'size': 2}
+            )
+            cmb.connectattr('output', node, 'position')
+            keys = {}
+            time_v = 0.0
 
-        # Gen some random keys for that stop-motion-y look
-        jitter_scale = 8
-        for _i in range(10):
-            keys[time_v] = (
-                x + (random.random() - 0.5) * 0.7 * jitter_scale
-            )
-            time_v += random.random() * 0.1
-        bs.animate(cmb, 'input0', keys, loop=True)
-        keys = {}
-        time_v = 0.0
-        for _i in range(10):
-            keys[time_v] = (
-                y + (random.random() - 0.5) * 0.7 * jitter_scale
-            )
-            time_v += random.random() * 0.1
-        bs.animate(cmb, 'input1', keys, loop=True)
+            # Gen some random keys for that stop-motion-y look
+            jitter_scale = 14
+            key_amount = 20
+            key_time = 0.03
+            for _i in range(key_amount):
+                keys[time_v] = (
+                    x + (random.random() - 0.5) * 0.7 * jitter_scale
+                )
+                time_v += random.random() * key_time
+            bs.animate(cmb, 'input0', keys, loop=False)
+            keys = {}
+            time_v = 0.0
+            for _i in range(10):
+                keys[time_v] = (
+                    y + (random.random() - 0.5) * 0.7 * jitter_scale
+                )
+                time_v += random.random() * key_time
+            bs.animate(cmb, 'input1', keys, loop=False)
         bs.animate_array(
             node,
             'scale', 2,
@@ -1721,10 +1727,11 @@ class Match(bs.Activity[bs.Player, bs.Team]):
                 0: (0, 0),
                 0.1: size_ex,
                 0.2: size,
-                display_duration - 0.5: size,
+                display_duration - 0.3: size,
                 display_duration: (0, 0),
             }
         )
+        bs.timer(0.1, do_shake)
         bs.timer(display_duration, node.delete)
     
     def handlemessage(self, msg):

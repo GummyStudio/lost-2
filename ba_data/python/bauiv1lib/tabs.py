@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import bauiv1 as bui
+#AAHHHHHHHHHH
+import bascenev1 as bs
 
 if TYPE_CHECKING:
     from typing import Any, Callable
@@ -36,10 +38,17 @@ class TabRow[T]:
         size: tuple[float, float],
         *,
         on_select_call: Callable[[T], None] | None = None,
+        lit_color = (0.5, 0.4, 0.93),
+        unlit_color = (0.50, 0.44, 0.63),
     ) -> None:
         if not tabdefs:
             raise ValueError('At least one tab def is required')
         self.tabs: dict[T, Tab] = {}
+        self._unlit_color = unlit_color
+        self._lit_color = lit_color
+        unlit_text_color = bs.safecolor(
+            tuple(unlit_color * bs.Vec3(0.4))
+        )
         tab_pos_v = pos[1]
         tab_button_width = float(size[0]) / len(tabdefs)
         tab_spacing = (250.0 - tab_button_width) * 0.06
@@ -55,6 +64,8 @@ class TabRow[T]:
                 size=size,
                 label=tab_label,
                 enable_sound=False,
+                color=unlit_color,
+                textcolor=unlit_text_color,
                 on_activate_call=bui.Call(
                     self._tick_and_call, on_select_call, tab_id
                 ),
@@ -64,19 +75,28 @@ class TabRow[T]:
 
     def update_appearance(self, selected_tab_id: T) -> None:
         """Update appearances to make the provided tab appear selected."""
+        lit_color = bs.Vec3(self._lit_color)
+        lit_text_color = bs.safecolor(
+            tuple(lit_color + bs.Vec3(0.4))
+        )
+        
+        unlit_color = bs.Vec3(self._unlit_color)
+        unlit_text_color = bs.safecolor(
+            tuple(unlit_color * bs.Vec3(0.4))
+        )
         for tab_id, tab in self.tabs.items():
             if tab_id == selected_tab_id:
                 bui.buttonwidget(
                     edit=tab.button,
-                    color=(0.5, 0.4, 0.93),
-                    textcolor=(0.82, 0.72, 0.92),
-                )  # lit
+                    color=tuple(lit_color),
+                    textcolor=tuple(lit_text_color),
+                )
             else:
                 bui.buttonwidget(
                     edit=tab.button,
-                    color=(0.50, 0.44, 0.63),
-                    textcolor=(0.65, 0.6, 0.7),
-                )  # unlit
+                    color=tuple(unlit_color),
+                    textcolor=tuple(unlit_text_color),
+                )
 
     def _tick_and_call(
         self, call: Callable[[Any], None] | None, arg: Any
