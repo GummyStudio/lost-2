@@ -322,9 +322,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         gnode.ambient_color = (1.06, 1.04, 1.03)
         gnode.vignette_outer = (0.45, 0.55, 0.54)
         gnode.vignette_inner = (0.99, 0.98, 0.98)
-
-        self._update_timer = bs.Timer(0.1, self._update, repeat=True)
-        self._update()
+        self._remake_title()
 
         # Hopefully this won't hitch but lets space these out anyway.
         bs.add_clean_frame_callback(bs.WeakCall(self._start_preloads))
@@ -342,199 +340,221 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
 
         app.classic.invoke_main_menu_ui()
 
-    def _update(self) -> None:
+    def _remake_title(self) -> None:
         # pylint: disable=too-many-locals
         # pylint: disable=too-many-statements
         app = bs.app
         assert app.classic is not None
-
-        # Update logo in case it changes.
-        if self._logo_node:
-            custom_texture = self._get_custom_logo_tex_name()
-            if custom_texture != self._custom_logo_tex_name:
-                self._custom_logo_tex_name = custom_texture
-                self._logo_node.texture = bs.gettexture(
-                    custom_texture if custom_texture is not None else 'logo'
-                )
-                self._logo_node.mesh_opaque = (
-                    None if custom_texture is not None else bs.getmesh('logo')
-                )
-                self._logo_node.mesh_transparent = (
-                    None
-                    if custom_texture is not None
-                    else bs.getmesh('logoTransparent')
-                )
-
-        # If language has changed, recreate our logo text/graphics.
-        lang = app.lang.language
-        if lang != self._language:
-            self._language = lang
-            y = 20
-            base_scale = 1.1
-            self._word_actors = []
-            base_delay = 0.8
+        y = 20
+        base_scale = 1.2
+        self._word_actors = []
+        base_delay = 0.8
+        delay = base_delay
+        delay_inc = 0.02
+        # disable for the creepypasta ish logo
+        # enable if you want. i dunno :3
+        cool_logo = False
+        # Come on faster after the first time.
+        if self._did_initial_transition:
+            base_delay = 0.0
             delay = base_delay
             delay_inc = 0.02
+        if cool_logo:
+            base_scale += 0.7
+            base_x = -115
+            x = base_x - 20
+            spacing = 100
+            y_extra = -30
+            xv1 = x
+            delay1 = delay
+            for shadow in (True, False):
+                x = xv1
+                delay = delay1
+                delay += delay_inc
+                delay += delay_inc
+                self._make_word(
+                    'L',
+                    x,
+                    y + y_extra,
+                    scale=base_scale,
+                    delay=delay,
+                    vr_depth_offset=14,
+                    shadow=shadow,
+                )
+                x += spacing * 0.85
+                delay += delay_inc
+                x += spacing * 0.85
+                delay += delay_inc
+                self._make_word(
+                    's',
+                    x,
+                    y + y_extra,
+                    delay=delay,
+                    scale=base_scale,
+                    vr_depth_offset=7,
+                    shadow=shadow,
+                )
+                x += spacing * 0.5
+                delay += delay_inc
+                self._make_word(
+                    't',
+                    x,
+                    y + y_extra,
+                    delay=delay,
+                    scale=base_scale,
+                    shadow=shadow,
+                )
+            self._make_logo(
+                xv1 + (spacing * 0.95),
+                y + y_extra + 170,
+                delay=delay,
+                scale=base_scale - 1.35,
+            )
+            two_x = 0
+            two_y = y + y_extra - 10
+            image2 = self._shaky_effect = bs.NodeActor(
+                bs.newnode(
+                    'image',
+                    attrs={
+                        'texture': bs.gettexture('scorchBig'),
+                        'position': (two_x, two_y),
+                        'opacity': 0,
+                    }
+                )
+            )
+            image = self._two_image = bs.NodeActor(
+                bs.newnode(
+                    'image',
+                    attrs={
+                        'texture': bs.gettexture('lost2'),
+                    }
+                )
+            )
+            self._word_actors.append(image)
+            self._word_actors.append(image2)
+            hit_time = 0.1
+            bs.animate_array(
+                image.node,
+                'scale', 2,
+                {
+                    0: (1024 * base_scale, 1024 * base_scale),
+                    hit_time: (64 * base_scale, 64 * base_scale),
+                    hit_time + 0.2: (128 * base_scale, 128 * base_scale),
+                },
+                offset=delay,
+            )
+            bs.animate(
+                image.node,
+                'opacity',
+                {
+                    0: 0,
+                    hit_time - 0.1: 0,
+                    hit_time: 1,
+                },
+                offset=delay,
+            )
+            def make_shaky_effect():
+                if self._did_initial_transition:
+                    return
+                cmb = bs.newnode('combine', owner=image2.node, attrs={'size': 2})
+                cmb.connectattr('output', image2.node, 'scale')
+                end_time = 0.3
+                keys = {
+                    0: 0,
+                    end_time: 1024,
+                }
+                bs.animate(
+                    image2.node,
+                    'opacity',
+                    {
+                        0: 0,
+                        0.01: 0.7,
+                        end_time - 0.1: 0.7,
+                        end_time: 0,
+                    }
+                )
+                        
+                bs.animate(cmb, 'input0', keys)
+                bs.animate(cmb, 'input1', keys)
+            
+            cmb = bs.newnode('combine', owner=image.node, attrs={'size': 2})
+            cmb.connectattr('output', image.node, 'position')
+            keys = {}
+            time_v = 0.0
+            jitter_scale = 5 
+            key_steps = 15
+            speed = 0.07
+            x = two_x
+            y = two_y
 
-            # Come on faster after the first time.
-            if self._did_initial_transition:
-                base_delay = 0.0
-                delay = base_delay
-                delay_inc = 0.02
-
-            # We draw higher in kiosk mode (make sure to test this
-            # when making adjustments) for now we're hard-coded for
-            # a few languages.. should maybe look into generalizing this?..
-            if (
-                app.locale.current_locale.resolved
-                is LocaleResolved.CHINESE_SIMPLIFIED
-            ):
-                base_x = -270.0
-                x = base_x - 20.0
-                spacing = 85.0 * base_scale
-                y_extra = 0.0
-                self._make_logo(
-                    x - 110 + 50,
-                    113 + y + 1.2 * y_extra,
-                    0.34 * base_scale,
-                    delay=base_delay + 0.1,
-                    custom_texture='chTitleChar1',
-                    jitter_scale=2.0,
-                    vr_depth_offset=-30,
+            # Gen some random keys for that stop-motion-y look
+            for _i in range(key_steps):
+                keys[time_v] = (
+                    x + (random.random() - 0.5) * 0.7 * jitter_scale
                 )
-                x += spacing
+                time_v += random.random() * speed
+            bs.animate(cmb, 'input0', keys, loop=True)
+            keys = {}
+            time_v = 0.0
+            for _i in range(key_steps):
+                keys[time_v * self._ts] = (
+                    y + (random.random() - 0.5) * 0.7 * jitter_scale
+                )
+                time_v += random.random() * speed
+            bs.animate(cmb, 'input1', keys, loop=True)
+            bs.timer(delay + hit_time, make_shaky_effect)
+        else:
+            base_x = -90
+            x = base_x - 20
+            spacing = 55 * base_scale
+            y_extra = -20
+            xv1 = x
+            delay1 = delay
+            for shadow in (True, False):
+                x = xv1
+                delay = delay1
                 delay += delay_inc
-                self._make_logo(
-                    x - 10 + 50,
-                    110 + y + 1.2 * y_extra,
-                    0.31 * base_scale,
-                    delay=base_delay + 0.15,
-                    custom_texture='chTitleChar2',
-                    jitter_scale=2.0,
-                    vr_depth_offset=-30,
-                )
-                x += 2.0 * spacing
                 delay += delay_inc
-                self._make_logo(
-                    x + 180 - 140,
-                    110 + y + 1.2 * y_extra,
-                    0.3 * base_scale,
-                    delay=base_delay + 0.25,
-                    custom_texture='chTitleChar3',
-                    jitter_scale=2.0,
-                    vr_depth_offset=-30,
+                self._make_word(
+                    'L',
+                    x,
+                    y + y_extra,
+                    scale=base_scale,
+                    delay=delay,
+                    vr_depth_offset=14,
+                    shadow=shadow,
                 )
-                x += spacing
+                x += spacing * 0.9
                 delay += delay_inc
-                self._make_logo(
-                    x + 241 - 120,
-                    110 + y + 1.2 * y_extra,
-                    0.31 * base_scale,
-                    delay=base_delay + 0.3,
-                    custom_texture='chTitleChar4',
-                    jitter_scale=2.0,
-                    vr_depth_offset=-30,
+                self._make_word(
+                    'o',
+                    x,
+                    y + y_extra,
+                    delay=delay,
+                    scale=base_scale,
+                    shadow=shadow,
                 )
-                x += spacing
+                x += spacing * 0.9
                 delay += delay_inc
-                self._make_logo(
-                    x + 300 - 90,
-                    105 + y + 1.2 * y_extra,
-                    0.34 * base_scale,
-                    delay=base_delay + 0.35,
-                    custom_texture='chTitleChar5',
-                    jitter_scale=2.0,
-                    vr_depth_offset=-30,
+                self._make_word(
+                    's',
+                    x,
+                    y + y_extra,
+                    delay=delay,
+                    scale=base_scale,
+                    vr_depth_offset=7,
+                    shadow=shadow,
                 )
-                self._make_logo(
-                    base_x + 155,
-                    146 + y + 1.2 * y_extra,
-                    0.28 * base_scale,
-                    delay=base_delay + 0.2,
-                    rotate=-7,
+                x += spacing * 0.9
+                delay += delay_inc
+                self._make_word(
+                    't',
+                    x,
+                    y + y_extra,
+                    delay=delay,
+                    scale=base_scale,
+                    shadow=shadow,
                 )
-            else:
-                base_x = -170
-                x = base_x - 20
-                spacing = 55 * base_scale
-                y_extra = 0
-                xv1 = x
-                delay1 = delay
-                for shadow in (True, False):
-                    x = xv1
-                    delay = delay1
-                    self._make_word(
-                        '',
-                        x - 50,
-                        y - 23 + 0.8 * y_extra,
-                        scale=1.3 * base_scale,
-                        delay=delay,
-                        vr_depth_offset=3,
-                        shadow=shadow,
-                    )
-                    x += spacing
-                    delay += delay_inc
-                    self._make_word(
-                        '',
-                        x,
-                        y + y_extra,
-                        delay=delay,
-                        scale=base_scale,
-                        shadow=shadow,
-                    )
-                    x += spacing * 1.25
-                    delay += delay_inc
-                    self._make_word(
-                        '',
-                        x,
-                        y + y_extra - 10,
-                        delay=delay,
-                        scale=1.1 * base_scale,
-                        vr_depth_offset=5,
-                        shadow=shadow,
-                    )
-                    x += spacing * 0.85
-                    delay += delay_inc
-                    self._make_word(
-                        'L',
-                        x,
-                        y - 25 + 0.8 * y_extra,
-                        scale=1.35 * base_scale,
-                        delay=delay,
-                        vr_depth_offset=14,
-                        shadow=shadow,
-                    )
-                    x += spacing
-                    delay += delay_inc
-                    self._make_word(
-                        'o',
-                        x,
-                        y + y_extra,
-                        delay=delay,
-                        scale=base_scale,
-                        shadow=shadow,
-                    )
-                    x += spacing * 0.9
-                    delay += delay_inc
-                    self._make_word(
-                        's',
-                        x,
-                        y + y_extra,
-                        delay=delay,
-                        scale=base_scale,
-                        vr_depth_offset=7,
-                        shadow=shadow,
-                    )
-                    x += spacing * 0.9
-                    delay += delay_inc
-                    self._make_word(
-                        't',
-                        x,
-                        y + y_extra,
-                        delay=delay,
-                        scale=base_scale,
-                        shadow=shadow,
-                    )
                    
 
     def _make_word(
@@ -684,25 +704,15 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         ltex = bs.gettexture(
             custom_texture if custom_texture is not None else 'logo'
         )
-        mopaque = None if custom_texture is not None else bs.getmesh('logo')
-        mtrans = (
-            None
-            if custom_texture is not None
-            else bs.getmesh('logoTransparent')
-        )
         logo_attrs = {
             'position': (x, y),
             'texture': ltex,
-            'mesh_opaque': mopaque,
-            'mesh_transparent': mtrans,
             'vr_depth': -10 + vr_depth_offset,
             'rotate': rotate,
             'attach': 'center',
             'tilt_translate': 0.21,
             'absolute_scale': True,
         }
-        if custom_texture is None:
-            logo_attrs['scale'] = (2000.0, 2000.0)
         logo = bs.NodeActor(bs.newnode('image', attrs=logo_attrs))
         self._logo_node = logo.node
         self._word_actors.append(logo)
