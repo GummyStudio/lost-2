@@ -352,18 +352,21 @@ class CharacterMoveset:
         )  
     
     def do_ability1(self):
+        from bascenev1lib.mainmenu import MainMenuActivity
         if self.can_do_ability1():
-            if not isinstance(bs.getactivity(), Lobby):
+            if not isinstance(bs.getactivity(), (Lobby, MainMenuActivity)):
                 self._last_used_1 = bs.time()
             self.ability1()
     def do_ability2(self):
+        from bascenev1lib.mainmenu import MainMenuActivity
         if self.can_do_ability2():
-            if not isinstance(bs.getactivity(), Lobby):
+            if not isinstance(bs.getactivity(), (Lobby, MainMenuActivity)):
                 self._last_used_2 = bs.time()
             self.ability2()
     def do_ability3(self):
+        from bascenev1lib.mainmenu import MainMenuActivity
         if self.can_do_ability3():
-            if not isinstance(bs.getactivity(), Lobby):
+            if not isinstance(bs.getactivity(), (Lobby, MainMenuActivity)):
                 self._last_used_3 = bs.time()
             self.ability3()
 

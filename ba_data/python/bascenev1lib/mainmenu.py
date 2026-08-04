@@ -60,12 +60,18 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         self._survivor_dummy: Spaz | None = None
         self._killed_dummies = False
         self._chosen_player_char = 'Zoe'
+        self.killers = []
+        self.survivors = []
     
     def on_player_join(self, player):
         self.spawn_player(player)
     
     def on_player_leave(self, player):
         player.actor.handlemessage(bs.DieMessage(how=bs.DeathType.LEFT_GAME))
+    
+    def spawn_player_if_exists(self, player: bs.Player):
+        if player and player.exists():
+            self.spawn_player(player)
     
     def spawn_player(self, player: bs.Player):
         # get a spawn position
@@ -82,6 +88,10 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         spaz.handlemessage(bs.StandMessage(spawn))
         spaz.node.name = player.getname()
         spaz.node.name_color = player.color
+        # ug
+        spaz.node.add_death_action(
+            bs.WeakCall(self.spawn_player_if_exists, player)
+        )
         player.actor = spaz
         assignspazinput(spaz, player)
 
@@ -412,7 +422,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             )
             two_x = 0
             two_y = y + y_extra - 10
-            image2 = self._shaky_effect = bs.NodeActor(
+            image2 = bs.NodeActor(
                 bs.newnode(
                     'image',
                     attrs={
@@ -422,7 +432,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                     }
                 )
             )
-            image = self._two_image = bs.NodeActor(
+            image = bs.NodeActor(
                 bs.newnode(
                     'image',
                     attrs={
