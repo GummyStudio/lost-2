@@ -7,6 +7,14 @@ from bascenev1lib.actor.spaz import Spaz
 class AgentSurvivor(CharacterMoveset):
     is_killer = False
     hitpoints = 100
+    
+    description = (
+        "Agent Johnson is a trickster who can fool the killer "
+        "by making clones of himself and controlling them or their behavior."
+    )
+    ability1_description = "Starts controlling the clone if it is in 'C' mode."
+    ability2_description = "Spawns an exact clone of you that dies shortly."
+    ability3_description = "Changes the mode that the clone will follow."
 
     move_speed = 0.85
     run_speed =  0.9

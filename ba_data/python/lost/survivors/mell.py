@@ -148,6 +148,18 @@ class TauntHitbox(bs.Actor):
 class MellSurvivor(CharacterMoveset):
     is_killer = False
     hitpoints = 80
+    
+    description = (
+        "{'type': 'edit_text', 'color': (0.3, 0.8, 0.3)}"
+        "\"Yeah come get some, you frickin' wuss!\""
+        "{'type': 'edit_text', 'color': 'default'}"
+        "Mel helps his team by both healing them and by stunning the killer."
+        "His stun move can also grant him a speed boost, which makes him both a "
+        "surprisingly agile stunner and a healer."
+    )
+    
+    ability2_description = "Does a 'taunt' that speeds you up and stuns the killer if they're near you during the first second you use it."
+    ability3_description = "Throw a health powerup that heals whoever touches it."
 
     move_speed = 0.85
     run_speed =  0.9

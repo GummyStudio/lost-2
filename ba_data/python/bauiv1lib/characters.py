@@ -124,7 +124,7 @@ class CharactersWindow(bui.MainWindow):
             unlit_color=default_tab_color,
         )
         index_buttons_h = width * 0.5
-        index_buttons_spacing = width - 240
+        index_buttons_spacing = width - 220
         index_buttons_v = height * 0.5
         index_buttons_size = (60, 60)
         index_buttons_scale = 1.2
@@ -148,6 +148,7 @@ class CharactersWindow(bui.MainWindow):
             on_activate_call=self._prev,
             color=index_buttons_color,
             textcolor=index_buttons_textcolor,
+            button_type='square',
         )
         self._right_index_btn = bui.buttonwidget(
             parent=self._root_widget,
@@ -167,11 +168,12 @@ class CharactersWindow(bui.MainWindow):
             on_activate_call=self._next,
             color=index_buttons_color,
             textcolor=index_buttons_textcolor,
+            button_type='square',
         )
         v = height - 10
         self._char_name_text = bui.textwidget(
             parent=self._root_widget,
-            text='SOMEONE',
+            text='',
             h_align='center',
             position=(h, v),
             size=(0, 0),
