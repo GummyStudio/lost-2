@@ -365,7 +365,7 @@ class MaskedManKiller(CharacterMoveset):
         dele = node.getdelegate(bs.Actor)
 
         if self.node_not_punched_nodes(node) and len(self._punched_nodes) == 0:
-            dmg = 15
+            dmg = 10
             self._last_used_1 = (
                 self._last_used_1 - 
                 (self.ability1_cooldown - 0.5)
