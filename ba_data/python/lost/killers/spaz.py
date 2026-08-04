@@ -87,6 +87,20 @@ class SpazKiller(CharacterMoveset):
     ability1_icon = babase.charstr(babase.SpecialChar.LEFT_BUTTON)
     ability2_icon = babase.charstr(babase.SpecialChar.TOP_BUTTON)
     ability3_icon = babase.charstr(babase.SpecialChar.DPAD_CENTER_BUTTON)
+    
+    description = (
+        "Spaz is a very easy to play with killer, with his simple moveset.\n" 
+        "Despite his simplicity, he is still able to kill survivors efficiently.\n\n"
+        "{'type': 'edit_text', 'color': (1, 0.9, 0.9)}"
+        "After being split apart from his companions in the world of Lost, "
+        "Spaz had turned into one of the many people who had been corrupted, "
+        "and now chase people till' their death..."
+    )
+    
+    ability1_description = "Punches a survivor to deal small damage to them."
+    ability2_description = "Dashes forward."
+    ability3_description = "Spawn a land-mine trap that stuns survivors that touch it."
+    
 
     def __init__(self, spaz):
         super().__init__(spaz)

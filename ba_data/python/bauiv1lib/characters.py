@@ -68,6 +68,7 @@ class CharactersWindow(bui.MainWindow):
         ]
         for call in calls:
             ba.pushcall(call)
+        self._widgets_to_clear = []
         super().__init__(
             root_widget=bui.containerwidget(
                 size=(width, height),
@@ -172,7 +173,7 @@ class CharactersWindow(bui.MainWindow):
         scroll_width = width - 50
         # c_height = 35 * len(lines)
         c_height = 700
-        scroll_height = 300
+        scroll_height = 350
         scroll_bottom = v
         scroll_h = h - scroll_width * 0.5
         c_width = scroll_width - 5
@@ -200,6 +201,9 @@ class CharactersWindow(bui.MainWindow):
         self._set_tab(tabdefs[0][0])
     
     def _update_ui(self):
+        for widget in self._widgets_to_clear:
+            widget.delete()
+        self._widgets_to_clear.clear()
         character = self._characters_list[
             self._character_index
         ]
@@ -244,7 +248,7 @@ class CharactersWindow(bui.MainWindow):
             )
         )
         v = total_c_height - 10
-        def_text_color = text_color = (1, 1, 1)
+        def_text_color = text_color = (0.9, 0.9, 0.9)
         # Generate some UI widget types
         # based on the description.
         for chunk in text_w_tags:
@@ -288,6 +292,51 @@ class CharactersWindow(bui.MainWindow):
                 # (used to separate text colors and such)
                 if chunk.get('type') == 'separator':
                     pass
+        v = self._desc_scroll_height - 60
+        # FIXME: should gen this better
+        max_abilities_num = 3
+        icons = [
+            getattr(
+                character.moveset, 
+                f'ability{i + 1}_icon', 
+                None
+            )
+            for i in range(max_abilities_num)
+        ]
+        abilities_nums = [
+            icons.index(i) + 1
+            for i in icons
+            if i is not None
+            and i != ''
+        ]
+        ability_scale = 1.05
+        ability_x_offs = 20
+        for i in abilities_nums:
+            description = getattr(character.moveset, f'ability{i}_description', 'INVALID ABILITY')
+            icon = getattr(character.moveset, f'ability{i}_icon', 'X')
+            description = textwrap.fill(
+                description, 
+                width=text_maxwidth / ability_scale,
+                replace_whitespace=False
+            )
+            icon_widget = bui.textwidget(
+                parent=self._root_widget,
+                position=(0 + ability_x_offs, v),
+                size=(0, 0),
+                text=icon,
+                scale=ability_scale,
+            )
+            description_widget = bui.textwidget(
+                parent=self._root_widget,
+                text=description,
+                size=(0, 0),
+                position=(35 * ability_scale + ability_x_offs, v),
+                scale=ability_scale,
+            )
+            self._widgets_to_clear.append(icon_widget)
+            self._widgets_to_clear.append(description_widget)
+            lines = description.splitlines()
+            v -= text_height * len(lines) * ability_scale + 5
         
     def _add_to_character_index(self, value: int):
         self._character_index = (
