@@ -28,7 +28,6 @@ class MainMenuWindow(bui.MainWindow):
         bui.app.threadpool.submit_no_wait(self._preload_modules)
 
         bui.set_analytics_screen('Main Menu')
-        self._show_remote_app_info_on_first_launch()
 
         uiscale = bui.app.ui_v1.uiscale
 
@@ -95,37 +94,6 @@ class MainMenuWindow(bui.MainWindow):
         import bauiv1lib.gather as _unused10
         import bauiv1lib.watch as _unused11
 
-    def _show_remote_app_info_on_first_launch(self) -> None:
-        app = bui.app
-        assert app.classic is not None
-
-        # The first time the non-in-game menu pops up, we might wanna
-        # show a 'get-remote-app' dialog in front of it.
-        if app.classic.first_main_menu:
-            app.classic.first_main_menu = False
-            try:
-                force_test = False
-                bs.get_local_active_input_devices_count()
-                if (
-                    (app.env.tv or app.classic.platform == 'mac')
-                    and bui.app.config.get('launchCount', 0) <= 1
-                ) or force_test:
-
-                    def _check_show_bs_remote_window() -> None:
-                        try:
-                            from bauiv1lib.getremote import GetBSRemoteWindow
-
-                            bui.getsound('swish').play()
-                            GetBSRemoteWindow()
-                        except Exception:
-                            logging.exception(
-                                'Error showing get-remote window.'
-                            )
-
-                    bui.apptimer(2.5, _check_show_bs_remote_window)
-            except Exception:
-                logging.exception('Error showing get-remote-app info.')
-
     def get_play_button(self) -> bui.Widget | None:
         """Return the play button."""
         return self._play_button
@@ -153,39 +121,6 @@ class MainMenuWindow(bui.MainWindow):
         app = bui.app
         assert app.classic is not None
         uiscale = app.ui_v1.uiscale
-
-        # Temp note about UI changes.
-        if bool(False):
-            bui.textwidget(
-                parent=self._root_widget,
-                position=(
-                    (-400, 400)
-                    if uiscale is bui.UIScale.LARGE
-                    else (
-                        (-270, 320)
-                        if uiscale is bui.UIScale.MEDIUM
-                        else (-280, 280)
-                    )
-                ),
-                size=(0, 0),
-                scale=0.4,
-                flatness=1.0,
-                text=(
-                    'WARNING: This build contains a revamped UI\n'
-                    'which is still a work-in-progress. A number\n'
-                    'of features are not currently functional or\n'
-                    'contain bugs. To go back to the stable legacy UI,\n'
-                    'grab version 1.7.36 from ballistica.net'
-                ),
-                h_align='left',
-                v_align='top',
-            )
-
-        self._have_quit_button = app.classic.platform in (
-            'windows',
-            'mac',
-            'linux',
-        )
 
         if not classic.did_menu_intro:
             self._tdelay = 1.6
@@ -380,7 +315,7 @@ class MainMenuWindow(bui.MainWindow):
             {
                 'label': bui.Lstr(resource=f'{self._r}.quitText'),
                 'callback': self._quit,
-                'color': (1.0, 0.6, 0.6),
+                'back_btn': True,
             },
         ]
         # Regular buttons.
@@ -400,7 +335,7 @@ class MainMenuWindow(bui.MainWindow):
                     text_color[1] + 0.4,
                     text_color[2] + 0.4,
                 )
-            bui.buttonwidget(
+            buttonw = bui.buttonwidget(
                 parent=self._root_widget,
                 position=(h + hoffs + (spacing * this_buttons.index(btn)), v),
                 autoselect=self._use_autoselect,
@@ -412,6 +347,11 @@ class MainMenuWindow(bui.MainWindow):
                 textcolor=text_color,
                 transition_delay=thistdelay,
             )
+            if btn.get('back_btn'):
+                bui.containerwidget(
+                    edit=self._root_widget,
+                    cancel_button=buttonw,
+                )
 
         v -= 5
         bui.textwidget(
