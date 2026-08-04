@@ -31,7 +31,7 @@ class HelpWindow(bui.MainWindow):
             position=(10, height - 50),
             size=(40, 40),
             scale=1.25,
-            label='X',
+            label=bui.charstr(bui.SpecialChar.PLAY_STATION_CROSS_BUTTON),
             extra_touch_border_scale=2.0,
             autoselect=True,
             on_activate_call=self.main_window_back,
