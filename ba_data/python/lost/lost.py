@@ -12,7 +12,6 @@ import _bascenev1; import bascenev1 as bs;_bascenev1.getsession().start_timer(11
 """
 import math
 
-
 HP_COLORS = [
     (0,   (0.3, 0.1, 0.1)),
     (500, (0.9, 0, 0.1)),
@@ -657,6 +656,8 @@ class LostSession(bs.Session):
         self.setactivity(bs.newactivity(Lobby))
         #for map in self.mapss:
         #    map.preload()
+        
+        self.overtime = False # for kronk vs taobao but could be reused for something else? Mayb
 
         
     
@@ -740,8 +741,12 @@ class LostSession(bs.Session):
         if self._timer_node:
             self._timer_node.text = f'{self.format_time(max(0, int(self._time_remaining)))}'
         if self._time_remaining <= 0:
-            self.stop_timer()
             self.timer_complete()
+            if self.overtime == True: # return for taobao's aura moment :imp_smiling:
+                self.overtime = False
+                return
+            self.stop_timer()
+            
 
     def timer_complete(self) -> None:
         # tell the activity the timer has ended.
@@ -1624,7 +1629,7 @@ class Match(bs.Activity[bs.Player, bs.Team]):
                 },
                 ('Taobao Mascot', 'Kronk'): {
                     'texture': 'spaz',
-                    'time': 102,
+                    'time': 97,
                     'music': bs.MusicType.LMS9,
                 },
                 
@@ -1640,6 +1645,8 @@ class Match(bs.Activity[bs.Player, bs.Team]):
                 None,
             )
             if special_lms_dict:
+                if killer_char == "Taobao Mascot" and survivor_char == "Kronk":
+                    self.session.overtime = True
                 time = special_lms_dict.get('time')
                 music = special_lms_dict.get('music')
                 texture = special_lms_dict.get('texture')
@@ -1771,17 +1778,17 @@ class Match(bs.Activity[bs.Player, bs.Team]):
     # Every activity should have this.
     def on_timer_complete(self):
         # stolen co d heh ehe he
-       # killers = list(self.killers)
-        #print(killers)
-        #print(killers[0].actor.character)
-        #killer_char = killers[0].actor.character
-        #survivors = list(self.survivors)
-        #survivor_char = survivors[0].actor.character
-        #if killer_char == "Taobao Mascot" and survivor_char == "Kronk" and not self.aura_done: # holy mother of conditions
-        #    self.session.add_time(22.0) # add aura to the lms.
-        #    bs.screenmessage("YOU'RE NOT GETTING AWAY THAT EASILY.")
-        #    self.aura_done = True
-        #    return
+        if bs.getactivity() == Lobby or bs.getactivity() == ChooserActivity:
+            return
+        killers = list(self.killers)
+        killer_char = killers[0].actor.character
+        survivors = list(self.survivors)
+        survivor_char = survivors[0].actor.character
+        if killer_char == "Taobao Mascot" and survivor_char == "Kronk" and not self.aura_done: # holy mother of conditions
+            self.session.add_time(17.0, (1, 0, 0)) # add aura to the lms.
+            bs.screenmessage("YOU'RE NOT GETTING AWAY THAT EASILY.")
+            self.aura_done = True
+            return
         self.end_survivors_won()
     
     def end(self, results = None, delay = 0, force = False):

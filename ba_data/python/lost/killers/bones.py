@@ -139,19 +139,29 @@ class BonesKiller(CharacterMoveset):
     ability3_icon = babase.charstr(babase.SpecialChar.DELETE) 
 
     description = (
-        "Bones is a snowballer-type killer. Despite his weak basic attack,\n" 
-        "he can pack quite the punch if he uses his cooldowns correctly.\n"
-        "If he places enough Roombas around, he can corner any survivor he finds\n"
-        "with his high velocity and teleportation abilities!"
+        "Bones is a snowballer-type killer. Despite his weak basic attack,"
+        "{'type': 'separator'}"
+        "he can pack quite the punch if he uses his cooldowns correctly."
+        "{'type': 'separator'}"
+        "If he places enough Roombas around, he can corner any survivor he finds"
+        "{'type': 'separator'}"
+        "with his high velocity and teleportation abilities! Although,"
+        "{'type': 'separator'}"
+        "getting stunned will decrease percentage by a LOT, and if they"
+        "{'type': 'separator'}"
+        "hit 0%, they'll explode."
+        "{'type': 'separator'}"
         "{'type': 'edit_text', 'color': (1, 0.9, 0.9)}"
-        "After rising back from the dead in the world of Lost, Bones realized the\n"
-        "weakness of his form, and seeked mechanical upgrades for him to strive in this wicked place.\n"
-        "He attaches whatever technology he can find\nonto his spine, in the hopes that it will help him get stronger.\n"
+        "After rising back from the dead in the world of Lost, Bones realized the"
+        "{'type': 'separator'}"
+        "weakness of his form, and seeked mechanical upgrades for him to strive in this wicked place."
+        "{'type': 'separator'}" # I don't like this, but it'll do.
+        "He attaches whatever technology he can find\nonto his spine, in the hopes that it will help him get stronger."
     )
     
     ability1_description = "Basic punch, 15% damage."
     ability2_description = "Place a roomba. Hitting a basic punch will increase their percentage."
-    ability3_description = "If a roomba has 75% or more charge, teleport to it and gain a massive speed boost!"
+    ability3_description = "If a roomba has 75% or more charge, teleport to it and gain a massive speed boost and damage boost!"
     
     def __init__(self, spaz):
         super().__init__(spaz)
