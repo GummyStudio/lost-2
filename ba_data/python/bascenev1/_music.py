@@ -31,6 +31,7 @@ class MusicType(Enum):
     LMS6 = 'DEAD RINGER'
     LMS7 = 'And The Seraphim Wept'
     LMS8 = 'BLOOD IN THE SNOW'
+    LMS9 = 'NEVERENDING TOMFOOLERY'
     LOBBY = 'lobby'
     
 

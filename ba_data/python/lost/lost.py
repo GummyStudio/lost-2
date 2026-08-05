@@ -624,6 +624,9 @@ class AsymFactory:
             ),
         )
         
+     
+        
+        
 
 
 class LostSession(bs.Session):
@@ -732,13 +735,10 @@ class LostSession(bs.Session):
         if self._timer_node:
             self._timer_node.delete()
             self._timer_node = None
-
     def _tick_timer(self) -> None:
         self._time_remaining -= 1.0
-
         if self._timer_node:
             self._timer_node.text = f'{self.format_time(max(0, int(self._time_remaining)))}'
-
         if self._time_remaining <= 0:
             self.stop_timer()
             self.timer_complete()
@@ -1321,6 +1321,7 @@ class Match(bs.Activity[bs.Player, bs.Team]):
         self.match_data = settings.get('match_data', {})
         # Seriously eric.. no other way to make this better?
         self.killer_target = self.match_data.get('killer_player')
+        self.aura_done = False # for taobao vs kronk lms
         
     def on_expire(self):
         super().on_expire()
@@ -1621,6 +1622,11 @@ class Match(bs.Activity[bs.Player, bs.Team]):
                     'time': 88,
                     'music': bs.MusicType.LMS8,
                 },
+                ('Taobao Mascot', 'Kronk'): {
+                    'texture': 'spaz',
+                    'time': 102,
+                    'music': bs.MusicType.LMS9,
+                },
                 
             }
             # Should update this to support multi-killers.
@@ -1764,6 +1770,18 @@ class Match(bs.Activity[bs.Player, bs.Team]):
 
     # Every activity should have this.
     def on_timer_complete(self):
+        # stolen co d heh ehe he
+       # killers = list(self.killers)
+        #print(killers)
+        #print(killers[0].actor.character)
+        #killer_char = killers[0].actor.character
+        #survivors = list(self.survivors)
+        #survivor_char = survivors[0].actor.character
+        #if killer_char == "Taobao Mascot" and survivor_char == "Kronk" and not self.aura_done: # holy mother of conditions
+        #    self.session.add_time(22.0) # add aura to the lms.
+        #    bs.screenmessage("YOU'RE NOT GETTING AWAY THAT EASILY.")
+        #    self.aura_done = True
+        #    return
         self.end_survivors_won()
     
     def end(self, results = None, delay = 0, force = False):
