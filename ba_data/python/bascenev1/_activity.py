@@ -118,6 +118,9 @@ class Activity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
 
     def on_timer_complete(self):
         raise NotImplementedError('Please change this to do something')
+    
+    def can_timer_tick(self):
+        return (True, 'yup sure can')
 
 
     # end astm stuf

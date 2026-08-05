@@ -499,7 +499,7 @@ class MainMenuWindow(bui.MainWindow):
 
     def _play_press(self) -> None:
         # pylint: disable=cyclic-import
-        from lost.lost import LostSession
+        from lost.session import LostSession
 
         # no-op if we're not currently in control.
         if not self.main_window_has_control():

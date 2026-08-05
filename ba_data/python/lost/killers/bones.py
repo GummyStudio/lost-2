@@ -1,10 +1,10 @@
 from typing import override
 import math
-from lost.lost import (
-    CharacterMoveset, 
-    DamageMessage, 
-    AsymFactory, 
+from lost.factory import (
+    AsymFactory,
+    DamageMessage,
 )
+from lost.character_moveset import CharacterMoveset
 import bascenev1 as bs
 import babase, random
 

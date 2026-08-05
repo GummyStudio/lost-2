@@ -1,8 +1,12 @@
-from lost.lost import (
-    CharacterMoveset, DamageMessage, AsymFactory, 
-    KillerDetectedMessage, StunMessage,
-    SurvivorDetectedMessage, SurvivorUnDetectedMessage
+from lost.factory import (
+    AsymFactory,
+    DamageMessage,
+    StunMessage,
+    KillerDetectedMessage,
+    SurvivorDetectedMessage,
+    SurvivorUnDetectedMessage,
 )
+from lost.character_moveset import CharacterMoveset
 import bascenev1 as bs
 import babase
 from bascenev1lib.actor.popuptext import PopupText

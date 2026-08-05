@@ -1,4 +1,10 @@
-from lost.lost import CharacterMoveset, DamageMessage, AsymFactory, StunMessage, SurvivorDetectedMessage
+from lost.factory import (
+    AsymFactory,
+    DamageMessage,
+    StunMessage,
+    SurvivorDetectedMessage,
+)
+from lost.character_moveset import CharacterMoveset
 import bascenev1 as bs
 import babase
 import math

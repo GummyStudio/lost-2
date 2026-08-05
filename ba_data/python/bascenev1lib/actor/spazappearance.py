@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import bascenev1 as bs
-from lost.lost import CharacterMoveset
+from lost.character_moveset import CharacterMoveset
 
 
 def get_appearances(include_locked: bool = False) -> list[str]:

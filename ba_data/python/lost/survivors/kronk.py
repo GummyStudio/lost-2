@@ -1,6 +1,12 @@
 import bascenev1 as bs
 import babase
-from lost.lost import CharacterMoveset, DamageMessage, AsymFactory, StunMessage, KillerDetectedMessage
+from lost.factory import (
+    AsymFactory,
+    DamageMessage,
+    StunMessage,
+    KillerDetectedMessage,
+)
+from lost.character_moveset import CharacterMoveset
 import random
 
 class DashHitbox(bs.Actor):

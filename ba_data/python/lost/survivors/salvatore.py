@@ -1,4 +1,7 @@
-from lost.lost import CharacterMoveset, AsymFactory
+from lost.factory import (
+    AsymFactory,
+)
+from lost.character_moveset import CharacterMoveset
 import bascenev1 as bs
 import babase, random, math
 from bascenev1lib.actor.popuptext import PopupText

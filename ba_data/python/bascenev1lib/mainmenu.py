@@ -16,7 +16,8 @@ from bascenev1 import _map
 
 from bascenev1lib.actor.spaz import Spaz
 from bascenev1lib.maps import ThePad
-from lost.lost import AsymFactory, assignspazinput
+from lost.factory import AsymFactory
+from lost.functions import assignspazinput
 
 if TYPE_CHECKING:
     from typing import Any

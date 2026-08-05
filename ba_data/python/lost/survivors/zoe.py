@@ -1,4 +1,8 @@
-from lost.lost import CharacterMoveset, DamageMessage, AsymFactory
+from lost.factory import (
+    AsymFactory,
+    DamageMessage,
+)
+from lost.character_moveset import CharacterMoveset
 import bascenev1 as bs
 import babase
 
@@ -16,13 +20,13 @@ class ZoeSurvivor(CharacterMoveset):
         "Lore"
         "{'type': 'edit_text', 'color': 'default'}"
         "She was the loving wife to her husband, Spaz. After recent"
-        " events unfortunate events, her husband disapeared."
-        " she had to raise her child, Salvatore for years alone."
-        " After Salvatore's 20th birthday. She went to sleep until suddenly"
-        " Waking up in a strange place... She weilded a cursed knife which allows a second life if she stabs the killer. "
+        "unfortunate events, her husband disapeared."
+        "she had to raise her child, Salvatore for years alone."
+        "After Salvatore's 20th birthday. She went to sleep until suddenly"
+        "Waking up in a strange place... She wielded a cursed knife which allows a second life if she stabs the killer. "
         "But suddenly, She found her husband. No eyes. Metalic texture."
         "{'type': 'edit_text', 'color': (1, 0, 0)}"
-        " She knew it wasnt him. "
+        " She knew it wasn't him. "
     )
 
     move_speed = 0.85

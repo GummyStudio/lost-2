@@ -1,7 +1,14 @@
 from typing import override, Any
 import bascenev1 as bs # pyright: ignore[reportMissingImports]
 import babase # pyright: ignore[reportMissingImports] # shut UPPPPP vs code dont cry because i only imported survivors folder
-from lost.lost import CharacterMoveset, DamageMessage, AsymFactory, StunMessage, Lobby, KillerDetectedMessage # importing lobby so i can cancel cd
+from lost.factory import (
+    AsymFactory,
+    DamageMessage,
+    StunMessage,
+    KillerDetectedMessage,
+)
+from lost.character_moveset import CharacterMoveset
+from lost.lobby import Lobby
 from bascenev1lib.actor.popuptext import PopupText
 import random
 from bascenev1lib.gameutils import SharedObjects

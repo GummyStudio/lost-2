@@ -133,7 +133,8 @@ class Spaz(bs.Actor):
             materials.append(pam)
             roller_materials.append(pam)
             extras_material.append(pam)
-        from lost.lost import AsymFactory, CharacterMoveset
+        from lost.factory import AsymFactory
+        from lost.character_moveset import CharacterMoveset
         if is_killer:
             playermat = AsymFactory.get().killer_material
         else:
@@ -228,7 +229,8 @@ class Spaz(bs.Actor):
             self._punch_cooldown = BASE_PUNCH_COOLDOWN
         else:
             self._punch_cooldown = factory.punch_cooldown
-        self._jump_cooldown = 1250
+        #self._jump_cooldown = 1250
+        self._jump_cooldown = 0
         self._pickup_cooldown = 0
         self._bomb_cooldown = 0
         self._has_boxing_gloves = False
@@ -925,7 +927,7 @@ class Spaz(bs.Actor):
         # pylint: disable=too-many-statements
         # pylint: disable=too-many-branches
         assert not self.expired
-        from lost.lost import (
+        from lost.factory import (
             DamageMessage, StunMessage
         )
 

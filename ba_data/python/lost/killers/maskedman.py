@@ -1,11 +1,11 @@
 from typing import override, Any
-from lost.lost import (
-    CharacterMoveset, 
-    DamageMessage, 
-    AsymFactory, 
-    StunMessage, 
-    SurvivorDetectedMessage
+from lost.factory import (
+    AsymFactory,
+    DamageMessage,
+    StunMessage,
+    SurvivorDetectedMessage,
 )
+from lost.character_moveset import CharacterMoveset
 from bascenev1lib.gameutils import SharedObjects
 from bascenev1lib.actor.popuptext import PopupText
 import bascenev1 as bs

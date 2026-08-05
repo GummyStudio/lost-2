@@ -296,6 +296,7 @@ def verify_object_death(obj: object) -> None:
 
 
 def _verify_object_death(wref: weakref.ref) -> None:
+    import efro.debug
     obj = wref()
     if obj is None:
         return
@@ -309,8 +310,9 @@ def _verify_object_death(wref: weakref.ref) -> None:
     print(
         f'{Clr.RED}Error: {name} not dying when expected to:'
         f' {Clr.BLD}{obj}{Clr.RST}\n'
-        'See efro.debug for ways to debug this.'
+        'Object\'s references;'
     )
+    efro.debug.printrefs(obj)
 
 
 def storagename(suffix: str | None = None) -> str:

@@ -1,8 +1,15 @@
-from lost.lost import CharacterMoveset, DamageMessage, AsymFactory, StunMessage, SurvivorDetectedMessage
+from lost.factory import (
+    AsymFactory,
+    DamageMessage,
+    StunMessage,
+    SurvivorDetectedMessage,
+)
+from lost.character_moveset import CharacterMoveset
+from bascenev1lib.actor.spaz import Spaz
 import bascenev1 as bs
 import babase
 import math, random
-from bascenev1lib.actor.spaz import Spaz
+
 class DashHitbox(bs.Actor):
     def __init__(self,position, moveset):
         super().__init__()

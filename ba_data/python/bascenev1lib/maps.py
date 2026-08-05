@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, override
 import bascenev1 as bs
 
 from bascenev1lib.gameutils import SharedObjects
+from lost.factory import AsymFactory
 
 if TYPE_CHECKING:
     from typing import Any
@@ -724,8 +725,6 @@ class CragCastle(bs.Map):
             },
         )
 
-        from lost.lost import AsymFactory
-
         self.killer_doors = bs.newnode(
             'terrain',
             attrs={
@@ -1076,7 +1075,6 @@ class StepRightUp(bs.Map):
                 'color_texture': self.preloaddata['bgtex'],
             },
         )
-        from lost.lost import AsymFactory
 
         self.killer_doors = bs.newnode(
             'terrain',
@@ -1422,7 +1420,6 @@ class MonkeyFace(bs.Map):
         #    },
         #)
 
-        from lost.lost import AsymFactory
 
         self.killer_doors = bs.newnode(
             'terrain',
@@ -1502,7 +1499,6 @@ class BlockFortress(bs.Map):
                 'background': True,
                 'color_texture': self.preloaddata['bgtex']
             })
-        from lost.lost import AsymFactory
 
         self.killer_doors = bs.newnode(
             'terrain',
