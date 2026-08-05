@@ -30,6 +30,7 @@ class MusicType(Enum):
     LMS5 = 'Blood Stained Ears'
     LMS6 = 'DEAD RINGER'
     LMS7 = 'And The Seraphim Wept'
+    LMS8 = 'BLOOD IN THE SNOW'
     LOBBY = 'lobby'
     
 

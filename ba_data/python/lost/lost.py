@@ -1616,6 +1616,12 @@ class Match(bs.Activity[bs.Player, bs.Team]):
                     'time': 89,
                     'music': bs.MusicType.LMS7,
                 },
+                ('Bones', 'Bernard'): {
+                    'texture': 'bones-vs-bernard',
+                    'time': 88,
+                    'music': bs.MusicType.LMS8,
+                },
+                
             }
             # Should update this to support multi-killers.
             killers = list(self.killers)
