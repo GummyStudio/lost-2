@@ -43,6 +43,8 @@ class PlusAppSubsystem(AppSubsystem):
         """:meta private:"""
         _baplus.on_app_loading()
         self.accounts.on_app_loading()
+        from lost.startup import startup
+        startup()
 
     @staticmethod
     def add_v1_account_transaction(

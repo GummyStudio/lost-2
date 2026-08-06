@@ -120,6 +120,11 @@ class Activity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         raise NotImplementedError('Please change this to do something')
     
     def can_timer_tick(self):
+        """Return (bool, 'reason') on whether the session's 
+        timer should be able to tick. 'reason' gets shown 
+        as the timer's text IF not allowed to tick. This 
+        also gets called every tick, so you can use this 
+        as a makeshift on_timer_tick function."""
         return (True, 'yup sure can')
 
 

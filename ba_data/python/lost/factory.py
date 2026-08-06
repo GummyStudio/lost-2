@@ -240,7 +240,7 @@ class AsymFactory:
         this_mat = self.button_material = bs.Material()
         # collide with nothin
         this_mat.add_actions(('modify_part_collision', 'collide', False))
-        # destroy when colliding with a wall
+        # only collide with spazito
         this_mat.add_actions(
             conditions=(
                 'they_have_material',

@@ -4,6 +4,101 @@ import random
 from lost.functions import assignspazinput
 from bascenev1lib import maps
 from bascenev1lib.actor.spaz import Spaz
+from lost.gamemodes.default import DefaultMatch
+from lost.ingame_button import IngameButton
+from lost.factory import AsymFactory
+# set to 4 for default,
+# and to 9999 if you want no extra killers
+# set to something like 2 if yous testin
+PLAYER_TO_KILLER_LIMIT = 4
+
+class MapPreview(bs.Actor):
+    def __init__(
+        self, 
+        position: tuple[float],
+        map: bs.Map,
+    ):
+        super().__init__()
+        self._map = map
+        asymf = AsymFactory.get()
+        scale = 1.0
+        self.node: bs.Node = bs.newnode(
+            'prop',
+            delegate=self,
+            attrs={
+                'body': 'box',
+                'body_scale': 0.3,
+                'position': position,
+                'gravity_scale': 0,
+                'materials': [asymf.no_collision,],
+                'shadow_size': 0,
+            },
+        )
+        map_tex = map.get_preview_texture_name()
+        texture = bs.gettexture(map_tex)
+        mesh = bs.getmesh('level_select_ingame')
+        self.mesh_node: bs.Node = bs.newnode(
+            'prop',
+            delegate=self,
+            owner=self.node,
+            attrs={
+                'mesh': mesh,
+                'color_texture': texture,
+                'mesh_scale': scale,
+                'gravity_scale': 0,
+                'body': 'puck',
+                'position': position,
+                'shadow_size': 0,
+                'materials': [asymf.no_collision,],
+            },
+        )
+        text_pos = (
+            position[0], 
+            position[1] + 0.5,
+            position[2]
+        )
+        self.name_text_node = bs.newnode(
+            'text',
+            owner=self.node,
+            attrs={
+                'text': map.name,
+                'scale': 0.012,
+                'in_world': True,
+                'h_align': 'center',
+                'position': text_pos,
+            }
+        )
+        text_pos = (
+            position[0], 
+            position[1] + 0.8,
+            position[2]
+        )
+        self.votes_text_node = bs.newnode(
+            'text',
+            owner=self.node,
+            attrs={
+                'text': '',
+                'scale': 0.011,
+                'in_world': True,
+                'h_align': 'center',
+                'v_align': 'bottom',
+                'position': text_pos,
+                'color': (0.8, 0.9, 1),
+            }
+        )
+        self.node.connectattr('position', self.mesh_node, 'position')
+    
+    def _update_votes(self):
+        activity = self.getactivity()
+        text = activity.get_formatted_votes(self._map)
+        self.votes_text_node.text = text
+    
+    def handlemessage(self, msg):
+        if isinstance(msg, bs.DieMessage):
+            if self.node:
+                self.node.delete()
+        else: 
+            return super().handlemessage(msg)
 
 class Lobby(bs.Activity[bs.Player, bs.Team]):
     """ where the lobby takes place. """
@@ -11,15 +106,156 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
     def __init__(self, settings):
         super().__init__(settings)
         self.killers = []
-        self.killer_player = settings.get('next_killer')
-        if not self.killer_player:
+        self.killer_players = settings.get('next_killers')
+        # By default next gamemode is just the default
+        self.next_gamemode = DefaultMatch
+        # If we have no killer players but some players,
+        # let's pick out some random ones
+        if not self.killer_players:
+            self.killer_players = []
             if self.players:
-                self.killer_player = random.choice(self.players)
+                while len(self.killer_players) < desired:
+                    candidates = [
+                        p for p in self.players
+                        if p not in self.killer_players
+                    ]
+                    # If no candidates are possible, 
+                    # break out the loop
+                    if not candidates:
+                        break
+
+                    new = random.choice(candidates)
+                    self.killer_players.append(new)
+        # By default we have both a 
+        # randomly chosen map and a normal chosen map,
+        # which allows the chosen map to be changed
+        # but still allow the randomly chosen one in case of no voting.
         self.random_chosen_map = self.chosen_map = settings.get('chosen_map')
         self._map = maps.ThePad
         self._map.preload()
+        # Map voting related stuff.
+        # I felt annotation was necessary here. ;3
+        self._map_vote_buttons: dict[bs.Map, IngameButton] = {}
+        self._map_player_votes: dict[bs.Map, bs.Player] = {}
+        self._map_previews: list[MapPreview] = []
+        self._vote_sound = bs.getsound('roblox_beep')
+    
+    def get_formatted_votes(self, map: bs.Map):
+        votes = self._map_player_votes.get(map)
+        names = list(p.getname(full=True, icon=True) for p in votes)
+        return '\n'.join(names)
+    
+    def set_best_map(self):
+        if all(
+            i == 0 for i in 
+            self._map_player_votes.values()
+        ):
+            best_map = self.random_chosen_map
+        else:
+            best_map = max(
+                self._map_player_votes, 
+                key=lambda k: len(self._map_player_votes[k])
+            )
+        self.chosen_map = best_map
+    
+    def _update_votes(self):
+        for map in self._map_player_votes:
+            votes = self._map_player_votes.get(map)
+            for player in votes:
+                if not player.exists():
+                    votes.remove(player)
+        for actor in self._map_previews:
+            actor._update_votes()
+    
+    def player_vote(
+        self, 
+        player: bs.Player, 
+        map: bs.Map,
+    ):
+        actor = player.actor
+        if not actor:
+            return
+        node = player.actor.node
+        if not node:
+            return
+        self._vote_sound.play(
+            position=node.position
+        )
+        votes = self._map_player_votes.get(map)
+        if player not in votes:
+            votes.append(player)
+        elif player in votes:
+            votes.remove(player)
+        else:
+            # I have no idea how you would
+            # run into this in any way
+            raise RuntimeError('How.')
+        for other_map in self._map_player_votes.keys():
+            if other_map != map:
+                votes = self._map_player_votes.get(other_map)
+                if player in votes:
+                    votes.remove(player)
+        self._update_votes()
+        self.set_best_map()
+        
+        
+    def do_nothing(self, player):
+        """DO NOTHING!!!!"""
+    
+    def make_vote_buttons(self):
+        # Clear any existing buttons.
+        if self._map_vote_buttons:
+            self._map_vote_buttons.clear()
+        if self._map_previews:
+            self._map_previews.clear()
+        # Make some calcs to 
+        # center the buttons nicely.
+        x_offs = -1.3
+        button_scale = 0.8
+        button_amount = 3
+        spacing = 2.1
+        y = 3.3
+        total_width = ((button_amount * spacing) * button_scale) + x_offs
+        x = -total_width * 0.5
+        z = -5
+        # Get the maps that this gamemode can have.
+        allowed_maps = self.session.gamemode_maps[self.next_gamemode]
+        for _ in range(button_amount):
+            # Get a map that doesn't have a button.
+            other_maps = list(
+                m for m in allowed_maps
+                if m not in 
+                list(self._map_vote_buttons.keys())
+            )
+            # No other maps? Continue.
+            if other_maps:
+                this_map = random.choice(other_maps)
+            else:
+                continue
+            self._map_player_votes[this_map] = []
+            btn = IngameButton(
+                position=(x, y, z),
+                scale=button_scale,
+            )
+            btn.on_press = bs.WeakCall(
+                self.player_vote, 
+                map=this_map
+            )
+            btn.on_release = bs.WeakCall(self.do_nothing)
+            self._map_vote_buttons[this_map] = btn
+            preview_pos = (
+                x, y + 1.2, z
+            )
+            preview = MapPreview(
+                position=preview_pos,
+                map=this_map,
+            )
+            self._map_previews.append(preview)
+            x += spacing
+
     
     def can_timer_tick(self):
+        # Allow ticking if we have players
         return (bool(self.players), 'waiting for players...')
     
     def on_transition_in(self):
@@ -31,29 +267,50 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         # Start us a timer.
         bs.setmusic(bs.MusicType.LOBBY)
         self.session.start_timer(15)
+        self.make_vote_buttons()
+    
+    def _desired_killers(self) -> int:
+        """Return how many killers there should be."""
+        player_count = len(self.players)
 
+        if player_count == 0:
+            return 0
+        return (player_count + PLAYER_TO_KILLER_LIMIT - 1) // PLAYER_TO_KILLER_LIMIT
+        
     def on_player_join(self, player):
-        # If we have no killer,
-        # choose this one as our own
-        if not self.killer_player:
-            self.killer_player = player
+        desired = self._desired_killers()
+        # If this player joins while we don't
+        # have enough killers, let's add em in
+        if len(self.killer_players) < desired:
+            self.killer_players.append(player)
         self.spawn_player(player)
     
     def on_player_leave(self, player):
-        # If this player was the killer player,
-        # then choose a new one
-        if player is self.killer_player:
-            # Get if other players exist
-            others = list(p for p in self.players if p != player)
-            if others:
-                new = self.killer_player = random.choice(others)
-                # Refresh the new killer to give em their new character
-                new.actor.handlemessage(bs.DieMessage(True))
-                self.spawn_player(new)
-            # If not, killer is none
-            else:
-                self.killer_player = None
-        player.actor.handlemessage(bs.DieMessage(how=bs.DeathType.LEFT_GAME))
+        player.actor.handlemessage(
+            bs.DieMessage(how=bs.DeathType.LEFT_GAME)
+        )
+
+        if player in self.killer_players:
+            self.killer_players.remove(player)
+
+        desired = self._desired_killers()
+
+        while len(self.killer_players) < desired:
+            candidates = [
+                p for p in self.players
+                if p not in self.killer_players
+            ]
+            # If no candidates are possible, 
+            # break out the loop
+            if not candidates:
+                break
+
+            new = random.choice(candidates)
+            self.killer_players.append(new)
+
+            # Refresh them as a killer
+            new.actor.handlemessage(bs.DieMessage(True))
+            self.spawn_player(new)
         
 
     def spawn_player(self, player: bs.Player):
@@ -61,7 +318,7 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         spawn = self.map.get_ffa_start_position([])
         character = player.character
         is_killer = False
-        if player is self.killer_player:
+        if player in self.killer_players:
             character = 'Spaz'
             is_killer = True
        
@@ -92,9 +349,11 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
             bs.pushcall(bs.Call(self.session.start_timer, 35))
         else:
             self.session.chosen_map = self.chosen_map
+            killers = list(p.sessionplayer for p in self.killer_players)
             self.end(
                 {
                     'lobby_end': True,
-                    'killer_player': self.killer_player.sessionplayer
+                    'killer_players': killers,
+                    'next_gamemode': self.next_gamemode,
                 }
             )

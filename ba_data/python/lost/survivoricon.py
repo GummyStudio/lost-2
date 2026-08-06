@@ -96,6 +96,8 @@ class SurvivorIcon(bs.Actor):
         self.update()
     
     def update(self):
+        if not self._spaz:
+            return
         if not self._spaz.is_alive():
             self.node.color = (0.4, 0.4, 0.4)
         self.hp_node.text = '+' + str(

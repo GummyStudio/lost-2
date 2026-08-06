@@ -170,6 +170,8 @@ class LostSession(bs.Session):
                 raise Exception('no LostSession.last_results to go by')
             # Lobby ended, go to killer selection
             if self.last_results.get('lobby_end'):
+                if self.last_results.get('next_gamemode'):
+                    self.next_gamemode = self.last_results.get('next_gamemode')
                 killer_selection = (
                     self.next_gamemode.chooser_activity_override 
                     or ChooserActivity
@@ -183,7 +185,7 @@ class LostSession(bs.Session):
             # Match start
             elif (
                 isinstance(self.last_results, dict) 
-                and 'chosen_killer' in self.last_results
+                and 'chosen_killers' in self.last_results
             ):
                 self.setactivity(
                     bs.newactivity(

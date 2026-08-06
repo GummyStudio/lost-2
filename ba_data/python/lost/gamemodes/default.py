@@ -8,7 +8,7 @@ from bascenev1lib.actor.spaz import Spaz
 from bascenev1lib.actor.zoomtext import ZoomText
 
 class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
-    allow_pausing = False
+    allow_pausing = True
     allow_mid_activity_joins = False
     chooser_activity_override = None
 
@@ -25,7 +25,8 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
         self._survivor_icons = []
         self.match_data = settings.get('match_data', {})
         # Seriously eric.. no other way to make this better?
-        self.killer_target = self.match_data.get('killer_player')
+        self.session_killers = self.match_data.get('killer_players')
+        self.session_killer_characters = self.match_data.get('chosen_killers')
         self.aura_done = False # for taobao vs kronk lms
         # Get a random map from our class type
         self._map = self.session.chosen_map
@@ -45,7 +46,7 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
         scale = 0.8
         icon_size = (64 * scale, 64 * scale)
         spacing = icon_size[0] + 25
-        total_width = (len(self.survivors) - 1) * spacing
+        total_width = (len(self.survivors)) * spacing
         x = -total_width * 0.5
         y = 50
         for survivor in self.survivors:
@@ -65,24 +66,29 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
         super().on_transition_in()
         self.map = self._map()
     
+    def check_end(self):
+        # No survivors, killers win.
+        if len(self.survivors) == 0:
+            self.end_killer_won()
+        # No killers, survivors win.
+        if len(self.killers) == 0:
+            self.end_survivors_won()
+    
     def on_begin(self):
         super().on_begin()
         bs.setmusic(None)
-        self.killer_player = self.killer_target.activityplayer
-        self.killer_character = self.match_data.get(
-            'chosen_killer', 
-            'Spaz'
+        killer_players = list(
+            p.activityplayer for p
+            in self.session_killers
+            if p.exists()
         )
-
-        # No killer... End.
-        if not self.killer_player:
-            self.end_survivors_won()
-            return
-
+        # For now, we just want the first character
+        chars_vals = self.session_killer_characters.values()
+        chars_list = list(chars_vals)
+        self.killer_character = chars_list[0]
         for player in self.players:
-            if player != self.killer_player:
-                self.spawn_player(player, is_killer=False)
-        self.spawn_player(self.killer_player, is_killer=True)
+            is_killer = player in killer_players
+            self.spawn_player(player, is_killer=is_killer)
         self._spawn_survivor_icons()
         self._ui_update_timer = bs.Timer(
             0.1, 
@@ -142,6 +148,7 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
         min_distance = float('inf')
         in_active_chase = False
         spaz_injured = False
+        chasing_survivor = None
 
         # killer nod
         killer_nodes = []
@@ -176,7 +183,8 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
                 if dist < min_distance:
                     min_distance = dist
                     chasing_survivor = survivor
-        spaz_injured = chasing_survivor.actor.hitpoints <= 250
+        if chasing_survivor:
+            spaz_injured = chasing_survivor.actor.hitpoints <= 250
 
         # Volume 
         if in_active_chase:
@@ -195,13 +203,14 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
         current_lowHP_vol = getattr(self.lowHP_music, 'volume', 0)
         # Play different chase music if
         # we have it (and if the spaz is low hp)
-        if spaz_injured and self.lowHP_music:
-            self.chase_music.volume = 0
-            self.lowHP_music.volume = current_lowHP_vol + (target_volume - current_lowHP_vol) * 0.2
-        else:
-            if self.lowHP_music:
-                self.lowHP_music.volume = 0
-            self.chase_music.volume = current_vol + (target_volume - current_vol) * 0.2
+        if chasing_survivor:
+            if spaz_injured and self.lowHP_music:
+                self.chase_music.volume = 0
+                self.lowHP_music.volume = current_lowHP_vol + (target_volume - current_lowHP_vol) * 0.2
+            else:
+                if self.lowHP_music:
+                    self.lowHP_music.volume = 0
+                self.chase_music.volume = current_vol + (target_volume - current_vol) * 0.2
 
     def show_win_text(self, text: str, color: tuple[float] = (1, 1, 1)):
         trail = bs.Vec3(color) - bs.Vec3(0.2)
@@ -263,7 +272,7 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
             self.killers.add(player)
             spawn = self.map.get_ffa_start_position(list(self.survivors))
             # For now hard code it into spaz, sigh..
-            character = self.killer_character
+            character = self.session_killer_characters[player.sessionplayer]
             app = bs.app.classic.spaz_appearances[character]
             color = app.default_color
             highlight = app.default_highlight
@@ -298,24 +307,19 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
     def on_player_leave(self, player):
         # same shenanegins as diemessag
         if player in self.survivors:
-                self.survivors.remove(player)
-                # Survivor, increase timer.
-                self.session.add_time(35, flash_color=(1, 0, 0))
-                self.set_player_dead(player)
-                self.check_lms()
+            self.survivors.remove(player)
+            # Survivor, increase timer.
+            self.session.add_time(35, flash_color=(1, 0, 0))
+            self.set_player_dead(player)
+            self.check_lms()
         if player in self.killers:
             self.killers.remove(player)
-            
-        # No survivors, killers win.
-        if len(self.survivors) == 0:
-            self.end_killer_won()
-        # No killers, survivors win.
-        if len(self.killers) == 0:
-            self.end_survivors_won()
+        self.check_end()
 
     def start_lms(self):
         if self.lms:
             return
+        self.check_end()
         
         if self.chase_music:
             self.chase_music.delete()
