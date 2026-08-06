@@ -50,6 +50,7 @@ class MapPreview(bs.Actor):
                 'position': position,
                 'shadow_size': 0,
                 'materials': [asymf.no_collision,],
+                'reflection_scale': [0.0,],
             },
         )
         text_pos = (
