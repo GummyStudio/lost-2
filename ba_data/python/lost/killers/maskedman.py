@@ -122,15 +122,15 @@ class MaskedManKiller(CharacterMoveset):
         "{'type': 'edit_text', 'color': (1, 0.4, 0)}"
         '"Just what lies beyond that mask..?"' 
         "{'type': 'edit_text', 'color': 'default'}"
-        "Easter Bunny is a quite mixed killer, "
-        "having both a ranged ability, a agility ability, "
+        "Easter Bunny is quite a mixed killer, "
+        "having a ranged ability, a movement ability, "
         "and a... combo M1???"
         "{'type': 'edit_text', 'color': (0.6, 0.6, 0.6)}"
-        "...i'd doubt anyone gets the reference for this guy."
+        "...i doubt anyone gets the reference for this guy."
     )
     
-    ability1_description = "Punches a survivor to deal damage to them. Also resets cooldown if successfully hits."
-    ability2_description = "Charge up and shoot a fast projectile."
+    ability1_description = "Punches a survivor to deal damage to them. Also resets cooldown if it lands."
+    ability2_description = "Charges up and shoot a fast projectile."
     ability3_description = "Boosts yourself upwards."
 
     move_speed = 0.8

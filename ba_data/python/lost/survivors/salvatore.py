@@ -12,14 +12,14 @@ class SalvatoreSurvivor(CharacterMoveset):
     
     description = (
         "{'type': 'edit_text', 'color': (0.8, 0.9, 1)}"
-        '"You want a REALLY easy character? I\'ll give you a easy character!!"'
+        '"You want a REALLY easy character? I\'ll give you an easy character!!"'
         "{'type': 'edit_text', 'color': 'default'}"
-        'Salvatore is a character that is completely solo (Survivalist) and relies on 2 very, VERY simple abilities. '
+        'Salvatore is a solo-focused Survivalist-type survivor and relies on 2 very, VERY simple abilities. '
         'The only plausible way he can attempt to support his team is by body blocking. '
         'Despite this, both abilities are very useful against the killer on their own.'
     )
     ability2_description = "Gives a increase in speed for a period."
-    ability3_description = "Turns you rock solid for a period where you'll take severely less damage but walk way slower."
+    ability3_description = "Turns you rock solid for a period, where you'll take severely less damage but walk way slower."
 
     move_speed = 0.85
     run_speed =  0.9

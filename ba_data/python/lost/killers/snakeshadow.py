@@ -92,9 +92,9 @@ class NinjaKiller(CharacterMoveset):
         "Snake Shadow is a killer that both hits and goes pretty fast, "
         "but doesn't do as much damage. However, get him angry.. and he'll hit HARD."
     )
-    ability1_description = "Punches a survivor to deal small damage to them, or BIG damage if he's mad."
-    ability2_description = "Throws a mine that shortly disappears but stuns if it hits anyone."
-    ability3_description = "Initiates rage mode which increases overall speed and punch cooldown."
+    ability1_description = "Punches forward to deal small damage, or BIG damage if he's enraged."
+    ability2_description = "Throws a mine that shortly disappears but stuns if it hits."
+    ability3_description = "Initiates rage mode, which increases overall speed and punch cooldown."
 
     move_speed = 0.8
     run_speed =  1.0

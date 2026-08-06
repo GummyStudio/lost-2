@@ -272,13 +272,13 @@ class PirateSurvivor(CharacterMoveset):
     hitpoints = 100
     
     description = (
-        "Jack Morgan is a slight support class, "
+        "Jack Morgan is a minor Support survivor, "
         "helping teammates by dropping either dispensers or mines. "
         "{'type': 'separator'}"
         "However, his only way of protecting himself is the not-so-mobile mine, "
         "so don't get too close."
     )
-    ability2_description = "Deploys a dispenser that heals survivors in the range of it."
+    ability2_description = "Deploys a dispenser that heals survivors in its range."
     ability3_description = "Drops a mine that will stun the killer, albeit can be hit to just slow down and damage them."
 
     move_speed = 0.85

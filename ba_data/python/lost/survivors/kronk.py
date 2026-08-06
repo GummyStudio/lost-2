@@ -72,11 +72,11 @@ class KronkSurvivor(CharacterMoveset):
     hitpoints = 115
     
     description = (
-        "Kronk is a sentinel class, "
+        "Kronk is a Sentinel survivor, "
         "helping his teammates by simply "
         "beating up the killer."
         "{'type': 'separator'}"
-        "Or well, in this case, just stunning them."
+        "Or, well... In this case, just stunning them."
     )
     ability1_description = "Punches a killer to slightly stun and damage them."
     ability2_description = "Attempt to block an attack. Punch shortly afterwards to do a parry and strongly stun the killer."

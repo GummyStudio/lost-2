@@ -139,7 +139,27 @@ class BearSurvivor(CharacterMoveset):
     ability1_icon = babase.charstr(babase.SpecialChar.OCULUS_LOGO)
     ability2_icon = babase.charstr(babase.SpecialChar.FIREBALL)
     ability3_icon = babase.charstr(babase.SpecialChar.PLAY_BUTTON)
-    description = "Bernard is a ranged-type sentinel, able to stun the killer if he aims both of his bullets right. He can also support teammates by slowing the killer with his bash."
+    description = (
+        "Bernard is a ranged-type Sentinel, capable of"
+        "{'type': 'separator'}"
+        "using his shotgun to both slow and stun the killer"
+        "{'type': 'separator'}"
+        "from both afar and close range. He can also use his"
+        "{'type': 'separator'}"
+        "bash's impulse to jump through long gaps!"
+        "\n{'type': 'edit_text', 'color': (0, 0.8, 1)}"
+        "Lore"
+        "{'type': 'separator'}"
+        "{'type': 'edit_text', 'color': 'default'}"
+        "im lpace holdering ti. so good. oh yes."
+        "{'type': 'separator'}"
+        "- Bernard, probably."
+        "{'type': 'separator'}"
+        "{'type': 'separator'}"
+        "{'type': 'separator'}"
+        "{'type': 'edit_text', 'color': (1, 0, 0)}"
+        " Evil text "
+    )
     
     ability1_description = "Start charging your bash and flashing colors. Green is best."
     ability2_description = "Equip or unequip your shotgun. Land 2 shots to stun for 3 seconds."

@@ -146,9 +146,9 @@ class PennySurvivor(CharacterMoveset):
 
     description = (
        
-        'Penny is a frail bunny with only 60 HP. But with a max shatterpoints (SP) of 35. '
-        'Starting with 20 that '
-        'can be gained by hitting the killer, the shatterpoints makes a shield that reduces damage by 40% until it is depleted. '
+        'Penny is a frail bunny with only 60 HP, but with a max shatterpoints (SP) of 35. '
+        'Starting with 20SP that '
+        'can be gained by hitting the killer, your shatterpoints make a shield that reduces damage by 40% until it is depleted. '
         ''
     )
     ability1_description = "Punches the killer, reducing their speed. If the killer has resonance, they will be stunned for a duration based on resonance and Penny will gain SP."

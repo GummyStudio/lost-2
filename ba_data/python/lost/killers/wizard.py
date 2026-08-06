@@ -213,6 +213,28 @@ class WizardKiller(CharacterMoveset):
     is_killer = True
     chase_theme_dir = 'MasterpieceofTheRichesV2'
     hitpoints = 250
+    description = (
+        "Wizzy wazard powerzzzz,,,, "
+        "You trap kiler. YOu trap suirveres. "
+        "This edescerepetion, is Wipe. "
+        "Plz replece."
+        "\n{'type': 'edit_text', 'color': (0, 0.8, 1)}"
+        "Lore"
+        "{'type': 'edit_text', 'color': 'default'}"
+        "Hi im wizers and i klls you all"
+        "Nooo wizars stop it."
+        "no lol."
+        "Adn then he kiler everyone!!!"
+        "#NotSoArtfulOfYou "
+        "Ficking wus..ererer."
+        "{'type': 'edit_text', 'color': (1, 0, 0)}"
+        " e. "
+    )
+    ability1_description = "Throw a weak but quick punch."
+    ability2_description = "Place a brick wall that survivors cannot pass through."
+    ability3_description = "Place a music box that slows survivors down. Max: 2"
+
+
 
     move_speed = 0.75
     run_speed = 1.0

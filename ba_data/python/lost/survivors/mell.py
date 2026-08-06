@@ -160,8 +160,8 @@ class MellSurvivor(CharacterMoveset):
         "{'type': 'edit_text', 'color': (0.3, 0.8, 0.3)}"
         "\"Yeah come get some, you frickin' wuss!\""
         "{'type': 'edit_text', 'color': 'default'}"
-        "Mel is a supporter who helps his team by both "
-        "healing them and by stunning the killer. "
+        "Mel is a Support who helps his team by both "
+        "healing them and by shortly stunning the killer. "
         "His stun move can also grant him a speed boost, which makes him both a "
         "surprisingly agile stunner and a healer."
     )

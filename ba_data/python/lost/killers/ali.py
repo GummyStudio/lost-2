@@ -74,6 +74,22 @@ class AliKiller(CharacterMoveset):
     chase_theme_dir = 'aliChase'
     hitpoints = 1111
 
+    description = (
+        "{'type': 'edit_text', 'color': (1, 0.4, 0)}"
+        '"Just what lies beyond that smile..?"' 
+        "{'type': 'edit_text', 'color': 'default'}"
+        "Easter Taobao is quite a mixed killer, "
+        "having a movement ability, a movement ability, "
+        "and a... tricking ability???"
+        "{'type': 'edit_text', 'color': (0.6, 0.6, 0.6)}"
+        "...i doubt no one gets the reference for this guy."
+    )
+    
+    ability1_description = "Punches a survivor to deal damage to them."
+    ability2_description = "Make a clone of yourself, which deals little to no damage, but is useful for tricking survivors."
+    ability3_description = "Rush forwards! If you hit someone twice, you'll slam them for big damage!"
+
+
     move_speed = 0.65
     run_speed =  1.0
 
