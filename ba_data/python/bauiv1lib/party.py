@@ -33,49 +33,54 @@ class PartyWindow(bui.Window):
         self._width = 500
         assert bui.app.classic is not None
         uiscale = bui.app.ui_v1.uiscale
-        self._height = (
-            365
-            if uiscale is bui.UIScale.SMALL
-            else 480 if uiscale is bui.UIScale.MEDIUM else 600
-        )
+        self._height = 500
         self._display_old_msgs = True
+        stack_offset = (400, 110)
+        scale = 1.0
         super().__init__(
             root_widget=bui.containerwidget(
                 size=(self._width, self._height),
-                transition='in_scale',
-                color=(0.40, 0.55, 0.20),
+                transition='in_right',
                 parent=bui.get_special_widget('overlay_stack'),
                 on_outside_click_call=self.close_with_sound,
                 scale_origin_stack_offset=origin,
-                scale=(
-                    1.8
-                    if uiscale is bui.UIScale.SMALL
-                    else 1.3 if uiscale is bui.UIScale.MEDIUM else 0.9
-                ),
-                stack_offset=(
-                    (200, -10)
-                    if uiscale is bui.UIScale.SMALL
-                    else (
-                        (260, 0) if uiscale is bui.UIScale.MEDIUM else (370, 60)
-                    )
-                ),
+                scale=scale,
+                stack_offset=stack_offset,
+                background=False,
             ),
             # We exist in the overlay stack so main-windows being
             # recreated doesn't affect us.
             prevent_main_window_auto_recreate=False,
         )
+        bg_extra_size = 30
+        bg_size = (
+            self._width + bg_extra_size, 
+            self._height + bg_extra_size
+        )
+        bg_pos = (-10, 5)
+        self.background = bui.imagewidget(
+            parent=self._root_widget,
+            size=bg_size,
+            texture=bui.gettexture('softRect2'),
+            color=(0, 0, 0),
+            position=bg_pos,
+            opacity=0.8,
+        )
+        button_tex = bui.gettexture('softRect2')
+        button_color = (0.1, 0.1, 0.1)
+        button_text_color = (0.7, 0.7, 0.7)
 
         self._cancel_button = bui.buttonwidget(
             parent=self._root_widget,
             scale=0.7,
             position=(30, self._height - 47),
             size=(50, 50),
-            label='',
+            label=bui.charstr(bui.SpecialChar.PLAY_STATION_CROSS_BUTTON),
             on_activate_call=self.close,
             autoselect=True,
-            color=(0.45, 0.63, 0.15),
-            icon=bui.gettexture('crossOut'),
-            iconscale=1.2,
+            color=button_color,
+            textcolor=button_text_color,
+            texture=button_tex,
         )
         bui.containerwidget(
             edit=self._root_widget, cancel_button=self._cancel_button
@@ -90,8 +95,9 @@ class PartyWindow(bui.Window):
             autoselect=True,
             button_type='square',
             on_activate_call=bui.WeakCall(self._on_menu_button_press),
-            color=(0.55, 0.73, 0.25),
-            iconscale=1.2,
+            color=button_color,
+            textcolor=button_text_color,
+            texture=button_tex,
         )
 
         info = bs.get_connection_to_host_info_2()
@@ -104,7 +110,7 @@ class PartyWindow(bui.Window):
         self._title_text = bui.textwidget(
             parent=self._root_widget,
             scale=0.9,
-            color=(0.5, 0.7, 0.5),
+            color=button_text_color,
             text=title,
             size=(0, 0),
             position=(self._width * 0.5, self._height - 29),
@@ -119,18 +125,7 @@ class PartyWindow(bui.Window):
             size=(0, 0),
             # color=(0.5, 1.0, 0.5),
             shadow=0.3,
-            position=(self._width * 0.5, self._height - 57),
-            maxwidth=self._width * 0.85,
-            h_align='center',
-            v_align='center',
-        )
-        self._empty_str_2 = bui.textwidget(
-            parent=self._root_widget,
-            scale=0.5,
-            size=(0, 0),
-            color=(0.5, 1.0, 0.5),
-            shadow=0.1,
-            position=(self._width * 0.5, self._height - 75),
+            position=(self._width * 0.5, self._height - 50),
             maxwidth=self._width * 0.85,
             h_align='center',
             v_align='center',
@@ -197,6 +192,9 @@ class PartyWindow(bui.Window):
             autoselect=True,
             position=(self._width - 70, 35),
             on_activate_call=self._send_chat_message,
+            color=button_color,
+            textcolor=button_text_color,
+            texture=button_tex,
         )
 
         bui.textwidget(edit=txt, on_return_press_call=btn.activate)
@@ -269,7 +267,7 @@ class PartyWindow(bui.Window):
             choices.append('add_to_favorites')
             choices_display.append(bui.Lstr(resource='addToFavoritesText'))
 
-        PopupMenuWindow(
+        window = PopupMenuWindow(
             position=self._menu_button.get_screen_space_center(),
             scale=(
                 2.3
@@ -280,6 +278,10 @@ class PartyWindow(bui.Window):
             choices_display=choices_display,
             current_choice='unmute' if is_muted else 'mute',
             delegate=self,
+        )
+        bui.containerwidget(
+            edit=window.root_widget,
+            color=(0.2, 0.2, 0.2),
         )
         self._popup_type = 'menu'
 
@@ -320,10 +322,6 @@ class PartyWindow(bui.Window):
                 bui.textwidget(
                     edit=self._empty_str,
                     text=bui.Lstr(resource=f'{self._r}.emptyText'),
-                )
-                bui.textwidget(
-                    edit=self._empty_str_2,
-                    text=bui.Lstr(resource='gatherWindow.descriptionShortText'),
                 )
                 bui.scrollwidget(
                     edit=self._scrollwidget,
@@ -465,7 +463,6 @@ class PartyWindow(bui.Window):
                                     )
                                 )
                 bui.textwidget(edit=self._empty_str, text='')
-                bui.textwidget(edit=self._empty_str_2, text='')
                 bui.scrollwidget(
                     edit=self._scrollwidget,
                     size=(
@@ -619,7 +616,7 @@ class PartyWindow(bui.Window):
         if not self._root_widget or self._root_widget.transitioning_out:
             return
 
-        bui.containerwidget(edit=self._root_widget, transition='out_scale')
+        bui.containerwidget(edit=self._root_widget, transition='out_right')
 
     def close_with_sound(self) -> None:
         """Close the window and make a lovely sound."""
