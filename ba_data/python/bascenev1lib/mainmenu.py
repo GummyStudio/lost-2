@@ -366,7 +366,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         # enable if you want. i dunno :3
         cool_logo = bs.app.config.get('LOSTCOOLERFUCKINMENU', False)
         # Come on faster after the first time.
-        if self._did_initial_transition and False:
+        if self._did_initial_transition:
             base_delay = 0.0
             delay = base_delay
             delay_inc = 0.02
@@ -713,7 +713,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             custom_texture is None
             and bs.app.classic is not None
             and not self._did_initial_transition
-        ) or True:
+        ):
             jitter()
             cmb = bs.newnode('combine', owner=logo.node, attrs={'size': 2})
 
