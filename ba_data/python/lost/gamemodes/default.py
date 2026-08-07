@@ -328,8 +328,9 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
         # Remove player from roles if they're
         # there just so they die normally.
         for role in self._source_player_roles:
-            if player in role:
-                role.remove(player)
+            role_list = self._source_player_roles.get(role)
+            if player in role_list:
+                role_list.remove(player)
         self.check_end()
 
     def start_lms(self):
