@@ -268,7 +268,6 @@ def register_appearances() -> None:
     bs.app.classic.survivors.append('Kronk')
 
 
-
     # Ninja ##########################################
     t = Appearance('Snake Shadow')
     t.color_texture = 'ninjaColor'
@@ -297,6 +296,8 @@ def register_appearances() -> None:
     t.default_color = (0, 0, 1.0)#(1, 1, 1)
     t.default_highlight = (1, 1, 1)
     t.moveset = killers.NinjaKiller
+    t.card_texture = 'ninja'
+    t.oneliner = "The Speedy"
     bs.app.classic.killers.append('Snake Shadow')
 
      # Bunny ###################################
@@ -326,6 +327,8 @@ def register_appearances() -> None:
     t.default_color = (0.7, 0.4, 0.1)
     t.default_highlight = (0.35, 0.4, 0.5)
     t.moveset = killers.MaskedManKiller
+    t.card_texture = 'bunny'
+    t.oneliner = "The Strong One"
     bs.app.classic.killers.append('Easter Bunny')
     
 
@@ -356,6 +359,7 @@ def register_appearances() -> None:
     t.default_color = (0.2, 0.2, 0.2)
     t.default_highlight = (0.06, 0.15, 0.4)
     t.moveset = killers.WizardKiller
+    t.oneliner = "The Magical"
     bs.app.classic.killers.append('Grumbledorf')
 
     # Bear ###################################
@@ -413,6 +417,7 @@ def register_appearances() -> None:
     t.default_color = (0.6, 0.9, 1)
     t.default_highlight = (0.6, 0.9, 1)
     t.moveset = killers.BonesKiller
+    t.oneliner = "The Rebuilt"
     bs.app.classic.killers.append('Bones')
 
     # Agent ###################################
@@ -500,6 +505,8 @@ def register_appearances() -> None:
     t.default_color = (0.00392, 0.01569, 0.25098)
     t.default_highlight = (1, 1, 1)
     t.moveset = killers.AliKiller
+    t.card_texture = 'ali'
+    t.oneliner = "The Trickster"
     bs.app.classic.killers.append('Taobao Mascot')
 
     # Female Bunny ###################################
