@@ -3,9 +3,22 @@ import bascenev1 as bs
 import random
 from lost.factory import AsymFactory
 from lost.survivoricon import SurvivorIcon
-from lost.functions import assignspazinput
+from lost.functions import assignspazinput, PlayerInfoPlus
 from bascenev1lib.actor.spaz import Spaz
 from bascenev1lib.actor.zoomtext import ZoomText
+
+_WIN_CONFIG = {
+    'survivors': {
+        'text': 'SURVIVORS WIN!',
+        'color': (0.2, 0.5, 1),
+        'sound_attr': 'survivors_won_sound',
+    },
+    'killers': {
+        'text': 'KILLERS WIN!',
+        'color': (1, 0.1, 0),
+        'sound_attr': 'killers_won_sound',
+    },
+}
 
 class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
     allow_pausing = True
@@ -15,6 +28,9 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
     def __init__(self, settings):
         self.session: LostSession
         super().__init__(settings)
+        self._source_player_roles: dict[str, list[bs.Player]] = {}
+        self._source_player_roles['killers'] = []
+        self._source_player_roles['survivors'] = []
         self.survivors: list[bs.Player] = set()
         self.killers: list[bs.Player] = set()
         self.ended = False
@@ -69,10 +85,10 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
     def check_end(self):
         # No survivors, killers win.
         if len(self.survivors) == 0:
-            self.end_killer_won()
+            self.end_game('killers')
         # No killers, survivors win.
         if len(self.killers) == 0:
-            self.end_survivors_won()
+            self.end_game('survivors')
     
     def on_begin(self):
         super().on_begin()
@@ -88,6 +104,9 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
         self.killer_character = chars_list[0]
         for player in self.players:
             is_killer = player in killer_players
+            role = 'killers' if is_killer else 'survivors'
+            role_list = self._source_player_roles.get(role)
+            role_list.append(player)
             self.spawn_player(player, is_killer=is_killer)
         self._spawn_survivor_icons()
         self._ui_update_timer = bs.Timer(
@@ -224,46 +243,38 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
             color=color,
             trailcolor=trail,
         ).autoretain()
+        
+    def end_game(self, whowon: str) -> None:
+        if self.ended:
+            return
+        self.ended = True
+        cfg = _WIN_CONFIG[whowon]
+        
+        winning_players = self._source_player_roles.get(whowon, [])
+        winners: list[PlayerInfoPlus] = []
+        losers: list[PlayerInfoPlus] = []
 
-    def end_survivors_won(self):
-        if self.ended:
-            return
-        self.ended = True
-        results = {
-            'whowon': 'survivors',
-            'winners': list(
-                player.getname(full=True, icon=True) for player in
-                self.survivors
+        for player in self.players:
+            info = PlayerInfoPlus(
+                name=player.getname(full=True, icon=True),
+                color=player.color,
+                highlight=player.highlight,
+                character=player.character,
             )
+
+            if player in winning_players:
+                winners.append(info)
+            else:
+                losers.append(info)
+        results = {
+            'whowon': whowon,
+            'winners': winners,
+            'losers': losers,
         }
         self.session.stop_timer()
         bs.setmusic(None)
-        self.show_win_text(
-            'SURVIVORS WIN!', 
-            color=(0, 0.3, 0.9)
-        )
-        AsymFactory.get().survivors_won_sound.play()
-        bs.timer(2.7, bs.WeakCall(self.end, results=results))
-            
-    
-    def end_killer_won(self):
-        if self.ended:
-            return
-        self.ended = True
-        results = {
-            'whowon': 'killers',
-            'winners': list(
-                player.getname(full=True, icon=True) for player in
-                self.killers
-            )
-        }
-        self.session.stop_timer()
-        bs.setmusic(None)
-        self.show_win_text(
-            'KILLERS WIN!', 
-            color=(1, 0.1, 0)
-        )
-        AsymFactory.get().killers_won_sound.play()
+        self.show_win_text(cfg['text'], color=cfg['color'])
+        getattr(AsymFactory.get(), cfg['sound_attr']).play()
         bs.timer(2.7, bs.WeakCall(self.end, results=results))
 
     def spawn_player(self, player: bs.Player, is_killer=False):
@@ -314,6 +325,11 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
             self.check_lms()
         if player in self.killers:
             self.killers.remove(player)
+        # Remove player from roles if they're
+        # there just so they die normally.
+        for role in self._source_player_roles:
+            if player in role:
+                role.remove(player)
         self.check_end()
 
     def start_lms(self):
@@ -489,12 +505,7 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
             if player in self.killers:
                 self.killers.remove(player)
             
-            # No survivors, killers win.
-            if len(self.survivors) == 0:
-                self.end_killer_won()
-            # No killers, survivors win.
-            if len(self.killers) == 0:
-                self.end_survivors_won()
+            self.check_end()
         else:
             return super().handlemessage(msg)
 
@@ -517,7 +528,9 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
             )
             self.aura_done = True
             return
-        self.end_survivors_won()
+        # time ended successfully!
+        # survivors win then
+        self.end_game('survivors')
     
     def end(self, results = None, delay = 0, force = False):
         bs.setmusic(None)
