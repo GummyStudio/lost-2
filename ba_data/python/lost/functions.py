@@ -1,5 +1,15 @@
 """Helpful functions."""
 import bascenev1 as bs
+from dataclasses import dataclass
+
+@dataclass
+class PlayerInfoPlus:
+    """A class that can hold a lot of player's info."""
+    name: str
+    color: tuple[float]
+    highlight: tuple[float]
+    character: str
+
 def lerp(a, b, t):
     if isinstance(a, (tuple, list)):
         return tuple(

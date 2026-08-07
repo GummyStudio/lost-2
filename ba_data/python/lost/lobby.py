@@ -11,6 +11,11 @@ from lost.factory import AsymFactory
 # and to 9999 if you want no extra killers
 # set to something like 2 if yous testin
 PLAYER_TO_KILLER_LIMIT = 4
+_DEFAULT_RESULT_COLORS = {
+    'survivors': (0.2, 0.4, 0.9),
+    'killers': (0.9, 0.2, 0.1),
+}
+_DEFAULT_RESULT_COLOR = (1, 1, 1)
 
 class MapPreview(bs.Actor):
     def __init__(
@@ -108,6 +113,7 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         super().__init__(settings)
         self.killers = []
         self.killer_players = settings.get('next_killers')
+        self._round_results = settings.get('last_results')
         # By default next gamemode is just the default
         self.next_gamemode = DefaultMatch
         # If we have no killer players but some players,
@@ -257,7 +263,7 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
     
     def can_timer_tick(self):
         # Allow ticking if we have players
-        return (bool(self.players), 'waiting for players...')
+        return (len(self.players) > 1, 'waiting for players...')
     
     def on_transition_in(self):
         super().on_transition_in()
@@ -269,6 +275,82 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         bs.setmusic(bs.MusicType.LOBBY)
         self.session.start_timer(15)
         self.make_vote_buttons()
+        # If we have the last round's results,
+        # let's display them
+        if self._round_results:
+            self._display_round_results(self._round_results)
+
+    def _display_round_results(
+        self,
+        results: dict,
+        *,
+        x: float = 610,
+        y: float = 310,
+        x_attach: str = 'left',
+        y_attach: str = 'top',
+        scale: float = 0.8,
+        flatness: float = 0.6,
+        shadow: float = 0.3,
+        y_spacing: float = 30,
+        x_spacing: float = 150,
+        colors: dict | None = None,
+    ) -> None:
+        losers = results.get('losers', ())
+        winners = results.get('winners', ())
+        whowon = results.get('whowon')
+
+        colors = colors or _DEFAULT_RESULT_COLORS
+        color = results.get('color') or colors.get(whowon, _DEFAULT_RESULT_COLOR)
+
+        # Normalize spacing/position based on attach points instead of
+        # hardcoding sign flips inline.
+        x = -x if x_attach == 'left' else x if x_attach == 'right' else x * 0.5
+        y = -y if y_attach == 'bottom' else y
+        y_spacing = (y_spacing * scale) * (-1 if y_attach == 'bottom' else 1)
+        x_spacing = (x_spacing * scale) * (-1 if x_attach == 'right' else 1)
+
+        name_maxwidth = abs(x_spacing) - 30
+
+        base_attrs = {
+            'h_align': x_attach,
+            'scale': scale,
+            'shadow': shadow,
+            'flatness': flatness,
+        }
+
+        def _add_text(text, pos, *, extra=None, use_color=False):
+            attrs = dict(base_attrs, text=text, position=pos)
+            if use_color:
+                attrs['color'] = color
+            if extra:
+                attrs.update(extra)
+            return bs.newnode('text', attrs=attrs)
+
+        def _add_column(header, infos, x_pos, y_start):
+            y_pos = y_start
+            _add_text(header, (x_pos, y_pos))
+            y_pos -= y_spacing
+            for info in infos:
+                _add_text(
+                    info.name,
+                    (x_pos, y_pos),
+                    extra={
+                        'maxwidth': name_maxwidth,
+                        'color': info.color, 
+                    },
+                )
+                y_pos -= y_spacing
+            return y_pos
+
+        _add_text(
+            f'{whowon.upper()} won the last round!' if whowon else 'Round complete!',
+            (x, y),
+            use_color=True,
+        )
+        y -= y_spacing
+
+        _add_column('- WINNERS -', winners, x, y)
+        _add_column('- LOSERS -', losers, x + x_spacing, y)
     
     def _desired_killers(self) -> int:
         """Return how many killers there should be."""
