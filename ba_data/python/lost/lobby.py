@@ -22,11 +22,11 @@ class MapPreview(bs.Actor):
         self, 
         position: tuple[float],
         map: bs.Map,
+        scale: int = 1.0,
     ):
         super().__init__()
         self._map = map
         asymf = AsymFactory.get()
-        scale = 1.0
         self.node: bs.Node = bs.newnode(
             'prop',
             delegate=self,

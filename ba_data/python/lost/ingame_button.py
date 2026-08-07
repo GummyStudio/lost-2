@@ -102,6 +102,7 @@ class IngameButton(bs.Actor):
     
     def handlemessage(self, msg):
         if isinstance(msg, IngameButtonPressedMessage):
+            # See if the spaz exists
             try:
                 node = bs.getcollision().opposingnode
             except:
@@ -109,18 +110,23 @@ class IngameButton(bs.Actor):
             actor = node.getdelegate(Spaz)
             if not node or not actor:
                 return
+            # Alright, let's take their player
             player = actor.source_player
             if not player:
                 return
+            # Make a weakref so we don't strongref
             wref = weakref.ref(player)
             if not msg.state:
                 self.animate_release(player)
+            # If we already got a press from this player,
+            # assume it was a accidental re-press (bouncy?) and no-op
             if wref in self._last_players:
                 return
             self._last_players.append(wref)
             if msg.state:
                 self.animate_press(player)
-            bs.timer(0.3, bs.WeakCall(self.reset_allow_press, wref))
+            # Ok... re-allow presses after a while
+            bs.timer(0.6, bs.WeakCall(self.reset_allow_press, wref))
             
             
         elif isinstance(msg, bs.DieMessage):
