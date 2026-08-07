@@ -233,7 +233,7 @@ class MaskedManKiller(CharacterMoveset):
         
         self.spaz.node.punch_pressed = True
         try: 
-            bs.timer(0, bs.Call(self.spaz.safesetattr, self.spaz.node, 'punch_pressed', False))
+            bs.timer(0.1, bs.Call(self.spaz.safesetattr, self.spaz.node, 'punch_pressed', False))
         except: 
             pass
     
@@ -345,7 +345,7 @@ class MaskedManKiller(CharacterMoveset):
             self.reset_bashes()
             self._last_used_1 = (
                 self._last_used_1 - 
-                (self.ability1_cooldown - 6)
+                (self.ability1_cooldown - 2)
             )
             self.play('cheer')
         sfx_list = self.current_bash_sound_list
