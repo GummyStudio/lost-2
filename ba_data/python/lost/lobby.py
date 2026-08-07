@@ -252,6 +252,33 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
     def on_transition_in(self):
         super().on_transition_in()
         self.map = self._map()
+        # If we have the last round's results,
+        # let's display them
+        if self._round_results:
+            self._display_round_results(self._round_results)
+        # If we have no killer players but some players,
+        # let's pick out some random ones
+        def do_check():
+            desired = self._desired_killers()
+            if not self.killer_players:
+                if self.players:
+                    while len(self.killer_players) < desired:
+                        candidates = [
+                            p for p in self.players
+                            if p not in self.killer_players
+                        ]
+                        # If no candidates are possible, 
+                        # break out the loop
+                        if not candidates:
+                            break
+
+                        new = random.choice(candidates)
+                        self.killer_players.append(new)
+                        if new.actor:
+                            new.actor.handlemessage(bs.DieMessage(True))
+                            self.spawn_player(new)
+        # WHY THE FUCK
+        bs.timer(0.1, do_check)
     
     def on_begin(self):
         super().on_begin()
@@ -259,28 +286,7 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         bs.setmusic(bs.MusicType.LOBBY)
         self.session.start_timer(15)
         self.make_vote_buttons()
-        # If we have the last round's results,
-        # let's display them
-        if self._round_results:
-            self._display_round_results(self._round_results)
-        # If we have no killer players but some players,
-        # let's pick out some random ones
-        if not self.killer_players:
-            desired = self._desired_killers()
-            if self.players:
-                while len(self.killer_players) < desired:
-                    candidates = [
-                        p for p in self.players
-                        if p not in self.killer_players
-                    ]
-                    # If no candidates are possible, 
-                    # break out the loop
-                    if not candidates:
-                        break
-
-                    new = random.choice(candidates)
-                    self.killer_players.append(new)
-            self._decided_killers = True
+        self._decided_killers = True
 
     def _display_round_results(
         self,
@@ -407,7 +413,7 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         character = player.character
         is_killer = False
         if player in self.killer_players:
-            character = 'Spaz'
+            character = random.choice(bs.app.classic.killers)
             is_killer = True
        
         spaz = Spaz(
