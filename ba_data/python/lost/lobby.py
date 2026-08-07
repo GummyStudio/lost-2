@@ -10,7 +10,7 @@ from lost.factory import AsymFactory
 # set to 4 for default,
 # and to 9999 if you want no extra killers
 # set to something like 2 if yous testin
-PLAYER_TO_KILLER_LIMIT = 4
+PLAYER_TO_KILLER_LIMIT = 9999
 _DEFAULT_RESULT_COLORS = {
     'survivors': (0.2, 0.4, 0.9),
     'killers': (0.9, 0.2, 0.1),
