@@ -284,7 +284,7 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         super().on_begin()
         # Start us a timer.
         bs.setmusic(bs.MusicType.LOBBY)
-        self.session.start_timer(15)
+        self.session.start_timer(20)
         self.make_vote_buttons()
         self._decided_killers = True
 
