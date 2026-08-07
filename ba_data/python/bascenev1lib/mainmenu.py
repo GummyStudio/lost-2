@@ -366,63 +366,71 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         # enable if you want. i dunno :3
         cool_logo = bs.app.config.get('LOSTCOOLERFUCKINMENU', False)
         # Come on faster after the first time.
-        if self._did_initial_transition:
+        if self._did_initial_transition and False:
             base_delay = 0.0
             delay = base_delay
             delay_inc = 0.02
         if cool_logo:
-            base_scale += 0.7
-            base_x = -115
+            base_scale = 2.3
+            base_x = -230
             x = base_x - 20
-            spacing = 100
-            y_extra = -30
+            spacing = 170
+            y_extra = 120
             xv1 = x
             delay1 = delay
-            for shadow in (True, False):
-                x = xv1
-                delay = delay1
-                delay += delay_inc
-                delay += delay_inc
-                self._make_word(
-                    'L',
-                    x,
-                    y + y_extra,
-                    scale=base_scale,
-                    delay=delay,
-                    vr_depth_offset=14,
-                    shadow=shadow,
-                )
-                x += spacing * 0.85
-                delay += delay_inc
-                x += spacing * 0.85
-                delay += delay_inc
-                self._make_word(
-                    's',
-                    x,
-                    y + y_extra,
-                    delay=delay,
-                    scale=base_scale,
-                    vr_depth_offset=7,
-                    shadow=shadow,
-                )
-                x += spacing * 0.5
-                delay += delay_inc
-                self._make_word(
-                    't',
-                    x,
-                    y + y_extra,
-                    delay=delay,
-                    scale=base_scale,
-                    shadow=shadow,
-                )
-            self._make_logo(
-                xv1 + (spacing * 0.95),
-                y + y_extra + 170,
+            x = xv1
+            delay = delay1
+            jitter_scale = 3
+            delay += delay_inc
+            shadow = False
+            self._make_word(
+                'titleL',
+                x,
+                y + y_extra,
+                scale=base_scale,
                 delay=delay,
-                scale=base_scale - 1.35,
+                vr_depth_offset=14,
+                shadow=shadow,
+                jitter_scale=jitter_scale,
             )
+            x += spacing
+            if not shadow:
+                logo_x = x
+            delay += delay_inc
+            x += spacing
+            delay += delay_inc
+            self._make_word(
+                'titleS',
+                x,
+                y + y_extra,
+                delay=delay,
+                scale=base_scale,
+                vr_depth_offset=7,
+                shadow=shadow,
+                jitter_scale=jitter_scale,
+            )
+            x += spacing
+            delay += delay_inc
+            self._make_word(
+                'titleT',
+                x,
+                y + y_extra,
+                delay=delay,
+                scale=base_scale,
+                shadow=shadow,
+                jitter_scale=jitter_scale,
+            )
+            self._make_logo(
+                logo_x,
+                y + y_extra,
+                delay=delay1,
+                scale=base_scale,
+                jitter_scale=jitter_scale,
+            )
+            delay += delay_inc
+            delay += delay_inc
             two_x = 0
-            two_y = y + y_extra - 10
+            two_y = y + y_extra - 120
             image2 = bs.NodeActor(
                 bs.newnode(
                     'image',
@@ -492,7 +500,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             cmb.connectattr('output', image.node, 'position')
             keys = {}
             time_v = 0.0
-            jitter_scale = 5 
+            jitter_scale = jitter_scale * 1.5
             key_steps = 15
             speed = 0.07
             x = two_x
@@ -574,118 +582,64 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         x: float,
         y: float,
         *,
+        jitter_scale: float = 1.0,
         scale: float = 1.0,
         delay: float = 0.0,
         vr_depth_offset: float = 0.0,
         shadow: bool = False,
     ) -> None:
-        # pylint: disable=too-many-branches
         # pylint: disable=too-many-locals
-        # pylint: disable=too-many-statements
-        if shadow:
-            word_obj = bs.NodeActor(
-                bs.newnode(
-                    'text',
-                    attrs={
-                        'position': (x, y),
-                        'big': True,
-                        'color': (0.0, 0.0, 0.2, 0.08),
-                        'tilt_translate': 0.09,
-                        'opacity_scales_shadow': False,
-                        'shadow': 0.2,
-                        'vr_depth': -130,
-                        'v_align': 'center',
-                        'project_scale': 0.97 * scale,
-                        'scale': 1.0,
-                        'text': word,
-                    },
-                )
-            )
-            self._word_actors.append(word_obj)
-        else:
-            word_obj = bs.NodeActor(
-                bs.newnode(
-                    'text',
-                    attrs={
-                        'position': (x, y),
-                        'big': True,
-                        'color': (1.2, 1.15, 1.15, 1.0),
-                        'tilt_translate': 0.11,
-                        'shadow': 0.2,
-                        'vr_depth': -40 + vr_depth_offset,
-                        'v_align': 'center',
-                        'project_scale': scale,
-                        'scale': 1.0,
-                        'text': word,
-                    },
-                )
-            )
-            self._word_actors.append(word_obj)
+        ltex = bs.gettexture(word)
+        logo_attrs = {
+            'position': (x, y),
+            'texture': ltex,
+            'vr_depth': -10 + vr_depth_offset,
+            'attach': 'center',
+            'tilt_translate': 0.21,
+            'absolute_scale': True,
+        }
+        logo = bs.NodeActor(bs.newnode('image', attrs=logo_attrs))
+        self._logo_node = logo.node
+        self._word_actors.append(logo)
 
         # Add a bit of stop-motion-y jitter to the logo (unless we're in
         # VR mode in which case its best to leave things still).
-        if not bs.app.env.vr:
-            cmb: bs.Node | None
-            cmb2: bs.Node | None
-            if not shadow:
-                cmb = bs.newnode(
-                    'combine', owner=word_obj.node, attrs={'size': 2}
-                )
-            else:
-                cmb = None
-            if shadow:
-                cmb2 = bs.newnode(
-                    'combine', owner=word_obj.node, attrs={'size': 2}
-                )
-            else:
-                cmb2 = None
-            if not shadow:
-                assert cmb and word_obj.node
-                cmb.connectattr('output', word_obj.node, 'position')
-            if shadow:
-                assert cmb2 and word_obj.node
-                cmb2.connectattr('output', word_obj.node, 'position')
-            keys = {}
-            keys2 = {}
-            time_v = 0.0
-            for _i in range(10):
-                val = x + (random.random() - 0.5) * 0.8
-                val2 = x + (random.random() - 0.5) * 0.8
-                keys[time_v * self._ts] = val
-                keys2[time_v * self._ts] = val2 + 5
-                time_v += random.random() * 0.1
-            if cmb is not None:
-                bs.animate(cmb, 'input0', keys, loop=True)
-            if cmb2 is not None:
-                bs.animate(cmb2, 'input0', keys2, loop=True)
-            keys = {}
-            keys2 = {}
-            time_v = 0
-            for _i in range(10):
-                val = y + (random.random() - 0.5) * 0.8
-                val2 = y + (random.random() - 0.5) * 0.8
-                keys[time_v * self._ts] = val
-                keys2[time_v * self._ts] = val2 - 9
-                time_v += random.random() * 0.1
-            if cmb is not None:
-                bs.animate(cmb, 'input1', keys, loop=True)
-            if cmb2 is not None:
-                bs.animate(cmb2, 'input1', keys2, loop=True)
+        assert logo.node
 
-        if not shadow:
-            assert word_obj.node
-            bs.animate(
-                word_obj.node,
-                'project_scale',
-                {delay: 0.0, delay + 0.1: scale * 1.1, delay + 0.2: scale},
-            )
-        else:
-            assert word_obj.node
-            bs.animate(
-                word_obj.node,
-                'project_scale',
-                {delay: 0.0, delay + 0.1: scale * 1.1, delay + 0.2: scale},
-            )
+        def jitter() -> None:
+            if not bs.app.env.vr:
+                cmb = bs.newnode('combine', owner=logo.node, attrs={'size': 2})
+                cmb.connectattr('output', logo.node, 'position')
+                keys = {}
+                time_v = 0.0
+
+                # Gen some random keys for that stop-motion-y look
+                for _i in range(10):
+                    keys[time_v] = (
+                        x + (random.random() - 0.5) * 0.7 * jitter_scale
+                    )
+                    time_v += random.random() * 0.1
+                bs.animate(cmb, 'input0', keys, loop=True)
+                keys = {}
+                time_v = 0.0
+                for _i in range(10):
+                    keys[time_v * self._ts] = (
+                        y + (random.random() - 0.5) * 0.7 * jitter_scale
+                    )
+                    time_v += random.random() * 0.1
+                bs.animate(cmb, 'input1', keys, loop=True)
+        # For all other cases do a simple scale up animation.
+        jitter()
+        cmb = bs.newnode('combine', owner=logo.node, attrs={'size': 2})
+
+        keys = {
+            delay: 0.0,
+            delay + 0.1: 180.0 * scale,
+            delay + 0.2: 128.0 * scale,
+        }
+        bs.animate(cmb, 'input0', keys)
+        bs.animate(cmb, 'input1', keys)
+        cmb.connectattr('output', logo.node, 'scale')
 
     def _get_custom_logo_tex_name(self) -> str | None:
         plus = bui.app.plus
@@ -695,7 +649,6 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             return 'logoEaster'
         return None
 
-    # Pop the logo and menu in.
     def _make_logo(
         self,
         x: float,
@@ -760,18 +713,18 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
             custom_texture is None
             and bs.app.classic is not None
             and not self._did_initial_transition
-        ):
+        ) or True:
             jitter()
             cmb = bs.newnode('combine', owner=logo.node, attrs={'size': 2})
 
             delay = 0.0
             keys = {
-                delay: 5000.0 * scale,
-                delay + 0.4: 530.0 * scale,
-                delay + 0.45: 620.0 * scale,
-                delay + 0.5: 590.0 * scale,
-                delay + 0.55: 605.0 * scale,
-                delay + 0.6: 600.0 * scale,
+                delay: 3000.0 * scale,
+                delay + 0.4: 150.0 * scale,
+                delay + 0.45: 50.0 * scale,
+                delay + 0.5: 84.0 * scale,
+                delay + 0.55: 185.0 * scale,
+                delay + 0.6: 164.0 * scale,
             }
             bs.animate(cmb, 'input0', keys)
             bs.animate(cmb, 'input1', keys)
@@ -779,9 +732,9 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
 
             keys = {
                 delay: 100.0,
-                delay + 0.4: 370.0,
-                delay + 0.45: 357.0,
-                delay + 0.5: 360.0,
+                delay + 0.5: 370.0,
+                delay + 0.55: 357.0,
+                delay + 0.6: 360.0,
             }
             bs.animate(logo.node, 'rotate', keys)
             type(self)._did_initial_transition = True
@@ -792,8 +745,8 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
 
             keys = {
                 delay: 0.0,
-                delay + 0.1: 700.0 * scale,
-                delay + 0.2: 600.0 * scale,
+                delay + 0.1: 240.0 * scale,
+                delay + 0.2: 164.0 * scale,
             }
             bs.animate(cmb, 'input0', keys)
             bs.animate(cmb, 'input1', keys)

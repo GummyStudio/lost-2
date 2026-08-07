@@ -1,14 +1,12 @@
 import traceback
 import datetime
 import sys
+import babase as ba
+import bascenev1 as bs
+import bauiv1 as bui
 
 def startup():
     def auto_module_import():
-        # import the modules...
-        import babase as ba
-        import bascenev1 as bs
-        import bauiv1 as bui
-        # and install them to the console
         globals = sys.modules['__main__'].__dict__
         globals['ba'] = ba
         globals['bs'] = bs
@@ -16,10 +14,8 @@ def startup():
         globals['ga'] = bs.getactivity
         globals['gp'] = lambda: bs.getactivity().players
         globals['gs'] = bs.getsession
-    # call it
     auto_module_import()
-    def my_global_exception_hook(exc_type, exc_value, exc_traceback):
-        import bauiv1 as bui
+    def global_exception_hook(exc_type, exc_value, exc_traceback):
         global _last_error_time, _recent_error
         # convert a error to text
         error_text = ''.join(
@@ -30,6 +26,4 @@ def startup():
         _recent_error = True
         print(error_text)
         bui.getsound('error').play(0.3)
-        
-    # Install the hook
-    sys.excepthook = my_global_exception_hook
+    sys.excepthook = global_exception_hook
