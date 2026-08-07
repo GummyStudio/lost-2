@@ -112,27 +112,11 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
     def __init__(self, settings):
         super().__init__(settings)
         self.killers = []
-        self.killer_players = settings.get('next_killers')
+        self.killer_players = []
         self._round_results = settings.get('last_results')
+        self._decided_killers = False
         # By default next gamemode is just the default
         self.next_gamemode = DefaultMatch
-        # If we have no killer players but some players,
-        # let's pick out some random ones
-        if not self.killer_players:
-            self.killer_players = []
-            if self.players:
-                while len(self.killer_players) < desired:
-                    candidates = [
-                        p for p in self.players
-                        if p not in self.killer_players
-                    ]
-                    # If no candidates are possible, 
-                    # break out the loop
-                    if not candidates:
-                        break
-
-                    new = random.choice(candidates)
-                    self.killer_players.append(new)
         # By default we have both a 
         # randomly chosen map and a normal chosen map,
         # which allows the chosen map to be changed
@@ -279,6 +263,24 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         # let's display them
         if self._round_results:
             self._display_round_results(self._round_results)
+        # If we have no killer players but some players,
+        # let's pick out some random ones
+        if not self.killer_players:
+            desired = self._desired_killers()
+            if self.players:
+                while len(self.killer_players) < desired:
+                    candidates = [
+                        p for p in self.players
+                        if p not in self.killer_players
+                    ]
+                    # If no candidates are possible, 
+                    # break out the loop
+                    if not candidates:
+                        break
+
+                    new = random.choice(candidates)
+                    self.killer_players.append(new)
+            self._decided_killers = True
 
     def _display_round_results(
         self,
@@ -364,7 +366,10 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         desired = self._desired_killers()
         # If this player joins while we don't
         # have enough killers, let's add em in
-        if len(self.killer_players) < desired:
+        if (
+            len(self.killer_players) < desired
+            and self._decided_killers
+        ):
             self.killer_players.append(player)
         self.spawn_player(player)
     
