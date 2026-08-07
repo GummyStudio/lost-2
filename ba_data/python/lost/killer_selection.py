@@ -127,7 +127,7 @@ class KillerSelection(bs.Actor):
         self._ready = False
         self._cards: list[ChooserCard] = []
 
-        card_spacing = 30 * scale
+        card_spacing = 60 * scale
         card_amount = 3
         self._card_amount = card_amount
         total_width = (card_amount - 1) * card_spacing
@@ -187,7 +187,7 @@ class KillerSelection(bs.Actor):
             x += card_spacing
 
         # nice littel arrows
-        arrow_spacing = (20 + (card_spacing)) * scale
+        arrow_spacing = card_spacing * scale
         arrow_scale = scale - 0.3
         arrow_color = (1, 0.3, 0.3)
         arrow_x, arrow_y = position
@@ -202,9 +202,9 @@ class KillerSelection(bs.Actor):
             },
         )
         keys = {
-            0: (arrow_x + arrow_spacing + 40, arrow_y),
-            0.5: (arrow_x + arrow_spacing + 28, arrow_y),
-            1: (arrow_x + arrow_spacing + 40, arrow_y),
+            0: (arrow_x + arrow_spacing + 10, arrow_y),
+            0.5: (arrow_x + arrow_spacing, arrow_y),
+            1: (arrow_x + arrow_spacing + 10, arrow_y),
         }
         keys = choppify(keys, fps=10)
         bs.animate_array(right_arrow, 'position', 2, keys, loop=True)
@@ -219,9 +219,9 @@ class KillerSelection(bs.Actor):
             },
         )
         keys = {
-            0: (arrow_x - arrow_spacing - 40, arrow_y),
-            0.5: (arrow_x - arrow_spacing - 28, arrow_y),
-            1: (arrow_x - arrow_spacing - 40, arrow_y),
+            0: (arrow_x - arrow_spacing - 10, arrow_y),
+            0.5: (arrow_x - arrow_spacing, arrow_y),
+            1: (arrow_x - arrow_spacing - 10, arrow_y),
         }
         keys = choppify(keys, fps=10)
         bs.animate_array(left_arrow, 'position', 2, keys, loop=True)
@@ -325,7 +325,7 @@ class ChooserActivity(bs.Activity[bs.Player, bs.Team]):
 
         x = 0
         y = 270
-        scale = 8 / int((len(self.killers)))
+        scale = 6 / int((len(self.killers)))
         self._spacing = spacing = 256 + 30 * scale
 
         if len(self.killers) == 1:
@@ -335,15 +335,15 @@ class ChooserActivity(bs.Activity[bs.Player, bs.Team]):
             names = ', '.join(p.getname() for p in self.killers)
             suffix = 'S'
 
-        self._players_text = bs.newnode(
-            'text',
-            attrs={
-                'scale': 1.2,
-                'text': names,
-                'h_align': 'center',
-                'position': (x, y),
-            },
-        )
+        # self._players_text = bs.newnode(
+            # 'text',
+            # attrs={
+                # 'scale': 1.2,
+                # 'text': names,
+                # 'h_align': 'center',
+                # 'position': (x, y),
+            # },
+        # )
         y -= 30
         self._pick_text = bs.newnode(
             'text',
