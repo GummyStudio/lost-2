@@ -254,6 +254,8 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
         winners: list[PlayerInfoPlus] = []
         losers: list[PlayerInfoPlus] = []
 
+        
+
         for player in self.players:
             info = PlayerInfoPlus(
                 name=player.getname(full=True, icon=True),
@@ -264,6 +266,10 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
 
             if player in winning_players:
                 winners.append(info)
+
+                # Winner, give invincibility if alive.
+                if player.actor and player.actor.is_alive():
+                    player.actor.set_invincible(10)
             else:
                 losers.append(info)
         results = {
@@ -334,97 +340,103 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
         self.check_end()
 
     def start_lms(self):
-        if self.lms:
-            return
-        self.check_end()
-        
-        if self.chase_music:
-            self.chase_music.delete()
-            self.chase_music = None
-        if self.lowHP_music:
-            self.lowHP_music.delete()
-            self.lowHP_music = None
-        # Special killer to survivor LMS
-        # Format here is (Killer, Survivor)
-        special_lms = {
-            ('Spaz', 'Zoe'): {
-                'texture': 'spaz-vs-zoe',
-                'time': 96,
-                'music': bs.MusicType.LMS4,
-            },
-            ('Snake Shadow', 'Mel'): {
-                'texture': 'ninja-vs-mel',
-                'time': 86,
-                'music': bs.MusicType.LMS5,
-            },
-            ('Spaz', 'Salvatore'): {
-                'texture': 'spaz-vs-sal',
-                'time': 90,
-                'music': bs.MusicType.LMS6,
-            },
-            ('Easter Bunny', 'Penny'): {
-                'texture': 'bunny-vs-penny',
-                'time': 89,
-                'music': bs.MusicType.LMS7,
-            },
-            ('Bones', 'Bernard'): {
-                'texture': 'bones-vs-bernard',
-                'time': 88,
-                'music': bs.MusicType.LMS8,
-            },
-            ('Taobao Mascot', 'Kronk'): {
-                'texture': 'spaz',
-                'time': 97,
-                'music': bs.MusicType.LMS9,
-            },
+        try:
+            if self.lms:
+                return
+            self.check_end()
             
-        }
-        # Should update this to support multi-killers.
-        killers = list(self.killers)
-        killer_char = killers[0].actor.character
-        # This too.
-        survivors = list(self.survivors)
-        survivor_char = survivors[0].actor.character
-        special_lms_dict = special_lms.get(
-            (killer_char, survivor_char),
-            None,
-        )
-        if special_lms_dict:
-            if killer_char == "Taobao Mascot" and survivor_char == "Kronk":
-                self.session.overtime = True
-            time = special_lms_dict.get('time')
-            music = special_lms_dict.get('music')
-            texture = special_lms_dict.get('texture')
-            self.session.start_timer(time)
-            bs.setmusic(music)
-            self.show_lms_texture(texture)
-        else:
-            self.session.start_timer(69)
-            bs.setmusic(bs.MusicType.LMS1)
-            # FIXME: this is OBJECTIVELY better,
-            # but we should still move to spazapps
-            textures = {
-                'Snake Shadow': 'snakeshadow',
-                'Easter Bunny': 'bunny',
-                'Grumbledorf': 'wizard',
-                'Bones': 'bones',
-                'Taobao Mascot': 'ali',
-                'Spaz': 'spaz',
+            if self.chase_music:
+                self.chase_music.delete()
+                self.chase_music = None
+            if self.lowHP_music:
+                self.lowHP_music.delete()
+                self.lowHP_music = None
+            # Special killer to survivor LMS
+            # Format here is (Killer, Survivor)
+            special_lms = {
+                ('Spaz', 'Zoe'): {
+                    'texture': 'spaz-vs-zoe',
+                    'time': 96,
+                    'music': bs.MusicType.LMS4,
+                },
+                ('Snake Shadow', 'Mel'): {
+                    'texture': 'ninja-vs-mel',
+                    'time': 86,
+                    'music': bs.MusicType.LMS5,
+                },
+                ('Spaz', 'Salvatore'): {
+                    'texture': 'spaz-vs-sal',
+                    'time': 90,
+                    'music': bs.MusicType.LMS6,
+                },
+                ('Easter Bunny', 'Penny'): {
+                    'texture': 'bunny-vs-penny',
+                    'time': 89,
+                    'music': bs.MusicType.LMS7,
+                },
+                ('Bones', 'Bernard'): {
+                    'texture': 'bones-vs-bernard',
+                    'time': 88,
+                    'music': bs.MusicType.LMS8,
+                },
+                ('Taobao Mascot', 'Kronk'): {
+                    'texture': 'spaz',
+                    'time': 97,
+                    'music': bs.MusicType.LMS9,
+                },
+                
             }
-            
-            # Get the killer's LMS texture, but in any case
-            # just fallback to spaz.
-            texture = textures.get(killer_char, 'Spaz')
-            self.show_lms_texture(texture)
+            # Should update this to support multi-killers.
+            killers = list(self.killers)
+            killer_char = killers[0].actor.character
+            # This too.
+            survivors = list(self.survivors)
+            survivor_char = survivors[0].actor.character
+            special_lms_dict = special_lms.get(
+                (killer_char, survivor_char),
+                None,
+            )
+            if special_lms_dict:
+                if killer_char == "Taobao Mascot" and survivor_char == "Kronk":
+                    self.session.overtime = True
+                time = special_lms_dict.get('time')
+                music = special_lms_dict.get('music')
+                texture = special_lms_dict.get('texture')
+                self.session.start_timer(time)
+                bs.setmusic(music)
+                self.show_lms_texture(texture)
+            else:
+                self.session.start_timer(69)
+                bs.setmusic(bs.MusicType.LMS1)
+                # FIXME: this is OBJECTIVELY better,
+                # but we should still move to spazapps
+                textures = {
+                    'Snake Shadow': 'snakeshadow',
+                    'Easter Bunny': 'bunny',
+                    'Grumbledorf': 'wizard',
+                    'Bones': 'bones',
+                    'Taobao Mascot': 'ali',
+                    'Spaz': 'spaz',
+                    'Pixel': 'pixel',
+                }
+                
+                # Get the killer's LMS texture, but in any case
+                # just fallback to spaz.
+                texture = textures.get(killer_char, 'Spaz')
+                self.show_lms_texture(texture)
 
-        self.lms = True
-        for player in self.survivors:
-            player.actor.node.is_area_of_interest = True
-        for player in self.killers:
-            player.actor.node.is_area_of_interest = True
-        # Set the BG...
-        self.map.background.color_texture = bs.gettexture('spectureBG')
-        self.globalsnode.tint = (1, 0.8, 0.8)
+            self.lms = True
+            self.allow_pausing = False
+            for player in self.survivors:
+                player.actor.node.is_area_of_interest = True
+            for player in self.killers:
+                player.actor.node.is_area_of_interest = True
+            # Set the BG...
+            self.map.background.color_texture = bs.gettexture('spectureBG')
+            self.globalsnode.tint = (1, 0.8, 0.8)
+        except:
+            pass
+            # idk gang the killer or survivor probably left before it started
     
         
     def show_lms_texture(

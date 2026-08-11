@@ -294,7 +294,7 @@ class Spaz(bs.Actor):
         self._next_wiggle_left = True
         self.wiggle_reset_timer = None
         self.wiggling = False
-        self.damage_mult = 1
+        self.damage_scale = 1
 
     def tick_movement(self):
         if not self.exists():
@@ -943,9 +943,9 @@ class Spaz(bs.Actor):
                 )
                 return
             # multiply.
-            msg.damage *= self.damage_mult
+            msg.damage *= self.damage_scale
             damage_string = str(truncate_decimal(
-                msg.visual_damage*self.damage_mult if msg.visual_damage else msg.damage
+                msg.visual_damage*self.damage_scale if msg.visual_damage else msg.damage
                 , 2))
 
             # Ask our moveset if we can can take damage
@@ -1500,8 +1500,12 @@ class Spaz(bs.Actor):
                         mag,
                     )
         elif isinstance(msg, PickupMessage):
+
+            # For now, dont do anything.
+            return
             if not self.node:
                 return None
+            
 
             try:
                 collision = bs.getcollision()

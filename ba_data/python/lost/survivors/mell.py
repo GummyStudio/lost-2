@@ -229,26 +229,6 @@ class MellSurvivor(CharacterMoveset):
 
    
  
-    def handle_spaz_punched_something(self, collision: bs.Collision) -> bool:
-        node = collision.opposingnode
-
-        if node.getnodetype() != 'spaz':
-            return
-
-        if self.node_not_punched_nodes(node) and len(self._punched_nodes) == 0:
-            node.handlemessage(
-                DamageMessage(
-                    damage=10,
-                    spaz=self.spaz,
-                    type='zoe_stab',
-                    hurt_sound=None,
-                )
-            )
-            self.play_sound('stab_hit', position=self.spaz.node.position)
-            
-
-        return False
-    
   
 
     

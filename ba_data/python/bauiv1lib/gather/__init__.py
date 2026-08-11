@@ -211,11 +211,12 @@ class GatherWindow(bui.MainWindow):
         )
 
         # Now instantiate handlers for these tabs.
+        # goodbye.
         tabtypes: dict[GatherWindow.TabID, type[GatherTab]] = {
-            self.TabID.ABOUT: AboutGatherTab,
+            #self.TabID.ABOUT: AboutGatherTab,
             self.TabID.MANUAL: ManualGatherTab,
-            self.TabID.PRIVATE: PrivateGatherTab,
-            self.TabID.INTERNET: PublicGatherTab,
+            #self.TabID.PRIVATE: PrivateGatherTab,
+            #self.TabID.INTERNET: PublicGatherTab,
             self.TabID.NEARBY: NearbyGatherTab,
         }
         self._tabs: dict[GatherWindow.TabID, GatherTab] = {}

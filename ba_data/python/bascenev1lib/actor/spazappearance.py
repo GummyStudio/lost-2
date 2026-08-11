@@ -58,8 +58,8 @@ class Appearance:
         self.pickup_sounds: list[str] = []
         self.fall_sounds: list[str] = []
         self.style = 'spaz'
-        self.default_color: tuple[float, float, float] | None = None
-        self.default_highlight: tuple[float, float, float] | None = None
+        self.default_color: tuple[float, float, float] = (1, 1, 1)
+        self.default_highlight: tuple[float, float, float] = (1, 1, 1)
         self.moveset: CharacterMoveset = None
         self.card_texture = 'placeholder'
         self.oneliner = 'The lost soul'
@@ -539,7 +539,64 @@ def register_appearances() -> None:
     bs.app.classic.survivors.append('Penny')
    
     
+    # Pixie ###################################
+    t = Appearance('Pixel')
+    t.color_texture = 'pixieColor'
+    t.color_mask_texture = 'pixieColorMask'
+    t.icon_texture = 'pixieIcon'
+    t.icon_mask_texture = 'pixieIconColorMask'
+    t.head_mesh = 'pixieHead'
+    t.torso_mesh = 'pixieTorso'
+    t.pelvis_mesh = 'pixiePelvis'
+    t.upper_arm_mesh = 'pixieUpperArm'
+    t.forearm_mesh = 'pixieForeArm'
+    t.hand_mesh = 'pixieHand'
+    t.upper_leg_mesh = 'pixieUpperLeg'
+    t.lower_leg_mesh = 'pixieLowerLeg'
+    t.toes_mesh = 'pixieToes'
+    pixie_sounds = ['pixie1', 'pixie2', 'pixie3', 'pixie4']
+    pixie_hit_sounds = ['pixieHit1', 'pixieHit2']
+    t.jump_sounds = pixie_sounds
+    t.attack_sounds = pixie_sounds
+    t.impact_sounds = pixie_hit_sounds
+    t.death_sounds = ['pixieDeath']
+    t.pickup_sounds = pixie_sounds
+    t.fall_sounds = ['pixieFall']
+    t.style = 'pixie'
+    t.default_color = (0, 1, 0.7)
+    t.default_highlight = (0.21, 0.1, 0.6) #(0.65, 0.35, 0.75)
+    t.moveset = killers.PixelKiller
+    t.oneliner = "The Fairy"
+    bs.app.classic.killers.append('Pixel')
 
+
+    t = Appearance('VenusMinion')
+    t.color_texture = 'bonesColor'
+    t.color_mask_texture = 'killerdoorColor' # im too lazy to make another red texture
+    t.icon_texture = 'bonesIcon'
+    t.icon_mask_texture = 'bonesIconColorMask'
+    t.head_mesh = 'bonesHead'
+    t.torso_mesh = 'bonesTorso'
+    t.pelvis_mesh = 'bonesPelvis'
+    t.upper_arm_mesh = 'bonesUpperArm'
+    t.forearm_mesh = 'bonesForeArm'
+    t.hand_mesh = 'bonesHand'
+    t.upper_leg_mesh = 'bonesUpperLeg'
+    t.lower_leg_mesh = 'bonesLowerLeg'
+    t.toes_mesh = 'bonesToes'
+    bones_sounds = ['bones1', 'bones2', 'bones3']
+    bones_hit_sounds = ['bones1', 'bones2', 'bones3']
+    t.jump_sounds = bones_sounds
+    t.attack_sounds = bones_sounds
+    t.impact_sounds = bones_hit_sounds
+    t.death_sounds = ['bonesDeath']
+    t.pickup_sounds = bones_sounds
+    t.fall_sounds = ['bonesFall']
+    t.style = 'bones'
+    t.default_color = (0.5, -1, 0.5)
+    t.moveset = killers.PixelMinion
+    #t.oneliner = "The Rebuilt"
+    #bs.app.classic.killers.append('Bones')
 
     return
 
@@ -630,6 +687,33 @@ def register_appearances() -> None:
     t.style = 'penguin'
     t.default_color = (0.3, 0.5, 0.8)
     t.default_highlight = (1, 0, 0)
+
+    # Santa ######################################
+    t = Appearance('Santa Claus')
+    t.color_texture = 'santaColor'
+    t.color_mask_texture = 'santaColorMask'
+    t.icon_texture = 'santaIcon'
+    t.icon_mask_texture = 'santaIconColorMask'
+    t.head_mesh = 'santaHead'
+    t.torso_mesh = 'santaTorso'
+    t.pelvis_mesh = 'kronkPelvis'
+    t.upper_arm_mesh = 'santaUpperArm'
+    t.forearm_mesh = 'santaForeArm'
+    t.hand_mesh = 'santaHand'
+    t.upper_leg_mesh = 'santaUpperLeg'
+    t.lower_leg_mesh = 'santaLowerLeg'
+    t.toes_mesh = 'santaToes'
+    hit_sounds = ['santaHit01', 'santaHit02', 'santaHit03', 'santaHit04']
+    sounds = ['santa01', 'santa02', 'santa03', 'santa04', 'santa05']
+    t.jump_sounds = sounds
+    t.attack_sounds = sounds
+    t.impact_sounds = hit_sounds
+    t.death_sounds = ['santaDeath']
+    t.pickup_sounds = sounds
+    t.fall_sounds = ['santaFall']
+    t.style = 'santa'
+    t.default_color = (1, 0, 0)
+    t.default_highlight = (1, 1, 1)
 
 
     # Cyborg ###################################
@@ -997,32 +1081,7 @@ def register_appearances() -> None:
     t.default_color = (0.3, 0.5, 0.8)
     t.default_highlight = (1, 0, 0)
 
-    # Pixie ###################################
-    t = Appearance('Pixel')
-    t.color_texture = 'pixieColor'
-    t.color_mask_texture = 'pixieColorMask'
-    t.icon_texture = 'pixieIcon'
-    t.icon_mask_texture = 'pixieIconColorMask'
-    t.head_mesh = 'pixieHead'
-    t.torso_mesh = 'pixieTorso'
-    t.pelvis_mesh = 'pixiePelvis'
-    t.upper_arm_mesh = 'pixieUpperArm'
-    t.forearm_mesh = 'pixieForeArm'
-    t.hand_mesh = 'pixieHand'
-    t.upper_leg_mesh = 'pixieUpperLeg'
-    t.lower_leg_mesh = 'pixieLowerLeg'
-    t.toes_mesh = 'pixieToes'
-    pixie_sounds = ['pixie1', 'pixie2', 'pixie3', 'pixie4']
-    pixie_hit_sounds = ['pixieHit1', 'pixieHit2']
-    t.jump_sounds = pixie_sounds
-    t.attack_sounds = pixie_sounds
-    t.impact_sounds = pixie_hit_sounds
-    t.death_sounds = ['pixieDeath']
-    t.pickup_sounds = pixie_sounds
-    t.fall_sounds = ['pixieFall']
-    t.style = 'pixie'
-    t.default_color = (0, 1, 0.7)
-    t.default_highlight = (0.65, 0.35, 0.75)
+    
 
     # Robot ###################################
     t = Appearance('Robot')

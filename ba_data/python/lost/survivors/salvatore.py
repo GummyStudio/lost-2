@@ -80,13 +80,13 @@ class SalvatoreSurvivor(CharacterMoveset):
         
         self.spaz.node.color_texture = self.slateskin_tex
         self.spaz.node.color_mask_texture = bs.gettexture('bonesColorMask')
-        self.spaz.damage_mult *= 0.15
+        self.spaz.damage_scale *= 0.15
 
         def stop():
             if self.spaz.exists():
                 self.in_slateskin = False
                 self.spaz.speed_boost(0.5)
-                self.spaz.damage_mult /= 0.15
+                self.spaz.damage_scale /= 0.15
                 self.spaz.max_walk_speed /= 0.15
                 self.spaz.node.color_texture = self.original_tex
                 self.spaz.node.color_mask_texture = self.original_colortex
