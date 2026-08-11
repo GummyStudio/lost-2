@@ -178,18 +178,18 @@ class GatherWindow(bui.MainWindow):
 
         # Build up the set of tabs we want.
         tabdefs: list[tuple[GatherWindow.TabID, bui.Lstr]] = [
-            (self.TabID.ABOUT, bui.Lstr(resource=f'{self._r}.aboutText'))
+            #(self.TabID.ABOUT, bui.Lstr(resource=f'{self._r}.aboutText'))
         ]
-        if plus.get_v1_account_misc_read_val('enablePublicParties', True):
-            tabdefs.append(
-                (
-                    self.TabID.INTERNET,
-                    bui.Lstr(resource=f'{self._r}.publicText'),
-                )
-            )
-        tabdefs.append(
-            (self.TabID.PRIVATE, bui.Lstr(resource=f'{self._r}.privateText'))
-        )
+        #if plus.get_v1_account_misc_read_val('enablePublicParties', True):
+            #tabdefs.append(
+            #    (
+            #        self.TabID.INTERNET,
+            #        bui.Lstr(resource=f'{self._r}.publicText'),
+            #    )
+            #)
+        #tabdefs.append(
+        #    (self.TabID.PRIVATE, bui.Lstr(resource=f'{self._r}.privateText'))
+        #)
         tabdefs.append(
             (self.TabID.NEARBY, bui.Lstr(resource=f'{self._r}.nearbyText'))
         )
