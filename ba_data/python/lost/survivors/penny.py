@@ -11,6 +11,7 @@ import babase
 class BombCrystal(bs.Actor):
     def __init__(self,position):
         super().__init__()
+        self.hitbox = bs.Node(None)
         self.node = bs.newnode(
                 'prop',
                 delegate=self,
