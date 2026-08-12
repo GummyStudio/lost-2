@@ -565,7 +565,7 @@ def register_appearances() -> None:
     t.style = 'cyborg' # its going to change in spaz.py 'pixie'
     # ths is just to remove the eyes.
     t.default_color = (0, 1, 0.7)
-    t.default_highlight = (0.21, 0.1, 0.6) #(0.65, 0.35, 0.75)
+    t.default_highlight = (0.6, 0.1, 0.6) #(0.65, 0.35, 0.75)
     t.moveset = killers.PixelKiller
     t.oneliner = "The Fairy"
     bs.app.classic.killers.append('Pixel')
