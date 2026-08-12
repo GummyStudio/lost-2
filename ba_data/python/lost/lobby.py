@@ -357,8 +357,8 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         )
         y -= y_spacing
 
-        _add_column('- WINNERS -', winners, x, y)
-        _add_column('- LOSERS -', losers, x + x_spacing, y)
+        _add_column('WINNERS', winners, x, y)
+        _add_column('LOSERS', losers, x + x_spacing, y)
     
     def _desired_killers(self) -> int:
         """Return how many killers there should be."""
@@ -413,8 +413,10 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         character = player.character
         is_killer = False
         if player in self.killer_players:
-            character = random.choice(bs.app.classic.killers)
-            is_killer = True
+            pass
+            # pls add a light or UI or smth, it fucks testing
+            #character = random.choice(bs.app.classic.killers)
+            #is_killer = True
        
         spaz = Spaz(
             character=character,

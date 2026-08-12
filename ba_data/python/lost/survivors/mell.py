@@ -68,7 +68,9 @@ class HealingItem(bs.Actor):
             node = bs.getcollision().opposingnode
             if node == self.owner:
                 return
-         
+            if node.getdelegate(bs.Actor).character == 'B-9000':
+                # cannot eat.
+                return
             node.getdelegate(bs.Actor).hitpoints = min(node.getdelegate(bs.Actor).hitpoints+35, node.getdelegate(bs.Actor).hitpoints_max)
             node.hurt = (
                 1.0 - float(node.getdelegate(bs.Actor).hitpoints) / node.getdelegate(bs.Actor).hitpoints_max

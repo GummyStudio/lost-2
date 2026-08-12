@@ -599,6 +599,36 @@ def register_appearances() -> None:
     #t.oneliner = "The Rebuilt"
     #bs.app.classic.killers.append('Bones')
 
+     # Cyborg ###################################
+    t = Appearance('B-9000')
+    t.color_texture = 'cyborgColor'
+    t.color_mask_texture = 'cyborgColorMask'
+    t.icon_texture = 'cyborgIcon'
+    t.icon_mask_texture = 'cyborgIconColorMask'
+    t.head_mesh = 'cyborgHead'
+    t.torso_mesh = 'cyborgTorso'
+    t.pelvis_mesh = 'cyborgPelvis'
+    t.upper_arm_mesh = 'cyborgUpperArm'
+    t.forearm_mesh = 'cyborgForeArm'
+    t.hand_mesh = 'cyborgHand'
+    t.upper_leg_mesh = 'cyborgUpperLeg'
+    t.lower_leg_mesh = 'cyborgLowerLeg'
+    t.toes_mesh = 'cyborgToes'
+    cyborg_sounds = ['cyborg1', 'cyborg2', 'cyborg3', 'cyborg4']
+    cyborg_hit_sounds = ['cyborgHit1', 'cyborgHit2']
+    t.jump_sounds = cyborg_sounds
+    t.attack_sounds = cyborg_sounds
+    t.impact_sounds = cyborg_hit_sounds
+    t.death_sounds = ['cyborgDeath']
+    t.pickup_sounds = cyborg_sounds
+    t.fall_sounds = ['cyborgFall']
+    t.style = 'cyborg'
+    t.default_color = (0.5, 0.5, 0.5)
+    t.default_highlight = (1, 0, 0)
+    t.moveset = survivors.B9000Survivor
+    bs.app.classic.survivors.append('B-9000')
+
+
     return
 
    
@@ -715,36 +745,6 @@ def register_appearances() -> None:
     t.style = 'santa'
     t.default_color = (1, 0, 0)
     t.default_highlight = (1, 1, 1)
-
-
-    # Cyborg ###################################
-    t = Appearance('B-9000')
-    t.color_texture = 'cyborgColor'
-    t.color_mask_texture = 'cyborgColorMask'
-    t.icon_texture = 'cyborgIcon'
-    t.icon_mask_texture = 'cyborgIconColorMask'
-    t.head_mesh = 'cyborgHead'
-    t.torso_mesh = 'cyborgTorso'
-    t.pelvis_mesh = 'cyborgPelvis'
-    t.upper_arm_mesh = 'cyborgUpperArm'
-    t.forearm_mesh = 'cyborgForeArm'
-    t.hand_mesh = 'cyborgHand'
-    t.upper_leg_mesh = 'cyborgUpperLeg'
-    t.lower_leg_mesh = 'cyborgLowerLeg'
-    t.toes_mesh = 'cyborgToes'
-    cyborg_sounds = ['cyborg1', 'cyborg2', 'cyborg3', 'cyborg4']
-    cyborg_hit_sounds = ['cyborgHit1', 'cyborgHit2']
-    t.jump_sounds = cyborg_sounds
-    t.attack_sounds = cyborg_sounds
-    t.impact_sounds = cyborg_hit_sounds
-    t.death_sounds = ['cyborgDeath']
-    t.pickup_sounds = cyborg_sounds
-    t.fall_sounds = ['cyborgFall']
-    t.style = 'cyborg'
-    t.default_color = (0.5, 0.5, 0.5)
-    t.default_highlight = (1, 0, 0)
-
-    
 
     # Jumpsuit ###################################
     t = Appearance('Lee')

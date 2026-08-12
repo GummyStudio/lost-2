@@ -256,7 +256,7 @@ class CharacterMoveset:
         if self.spaz.exists():
 
             # Special case: died to specific things will lead to interaction
-            if type in ['ali_slam']:
+            if type in ['ali_slam', 'die_upon_ungrab', 'b9000_death_blast']:
                 self.spaz.impulse(x=2, y=17, direction=self.spaz.node.velocity)
                 self.spaz.shatter(True)
 

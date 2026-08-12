@@ -924,7 +924,7 @@ class Spaz(bs.Actor):
         if not self.node:
             return
         self.node.hockey = True
-        try: bs.timer(dur, bs.Call(setattr, self.node, 'hockey', False))
+        try: bs.timer(dur, bs.Call(self.safesetattr, self.node, 'hockey', False))
         except: pass
 
 
