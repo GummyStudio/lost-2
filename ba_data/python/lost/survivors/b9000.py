@@ -185,7 +185,7 @@ class B9000DeathBlast(bs.Actor):
         elif isinstance(msg, KillerDetectedMessage):
             node = bs.getcollision().opposingnode 
             node.handlemessage(DamageMessage(
-                damage=50, type='b9000_death_blast',
+                damage=30, type='b9000_death_blast',
                 )
             )  
             node.handlemessage(
@@ -380,6 +380,20 @@ class B9000Survivor(CharacterMoveset):
     
         # make sure its false
         self.spaz.allow_movement = False
+
+        bs.emitfx(
+                    position=self.spaz.node.position,
+                    chunk_type='sweat',
+                    velocity=(
+                        0,
+                        5,
+                        0,
+                    ),
+                    count=10,
+                    scale=1.9,
+                    spread=0.8,
+                )
+
         
         
         dir_x = self.spaz.input_x* 0.35
@@ -447,7 +461,7 @@ class B9000Survivor(CharacterMoveset):
                 return
             self.spaz.node.hold_node = None
             spaz.handlemessage(DamageMessage(
-                damage=35, type='b9000_dash',
+                damage=25, type='b9000_dash',
                 )
             )
             v= (
@@ -509,7 +523,7 @@ class B9000Survivor(CharacterMoveset):
                 self.stun_time += 0.28
                 self.play_sound('dash_hurt')
                 spaz.handlemessage(DamageMessage(
-                    damage=5, type='b9000_dash',
+                    damage=1, type='b9000_dash',
                     )
                 )
                 
