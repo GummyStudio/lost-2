@@ -116,6 +116,7 @@ class Spaz(bs.Actor):
             self._hockey = activity.map.is_hockey
         else:
             self._hockey = False
+        self.hp_text = bs.Node(None)
         self._punched_nodes: set[bs.Node] = set()
         self._cursed = False
         self.stunned= False
@@ -303,10 +304,35 @@ class Spaz(bs.Actor):
             bs.timer(0.1, bs.Call(self.safesetattr, self.node, 'name_color', bs.app.classic.spaz_appearances['Pixel'].default_highlight
             ))
             self.node.style = 'pixie'
+        
+        # health text!
+        self.hp_text = bs.newnode(
+            'text',
+            owner=self.node,
+            attrs={
+                'text': 'nan/nan',
+                'in_world': True,
+                'scale': 0.009,
+                'color': color,
+                'shadow': 0.585
+            }
+        )
+        math = bs.newnode(
+                'math',
+                owner=self.node,
+                attrs={'input1': (-0.25, -0.25, 0), 'operation': 'add'},
+            )
+        self.node.connectattr('position', math, 'input2')
+       
+        math.connectattr('output', self.hp_text, 'position')
 
     def tick_movement(self):
         if not self.exists():
             return
+        
+        # no other place to put this lmfao
+        if self.hp_text:
+            self.hp_text.text = f'{int(self.hitpoints/10)}/{int(self.hitpoints_max/10)}'
         
         # Ew... has to be in a seperate handler, 
         # or else changing the variables wont do anything.
@@ -326,6 +352,7 @@ class Spaz(bs.Actor):
         self.node.move_up_down = self.input_y * self.max_walk_speed
         self.node.move_left_right = self.input_x * self.max_walk_speed
         self.node.run = self.input_run * self.max_run_speed
+        
 
 
 
@@ -1372,6 +1399,7 @@ class Spaz(bs.Actor):
             self.bomb_count += 1
 
         elif isinstance(msg, bs.DieMessage):
+            self.hp_text.delete()
             wasdead = self._dead
             self._dead = True
             self.hitpoints = 0
@@ -1405,7 +1433,7 @@ class Spaz(bs.Actor):
                 self.handlemessage(bs.DieMessage(how=bs.DeathType.FALL))
             # otherwise tp back
             else:
-                self.handlemessage(DamageMessage(damage=(self.highlight/2)/10))
+                self.handlemessage(DamageMessage(damage=(self.hitpoints/2)/10))
           
                 self.handlemessage(bs.StandMessage(self.getactivity().map.get_ffa_start_position([])))
 
@@ -1416,8 +1444,8 @@ class Spaz(bs.Actor):
 
                 def stop():
                     if self.exists():
-                        self.spaz.damage_scale /= 1.5
-                        self.spaz.max_walk_speed /= 0.8
+                        self.damage_scale /= 1.5
+                        self.max_walk_speed /= 0.8
                  
                 bs.timer(5, stop)
 
