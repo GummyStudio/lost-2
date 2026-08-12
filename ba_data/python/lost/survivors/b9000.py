@@ -418,6 +418,10 @@ class B9000Survivor(CharacterMoveset):
         if not spaz:
             return
         
+        if spaz.node.invincible:
+            # na.
+            return
+        
         self.cancel_dash_timer = None
         self.play_sound('dash_hit')
         self.spaz.node.hold_node = spaz.node
