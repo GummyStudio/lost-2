@@ -296,6 +296,13 @@ class Spaz(bs.Actor):
         self.wiggling = False
         self.damage_scale = 1
 
+        # NOTE: this is shit, lmfoa.
+        if character == 'Pixel':
+            # FIXME: THIS IS ACTUAL SHIT HOLY
+            bs.timer(0.1, bs.Call(self.safesetattr, self.node, 'name_color', bs.app.classic.spaz_appearances['Pixel'].default_highlight
+            ))
+            self.node.style = 'pixie'
+
     def tick_movement(self):
         if not self.exists():
             return
