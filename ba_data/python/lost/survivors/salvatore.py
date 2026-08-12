@@ -25,7 +25,7 @@ class SalvatoreSurvivor(CharacterMoveset):
     run_speed =  0.9
     ability1_cooldown = 0.0
     ability2_cooldown = 35
-    ability3_cooldown = 40
+    ability3_cooldown = 30
 
     ability1_icon = ''
     ability2_icon = babase.charstr(babase.SpecialChar.FAST_FORWARD_BUTTON)
@@ -80,13 +80,13 @@ class SalvatoreSurvivor(CharacterMoveset):
         
         self.spaz.node.color_texture = self.slateskin_tex
         self.spaz.node.color_mask_texture = bs.gettexture('bonesColorMask')
-        self.spaz.damage_scale *= 0.15
+        self.spaz.damage_scale *= 0.05
 
         def stop():
             if self.spaz.exists():
                 self.in_slateskin = False
                 self.spaz.speed_boost(0.5)
-                self.spaz.damage_scale /= 0.15
+                self.spaz.damage_scale /= 0.05
                 self.spaz.max_walk_speed /= 0.15
                 self.spaz.node.color_texture = self.original_tex
                 self.spaz.node.color_mask_texture = self.original_colortex
@@ -103,7 +103,7 @@ class SalvatoreSurvivor(CharacterMoveset):
         self.spaz.node.handlemessage('celebrate_l', duration*(1000))
         bs.timer(duration, self.speed)
     def ability3(self):
-        duration = 0.8
+        duration = 0.4
         self.spaz.max_run_speed *= 0.05
         self.using_item = True
         self.spaz.node.handlemessage('celebrate_r', duration*(1000))
