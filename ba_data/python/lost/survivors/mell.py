@@ -35,9 +35,9 @@ class HealingItem(bs.Actor):
         self.impulse(x=7, y=4)
         self.active = False
         bs.timer(1.6, self.activate)
-        try: bs.timer(40, bs.Call(self.safesetattr, self.node, 'flashing', True))
+        try: bs.timer(20, bs.Call(self.safesetattr, self.node, 'flashing', True))
         except: pass
-        bs.timer(45, bs.WeakCall(self.handlemessage, bs.DieMessage()))
+        bs.timer(25, bs.WeakCall(self.handlemessage, bs.DieMessage()))
     
     def on_expire(self):
         self.owner = None
@@ -69,7 +69,7 @@ class HealingItem(bs.Actor):
             if node == self.owner:
                 return
          
-            node.getdelegate(bs.Actor).hitpoints = min(node.getdelegate(bs.Actor).hitpoints+50, node.getdelegate(bs.Actor).hitpoints_max)
+            node.getdelegate(bs.Actor).hitpoints = min(node.getdelegate(bs.Actor).hitpoints+35, node.getdelegate(bs.Actor).hitpoints_max)
             node.hurt = (
                 1.0 - float(node.getdelegate(bs.Actor).hitpoints) / node.getdelegate(bs.Actor).hitpoints_max
             )
@@ -77,7 +77,7 @@ class HealingItem(bs.Actor):
             def heal():
                 if not node.exists():
                     return
-                node.getdelegate(bs.Actor).hitpoints = min(node.getdelegate(bs.Actor).hitpoints+30, node.getdelegate(bs.Actor).hitpoints_max)
+                node.getdelegate(bs.Actor).hitpoints = min(node.getdelegate(bs.Actor).hitpoints+20, node.getdelegate(bs.Actor).hitpoints_max)
                 node.hurt = (
                     1.0 - float(node.getdelegate(bs.Actor).hitpoints) / node.getdelegate(bs.Actor).hitpoints_max
                 )
@@ -173,7 +173,7 @@ class MellSurvivor(CharacterMoveset):
     run_speed =  0.9
     ability1_cooldown = 0.0
     ability2_cooldown = 45
-    ability3_cooldown = 20
+    ability3_cooldown = 25
 
     ability1_icon = ''
     ability2_icon = babase.charstr(babase.SpecialChar.RIGHT_ARROW)
