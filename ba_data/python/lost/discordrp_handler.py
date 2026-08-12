@@ -101,8 +101,8 @@ class RichPresence:
             'assets': {
                 'large_image': large_image,
                 'large_text': large_text,
-                'small_image': small_image, 
-                'small_text': small_text
+                **(({'small_image': small_image, 'small_text': small_text})
+                   if small_image else {}),
             },
             'timestamps': {'start': self.current_time},
         }
@@ -126,12 +126,16 @@ class RichPresence:
             if self.mode == 'menu_idle'
             else self._lstr('menuText')
         )
+        roster_size = max(1, len(bs.get_game_roster()))
+        party_size = (roster_size, bs.get_public_party_max_size())
         
         return self._build_data(
             details=details,
-            state='',
+            state='Party',
+            small_image='',
             large_image='logo',
             large_text=f'LOST 2',
+            party={'id': '00', 'size': party_size},
         )
 
     def _data_gameplay(self, fore_sesh, sesh_text, sesh_image) -> dict:
