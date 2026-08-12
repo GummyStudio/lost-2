@@ -1404,7 +1404,7 @@ class Spaz(bs.Actor):
                 self.handlemessage(bs.DieMessage(how=bs.DeathType.FALL))
             # otherwise tp back
             else:
-                self.handlemessage(DamageMessage(damage=(self.hitpoints_max/2)/10))
+                self.handlemessage(DamageMessage(damage=(self.highlight/2)/10))
           
                 self.handlemessage(bs.StandMessage(self.getactivity().map.get_ffa_start_position([])))
 
