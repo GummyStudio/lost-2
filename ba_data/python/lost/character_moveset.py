@@ -57,6 +57,32 @@ class CharacterMoveset:
     ability3_icon: str
     """ ability icons that show up on the spazito """
 
+    
+    @property
+    def stack(self) -> int:
+        """ 
+            checks the game to see how many copies of OUR character
+            is still alive.
+        """
+        if not self.spaz:
+            return 0
+        # obv we count
+        stack = 1
+        try:
+            for player in list(bs.getactivity().survivors):
+                if player == self.spaz.source_player:
+                    continue
+                if player.actor.character == self.spaz.character:
+                    stack += 1
+            for player in list(bs.getactivity().killers):
+                if player == self.spaz.source_player:
+                    continue
+                if player.actor.character == self.spaz.character:
+                    stack += 1
+        except:
+            return 1
+        return stack
+
 
     def __init__(self, spaz: Spaz):
         self._last_used_1 = -999

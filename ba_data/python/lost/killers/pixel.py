@@ -12,7 +12,7 @@ class PixelMinion(CharacterMoveset):
     """minion"""
     is_killer = True
     hitpoints = 25
-    move_speed = 0.65
+    move_speed = 0.5875
 
     ability1_cooldown = 0.0
     ability2_cooldown = 0.0
@@ -36,7 +36,7 @@ class PixelMinion(CharacterMoveset):
 
         self.aggro_range = self.default_aggro_range
         self.deaggro_range = self.default_deaggro_range
-        self.damage = 10
+        self.damage = 5
         self.target_survivor = None
 
         self.owner_moveset: PixelKiller = None
@@ -181,10 +181,10 @@ class PixelMinion(CharacterMoveset):
                     return
                 node.getdelegate(bs.Actor).max_walk_speed /= 0.98
                 node.getdelegate(bs.Actor).max_run_speed /= 0.98
-                node.getdelegate(bs.Actor).damage_scale /= 1.15
+                node.getdelegate(bs.Actor).damage_scale /= 1.2
             node.getdelegate(bs.Actor).max_walk_speed *= 0.98
             node.getdelegate(bs.Actor).max_run_speed *= 0.98
-            node.getdelegate(bs.Actor).damage_scale *= 1.15
+            node.getdelegate(bs.Actor).damage_scale *= 1.2
             bs.timer(3, revert)
             self._punched_nodes.add(node)
             
@@ -249,10 +249,10 @@ class MinionVenus(bs.Actor):
             },
         )
         self.active = True
-        bs.timer(1.6, bs.Call(self.add_percent, 3.7), repeat=True)
+        bs.timer(1.0, bs.Call(self.add_percent, 4.7), repeat=True)
         try:
             if self.getactivity().lms:
-                bs.timer(0.8, bs.Call(self.add_percent, 4.71), repeat=True)
+                bs.timer(0.8, bs.Call(self.add_percent, 5.71), repeat=True)
         except: pass
 
     def add_percent(self, amount: int = 2):
