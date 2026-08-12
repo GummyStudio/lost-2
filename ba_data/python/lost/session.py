@@ -5,7 +5,7 @@ from lost.lobby import Lobby
 from lost.killer_selection import ChooserActivity
 from bascenev1._activitytypes import TransitionActivity
 from bascenev1lib import maps
-# import bascenev1 as bs;bs.getsession().timer_complete()
+# gs().timer_complete()
 class LostSession(bs.Session):
     """ the thing that handles everything ig"""
 

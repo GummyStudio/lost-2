@@ -436,7 +436,7 @@ class B9000Survivor(CharacterMoveset):
             })
         self.stun_time = 1.5
         self.hits = 0
-        max_hits = random.randint(7, 9)
+        self.max_hits = random.randint(7, 9)
 
         def slam():
             if not self.spaz.exists():
@@ -482,7 +482,7 @@ class B9000Survivor(CharacterMoveset):
 
         def hit():
             if not self.die_upon_ungrab:
-                self.spaz.hitpoints = min(self.spaz.hitpoints-20, self.spaz.hitpoints_max)
+                self.spaz.hitpoints = min(self.spaz.hitpoints-27, self.spaz.hitpoints_max)
                 self.spaz.node.hurt = (
                     1.0 - float(self.spaz.hitpoints) / self.spaz.hitpoints_max
                 )
@@ -493,18 +493,23 @@ class B9000Survivor(CharacterMoveset):
                 self.die_warning_sfx = bs.newnode('sound', attrs={
                     'sound': self.sfx.get('death_is_coming'), 'volume': 1,
                 })
-            spaz.handlemessage(DamageMessage(
-                damage=5, type='b9000_dash',
-                )
-            )
+                # Also, reset our hits counter so we suffer more lol
+                self.max_hits = 13
+                self.hits = 0
+           
             # if were marked for death, dont add stun time.
             if not self.die_upon_ungrab:
                 self.stun_time += 0.28
                 self.play_sound('dash_hurt')
+                spaz.handlemessage(DamageMessage(
+                    damage=5, type='b9000_dash',
+                    )
+                )
+                
             self.hits += 1
 
             # Okay, if we him enough times, then slam em
-            if self.hits >= max_hits:
+            if self.hits >= self.max_hits:
                 slam()
                 return
         
