@@ -229,6 +229,7 @@ class PennySurvivor(CharacterMoveset):
 
     def handle_spaz_punched_something(self, collision: bs.Collision) -> bool:
         node = collision.opposingnode
+        stun_duration = 0.0
         if not hasattr(node.getdelegate(bs.Actor), 'resonance'):
             node.getdelegate(bs.Actor).resonance = 0
 
@@ -240,7 +241,7 @@ class PennySurvivor(CharacterMoveset):
             killer_resonance = int(getattr(
                 node.getdelegate(bs.Actor), 'resonance', 0
             ))
-            damage = 11 * (1+killer_resonance)
+            damage = abs(11 * (1+killer_resonance))
             node.handlemessage( 
                     DamageMessage(
                         damage=damage,  

@@ -438,7 +438,7 @@ class B9000Survivor(CharacterMoveset):
             self.die_warning_sfx = bs.newnode('sound', attrs={
                     'sound': self.sfx.get('death_is_coming'), 'volume': 1,
             })
-        self.stun_time = 1.5
+        self.stun_time = 0.85
         self.hits = 0
         self.max_hits = random.randint(7, 9)
 
