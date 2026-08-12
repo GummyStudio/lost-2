@@ -417,7 +417,9 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
             # pls add a light or UI or smth, it fucks testing
             #character = random.choice(bs.app.classic.killers)
             #is_killer = True
-       
+
+            # NOTE: moved
+            
         spaz = Spaz(
             character=character,
             color=player.color,
@@ -431,6 +433,18 @@ class Lobby(bs.Activity[bs.Player, bs.Team]):
         spaz.node.name_color = player.color
         player.actor = spaz
         assignspazinput(spaz, player)
+        if player in self.killer_players:
+            light = bs.newnode(
+                'light',
+                owner=spaz.node,
+                attrs={
+                    'volume_intensity_scale': 0.5,
+                    'color': (1,0,0),
+                },
+            ) 
+            spaz.node.connectattr('position', light, 'position')
+    
+       
     
     def handlemessage(self, msg):
         if isinstance(msg, bs.PlayerDiedMessage):
