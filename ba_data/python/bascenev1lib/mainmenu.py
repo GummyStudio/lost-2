@@ -364,7 +364,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         delay_inc = 0.02
         # disable for the creepypasta ish logo
         # enable if you want. i dunno :3
-        cool_logo = bs.app.config.get('LOSTCOOLERFUCKINMENU', False)
+        cool_logo = True#bs.app.config.get('LOSTCOOLERFUCKINMENU', False)
         # Come on faster after the first time.
         if self._did_initial_transition:
             base_delay = 0.0

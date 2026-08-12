@@ -1433,9 +1433,10 @@ class Spaz(bs.Actor):
                 self.handlemessage(bs.DieMessage(how=bs.DeathType.FALL))
             # otherwise tp back
             else:
+                self.handlemessage(bs.StandMessage(self.getactivity().map.get_ffa_start_position([])))
+
                 self.handlemessage(DamageMessage(damage=(self.hitpoints/2)/10))
           
-                self.handlemessage(bs.StandMessage(self.getactivity().map.get_ffa_start_position([])))
 
                 # slowness and weakness
                 self.max_walk_speed *= 0.8
