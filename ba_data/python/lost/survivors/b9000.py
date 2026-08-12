@@ -467,7 +467,10 @@ class B9000Survivor(CharacterMoveset):
 
             # Marked... increase stun time
             if self.die_upon_ungrab:
-                self.stun_time += 1.0
+                self.stun_time += 2.0
+            
+            # Reduce stuntime based on how many copies of B9000 is still alive.
+            self.stun_time *= max(0.20, 1.0 - (0.2 * (self.stack - 1)))
             # stun
             spaz.handlemessage(
                 StunMessage(

@@ -246,6 +246,7 @@ class Spaz(bs.Actor):
         self._turbo_filter_time_bucket = 0
         self._turbo_filter_counts: dict[str, int] = {}
         self.frozen = False
+        
         self.shattered = False
         self._last_hit_time: int | None = None
         self._num_times_hit = 0
@@ -1404,9 +1405,21 @@ class Spaz(bs.Actor):
                 self.handlemessage(bs.DieMessage(how=bs.DeathType.FALL))
             # otherwise tp back
             else:
-                self.handlemessage(DamageMessage(damage=(self.hitpoints_max/2)/10))
+                self.handlemessage(DamageMessage(damage=(self.highlight/2)/10))
           
                 self.handlemessage(bs.StandMessage(self.getactivity().map.get_ffa_start_position([])))
+
+                # slowness and weakness
+                self.max_walk_speed *= 0.8
+
+                self.damage_scale *= 1.5
+
+                def stop():
+                    if self.exists():
+                        self.spaz.damage_scale /= 1.5
+                        self.spaz.max_walk_speed /= 0.8
+                 
+                bs.timer(5, stop)
 
 
         elif isinstance(msg, bs.StandMessage):
