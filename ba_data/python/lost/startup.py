@@ -4,6 +4,7 @@ import sys
 import babase as ba
 import bascenev1 as bs
 import bauiv1 as bui
+from .discordrp_handler import RichPresence
 
 def startup():
     def auto_module_import():
@@ -25,5 +26,8 @@ def startup():
         _last_error_time = datetime.datetime.now()
         _recent_error = True
         print(error_text)
-        bui.getsound('error').play(0.3)
+        bui.getsound('error').play(1)
+        bui.screenmessage('error occured pls check console ill replace this later :3')
     sys.excepthook = global_exception_hook
+    # ok get rpc started!!! yay
+    ba.apptimer(3, RichPresence)

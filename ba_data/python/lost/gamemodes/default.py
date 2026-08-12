@@ -24,6 +24,7 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
     allow_pausing = True
     allow_mid_activity_joins = False
     chooser_activity_override = None
+    name = 'a Match'
 
     def __init__(self, settings):
         self.session: LostSession

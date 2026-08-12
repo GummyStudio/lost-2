@@ -109,6 +109,8 @@ class MapPreview(bs.Actor):
 class Lobby(bs.Activity[bs.Player, bs.Team]):
     """ where the lobby takes place. """
     allow_pausing = True
+    name = 'Lobby'
+    
     def __init__(self, settings):
         super().__init__(settings)
         self.killers = []

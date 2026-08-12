@@ -1971,6 +1971,22 @@
     "titleText": "Watch",
     "watchReplayButtonText": "Watch\nReplay"
   },
+  "discordRPC": {
+	"menuText": "Browsing the Menu",
+	"menuAFKText": "Browsing the Menu",
+	"activityPlaying": "Playing ${ACTIVITY}",
+	"coopScoreRankText": "Score: ${SCORE}",
+	"noOne": "No One",
+	"noPlayers": "No Players",
+	"charSelectText": "Choosing Profiles",
+	"lobbyText": "Lobby",
+	"partyNameFallback": "a Party",
+	"playingOnline": "Playing Online in ${PARTY}",
+	"playingOnlineSimple": "Playing Online",
+	"watchingReplay": "Watching a Replay",
+	"replayText": "Replay",
+	"playersText": "Players"
+  },
   "waveText": "Wave",
   "wellSureText": "Well Sure!",
   "whatIsThisText": "What is this?",
