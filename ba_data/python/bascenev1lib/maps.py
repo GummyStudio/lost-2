@@ -1516,3 +1516,195 @@ class BlockFortress(bs.Map):
         gnode.ambient_color = (0.6, 0.6, 0.6)
         gnode.vignette_outer = (1, 1, 1)
         gnode.vignette_inner = (0.95, 0.95, 0.95)
+    
+class BigG(bs.Map):
+    """Large G shaped map for racing"""
+
+    # noinspection PyUnresolvedReferences
+    from bascenev1lib.mapdata import big_g as defs
+
+    name = 'Big G'
+
+  
+    @override
+    @classmethod
+    def get_preview_texture_name(cls) -> str:
+        return 'bigGPreview'
+
+    @override
+    @classmethod
+    def on_preload(cls) -> Any:
+        data: dict[str, Any] = {
+            'mesh_top': bs.getmesh('bigG'),
+            'mesh_bottom': bs.getmesh('bigGBottom'),
+            'mesh_bg': bs.getmesh('natureBackground'),
+            'bg_vr_fill_mesh': bs.getmesh('natureBackgroundVRFill'),
+            'collision_mesh': bs.getcollisionmesh('bigGCollide'),
+            'tex': bs.gettexture('bigG'),
+            'mesh_bg_tex': bs.gettexture('natureBackgroundColor'),
+            'collide_bg': bs.getcollisionmesh('natureBackgroundCollide'),
+            'bumper_collision_mesh': bs.getcollisionmesh('bigGBumper'),
+            'bg_material': bs.Material(),
+            'killer_door': bs.getmesh('bigGKillerDoors'),
+            'killer_door_collide': bs.getcollisionmesh('bigGKillerDoors')
+        }
+        data['bg_material'].add_actions(
+            actions=('modify_part_collision', 'friction', 10.0)
+        )
+        return data
+
+    def __init__(self) -> None:
+        super().__init__()
+        shared = SharedObjects.get()
+        self.node = bs.newnode(
+            'terrain',
+            delegate=self,
+            attrs={
+                'collision_mesh': self.preloaddata['collision_mesh'],
+                'color': (0.7, 0.7, 0.7),
+                'mesh': self.preloaddata['mesh_top'],
+                'color_texture': self.preloaddata['tex'],
+                'materials': [shared.footing_material],
+            },
+        )
+        self.bottom = bs.newnode(
+            'terrain',
+            attrs={
+                'mesh': self.preloaddata['mesh_bottom'],
+                'color': (0.7, 0.7, 0.7),
+                'lighting': False,
+                'color_texture': self.preloaddata['tex'],
+            },
+        )
+        self.background = bs.newnode(
+            'terrain',
+            attrs={
+                'mesh': self.preloaddata['mesh_bg'],
+                'lighting': False,
+                'background': True,
+                'color_texture': self.preloaddata['mesh_bg_tex'],
+            },
+        )
+        bs.newnode(
+            'terrain',
+            attrs={
+                'mesh': self.preloaddata['bg_vr_fill_mesh'],
+                'lighting': False,
+                'vr_only': True,
+                'background': True,
+                'color_texture': self.preloaddata['mesh_bg_tex'],
+            },
+        )
+        self.railing = bs.newnode(
+            'terrain',
+            attrs={
+                'collision_mesh': self.preloaddata['bumper_collision_mesh'],
+                'materials': [shared.railing_material],
+                'bumper': True,
+            },
+        )
+        self.bg_collide = bs.newnode(
+            'terrain',
+            attrs={
+                'collision_mesh': self.preloaddata['collide_bg'],
+                'materials': [
+                    shared.footing_material,
+                    self.preloaddata['bg_material'],
+                    shared.death_material,
+                ],
+            },
+        )
+        self.killer_doors = bs.newnode(
+            'terrain',
+            attrs={
+                'mesh': self.preloaddata['killer_door'],
+                'lighting': True,
+                'opacity': 0.5,
+                'color_texture': bs.gettexture(killer_door_color),
+                'collision_mesh': self.preloaddata['killer_door_collide'],
+                'materials': [AsymFactory.get().killer_door_material]
+            },
+        )
+        gnode = bs.getactivity().globalsnode
+        gnode.tint = (1.1*0.5, 1.2*0.5, 1.3*0.5)
+        gnode.ambient_color = (1.1, 1.2, 1.3)
+        gnode.vignette_outer = (0.65, 0.6, 0.55)
+        gnode.vignette_inner = (0.9, 0.9, 0.93)
+
+class TheDivide(bs.Map):
+    """Cool two-parter map."""
+
+    from bascenev1lib.mapdata import divide as defs
+
+    name = 'Autumn Bases'
+
+  
+
+    @classmethod
+    def get_preview_texture_name(cls) -> str:
+        return 'dividePreview'
+
+    @classmethod
+    def on_preload(cls) -> Any:
+        data: dict[str, Any] = {
+            'mesh': bs.getmesh('divideLevel'),
+            'trees_mesh': bs.getmesh('divideTrees'),
+            'trees_tex': bs.gettexture('divideTreesColor'),
+            'collision_mesh': bs.getcollisionmesh('divideLevelCollide'),
+            'bumper_collide_mesh': bs.getcollisionmesh('divideLevelBumper'),
+            'tex': bs.gettexture('divideLevelColor'),
+            'bgmesh': bs.getmesh('thePadBG'),
+            'bgtex': bs.gettexture('divideBG'),
+        }
+        return data
+
+    def __init__(self) -> None:
+        super().__init__(vr_overlay_offset=(0, 0, 2))
+        shared = SharedObjects.get()
+        # Main Level
+        self.level = bs.newnode(
+            'terrain',
+            delegate=self,
+            attrs={
+                'collision_mesh': self.preloaddata['collision_mesh'],
+                'mesh': self.preloaddata['mesh'],
+                'color_texture': self.preloaddata['tex'],
+                'materials': [shared.footing_material]
+            })
+        # Background
+        self.background = bs.newnode(
+            'terrain',
+            attrs={
+                'mesh': self.preloaddata['bgmesh'],
+                'lighting': False,
+                'background': True,
+                'color_texture': self.preloaddata['bgtex']
+            })
+
+        self.trees = bs.NodeActor(
+            bs.newnode(
+                'terrain',
+                attrs={
+                    'mesh': self.preloaddata['trees_mesh'],
+                    'lighting': False,
+                    'reflection': 'char',
+                    'reflection_scale': [0.1],
+                    'color_texture': self.preloaddata['trees_tex'],
+                },
+            )
+        )
+
+        # Railing
+        self.railing = bs.newnode(
+            'terrain',
+            attrs={
+                'collision_mesh': self.preloaddata['bumper_collide_mesh'],
+                'materials': [shared.railing_material],
+                'bumper': True,
+            },
+        )
+        gnode = bs.getactivity().globalsnode
+        gnode.tint = (1.25, 1.05, 0.8)
+        gnode.ambient_color = (1.3, 1.1, 0.8)
+        gnode.vignette_outer = (1, 1, 1)
+        gnode.vignette_inner = (0.99, 0.99, 0.95)
