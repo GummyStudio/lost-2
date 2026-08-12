@@ -14,11 +14,11 @@ class LostSession(bs.Session):
 
     gamemode_maps = {
         DefaultMatch: [
-            #maps.StepRightUp,
-            #maps.MonkeyFace,
+            maps.StepRightUp,
+            maps.MonkeyFace,
             maps.CragCastle,
             maps.BlockFortress,
-            #maps.BigG,
+            maps.BigG,
             maps.TheDivide
         ]
     }
