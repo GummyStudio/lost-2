@@ -304,27 +304,29 @@ class Spaz(bs.Actor):
             bs.timer(0.1, bs.Call(self.safesetattr, self.node, 'name_color', bs.app.classic.spaz_appearances['Pixel'].default_highlight
             ))
             self.node.style = 'pixie'
-        
-        # health text!
-        self.hp_text = bs.newnode(
-            'text',
-            owner=self.node,
-            attrs={
-                'text': 'nan/nan',
-                'in_world': True,
-                'scale': 0.009,
-                'color': color,
-                'shadow': 0.585
-            }
-        )
-        math = bs.newnode(
-                'math',
+        if not self.is_killer:
+            # health text!
+            self.hp_text = bs.newnode(
+                'text',
                 owner=self.node,
-                attrs={'input1': (-0.25, -0.25, 0), 'operation': 'add'},
+                attrs={
+                    'text': 'nan/nan',
+                    'in_world': True,
+                    'scale': 0.009,
+                    'color': color,
+                    'shadow': 0.685,
+                    'v_attach': 'center',
+                    'h_attach': 'center',
+                }
             )
-        self.node.connectattr('position', math, 'input2')
-       
-        math.connectattr('output', self.hp_text, 'position')
+            math = bs.newnode(
+                    'math',
+                    owner=self.node,
+                    attrs={'input1': (-0.35, -0.25, 0), 'operation': 'add'},
+                )
+            self.node.connectattr('position', math, 'input2')
+        
+            math.connectattr('output', self.hp_text, 'position')
 
     def tick_movement(self):
         if not self.exists():
