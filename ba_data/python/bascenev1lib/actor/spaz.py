@@ -230,8 +230,8 @@ class Spaz(bs.Actor):
             self._punch_cooldown = BASE_PUNCH_COOLDOWN
         else:
             self._punch_cooldown = factory.punch_cooldown
-        #self._jump_cooldown = 1250
-        self._jump_cooldown = 0
+        #self._jump_cooldown = 0
+        self._jump_cooldown = 1250
         self._pickup_cooldown = 0
         self._bomb_cooldown = 0
         self._has_boxing_gloves = False
