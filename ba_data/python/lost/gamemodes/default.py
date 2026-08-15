@@ -531,11 +531,12 @@ class DefaultMatch(bs.Activity[bs.Player, bs.Team]):
         survivors = list(self.survivors)
         survivor_char = survivors[0].actor.character
         if (
-            killer_char == "Taobao Mascot" 
+            self.lms
+            and killer_char == "Taobao Mascot" 
             and survivor_char == "Kronk" 
             and not self.aura_done
         ): # holy mother of conditions
-            self.session.add_time(17.0, (1, 0, 0)) # add aura to the lms.
+            bs.pushcall(bs.Call(self.session.add_time, 17.0))
             bs.broadcastmessage(
                 "YOU'RE NOT GETTING AWAY THAT EASILY.", 
                 color=(1, 0.6, 0.6)
