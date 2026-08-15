@@ -1,0 +1,58 @@
+"""Module for a base class for gamemodes."""
+import bascenev1 as bs
+
+class Gamemode(bs.Activity[bs.Player, bs.Team]):
+    """Base class for a gamemode."""
+    def __init__(self, settings):
+        super().__init__(settings)
+        self.killers = []
+        self.survivors = []
+
+    def check_end(self):
+        should_end, winner = self._check_end_conditions()
+        if should_end:
+            self.end_game(winner)
+
+    def on_player_leave(self, player):
+        # same shenanegins as diemessag
+        if player in self.survivors:
+            self.survivors.remove(player)
+            self.check_lms()
+        if player in self.killers:
+            self.killers.remove(player)
+        self.on_player_die(player)
+        self.check_end()
+
+    def spawn_player(self, player: bs.Player, is_killer=False):
+        # get a spawn position
+        if is_killer:
+            self.killers.add(player)
+            spawn = self.map.get_ffa_start_position(list(self.survivors))
+            # For now hard code it into spaz, sigh..
+            character = self.session_killer_characters[player.sessionplayer]
+            app = bs.app.classic.spaz_appearances[character]
+            color = app.default_color
+            highlight = app.default_highlight
+
+        else:
+            self.survivors.add(player)
+            spawn = self.map.get_ffa_start_position([])
+            character = player.character # Their survivor..
+            color=player.color
+            highlight=player.highlight
+        
+       
+        spaz = Spaz(
+            character=character,
+            color=color,
+            highlight=highlight,
+            source_player=player,
+            start_invincible=False,
+            is_killer=is_killer
+        )
+        spaz.handlemessage(bs.StandMessage(spawn))
+        spaz.node.name = player.getname()
+        spaz.node.name_color = color
+        spaz.node.is_area_of_interest = False
+        assignspazinput(spaz, player)
+        player.actor = spaz
