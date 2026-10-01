@@ -1367,7 +1367,13 @@ class Spaz(bs.Actor):
                 # If we're holding something, drop it.
                 if damage > 0.0 and self.node.hold_node:
                     self.node.hold_node = None
-                self.hitpoints -= damage
+                self.handlemessage(
+                    DamageMessage(
+                        damage=damage / 10,
+                        type=msg.hit_type,
+                        hurt_sound=None,
+                    )
+                )
                 self.node.hurt = (
                     1.0 - float(self.hitpoints) / self.hitpoints_max
                 )
@@ -1380,22 +1386,6 @@ class Spaz(bs.Actor):
                             self.curse_explode, msg.get_source_player(bs.Player)
                         ),
                     )
-
-                # If we're frozen, shatter.. otherwise die if we hit zero
-                if self.frozen and (damage > 200 or self.hitpoints <= 0):
-                    self.shatter()
-                elif self.hitpoints <= 0:
-                    self.node.handlemessage(
-                        bs.DieMessage(how=bs.DeathType.IMPACT)
-                    )
-
-            # If we're dead, take a look at the smoothed damage value
-            # (which gives us a smoothed average of recent damage) and shatter
-            # us if its grown high enough.
-            if self.hitpoints <= 0:
-                damage_avg = self.node.damage_smoothed * damage_scale
-                if damage_avg >= 1000:
-                    self.shatter()
 
         elif isinstance(msg, BombDiedMessage):
             self.bomb_count += 1
@@ -1593,10 +1583,23 @@ class Spaz(bs.Actor):
         elif isinstance(msg, bs.CelebrateMessage):
             if self.node:
                 self.node.handlemessage('celebrate', int(msg.duration * 1000))
-
+        elif isinstance(msg, bs.ImpactDamageMessage):
+            bs.pushcall(bs.WeakCall(self._handle_impact_damage, msg.intensity))
         else:
             return super().handlemessage(msg)
         return None
+    
+    def _handle_impact_damage(self, mag: float):
+        # Ask the moveset how they want to handle it.
+        response = self.moveset.handle_impact_damage(mag)
+        # If it's false; it's been handled but want
+        # no affection. Do nothing.
+        if not response:
+            return None
+        # If it's true; handled, and want to be affected.
+        # Do some impact damage.
+        if response:
+            self._hit_self(mag)
 
     def drop_bomb(self) -> Bomb | None:
         """
@@ -1731,6 +1734,9 @@ class Spaz(bs.Actor):
         self.node.shattered = 2 if extreme else 1
 
     def _hit_self(self, intensity: float) -> None:
+        from lost.factory import (
+            DamageMessage, StunMessage
+        )
         if not self.node:
             return
         pos = self.node.position

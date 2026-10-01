@@ -151,6 +151,36 @@ def register_appearances() -> None:
     t.default_highlight = (0, 1, 0)
     t.moveset = survivors.ZoeSurvivor
     bs.app.classic.survivors.append('Zoe')
+    
+    # Ew, a Furry! #####################################
+    t = Appearance('Expie')
+    t.color_texture = 'expieColor'
+    t.color_mask_texture = 'expieColorMask'
+    t.icon_texture = 'expieIcon'
+    t.icon_mask_texture = 'expieIconColorMask'
+    t.head_mesh = 'expieHead'
+    t.torso_mesh = 'expieTorso'
+    t.pelvis_mesh = 'expiePelvis'
+    t.upper_arm_mesh = 'expieUpperArm'
+    t.forearm_mesh = 'expieForeArm'
+    t.hand_mesh = 'expieHand'
+    t.upper_leg_mesh = 'expieUpperLeg'
+    t.lower_leg_mesh = 'expieLowerLeg'
+    t.toes_mesh = 'expieToes'
+    # mostly placeholder
+    bunny_sounds = ['bunny1', 'bunny2', 'bunny3', 'bunny4']
+    bunny_hit_sounds = ['bunnyHit1', 'bunnyHit2']
+    t.jump_sounds = ['bunnyJump']
+    t.attack_sounds = bunny_sounds
+    t.impact_sounds = bunny_hit_sounds
+    t.death_sounds = ['bunnyDeath']
+    t.pickup_sounds = bunny_sounds
+    t.fall_sounds = ['bunnyFall']
+    t.style = 'bones'
+    t.default_color = (0.24, 0.23, 0.25)
+    t.default_highlight = (0.95, 0.64, 0.10)
+    t.moveset = survivors.ExpieSurvivor
+    bs.app.classic.survivors.append('Expie')
 
     # Pirate #######################################
     t = Appearance('Jack Morgan')

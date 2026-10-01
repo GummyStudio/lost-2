@@ -305,3 +305,9 @@ class CharacterMoveset:
     def handle_recieved_damage(self, damage: float, type: str):
         """ can we recieve damage? Return True if yes, return False if No"""
         return True
+    
+    def handle_impact_damage(self, mag: float):
+        """Handle whether this character should take
+        fall damage. Return False if none should be taken,
+        and True if impact damage should be done."""
+        return False

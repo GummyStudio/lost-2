@@ -1,0 +1,658 @@
+"""original non recode version to prove 
+i made half the fucking thing
+go fuwuck yourself :3
+- mell
+"""
+import bascenev1 as bs
+import babase
+from lost.factory import (
+    AsymFactory,
+    DamageMessage,
+    StunMessage,
+    KillerDetectedMessage,
+)
+from lost.character_moveset import CharacterMoveset
+from bascenev1lib.actor.popuptext import PopupText
+import random
+
+VOICELINES = {
+    'fall_damage': [
+        'Oowww...',
+        'Fuck...',
+        'Who even put that there!?',
+    ],
+    'fall_damage_strong': [
+        'AAAGGHHH!!',
+        'OOOWWWW-HO-HO!!!',
+        'MOTHHERFF...',
+    ],
+    'jabbed': [
+        'AH! Damn it!',
+        'Can SOMEONE help me out already!?',
+        'This damn THING is CHASING ME!',
+    ],
+    'jabbed_critical': [
+        'OOOHHH!!',
+        'HEY!! I CAN\'T DO THIS ALONE!!!',
+        'CAANN SOMEONE HEEELLLPPPP!??!?',
+        'I\'M ABOUT TO DIIEEE!!',
+        'IT\'S MAULING ME TO FUCKIN\' DEATH!!',
+    ],
+    'claw': [
+        'Well, that was easy.',
+    ],
+    'claw_critical': [
+        'GET... THE FUCK.. AWAY.',
+        'OH I GOTTA GET THE HELL OUTTA HERE!',
+    ],
+    'hit_any': [
+        'OOWW... What even hit me??!',
+        'OW- Damn it!',
+        'GHH- KNOCK IT OUT!!',
+    ],
+    'hit_any_critical': [
+        'OOOHHHHHH!!',
+        'GGGAAAAHHHHH!!!',
+        'FUUUCKK!!',
+    ],
+    'enraged': [
+        'I\'ll fucking KILL YOU.',
+        'Don\'t get me MAADD!!!\nI\'M BOUT TO GET MAADDD!!!',
+        'WHY YOU LITTLE-',
+    ],
+    'idle': [
+        'Should probably be doing something...\ninstead of standing here.',
+        '...where is everybody?',
+        'Well, I suppose this is nice.',
+    ],
+    'idle_critical': [
+        'This is the end, isn\'t it...?',
+        'Wh- what am I DOING!?',
+        'I\'ve got to get out of here...',
+        'This is madness...',
+    ],
+    'bleed_out': [
+        'Damn it.. if this doesn\'t stop\nsoon I\'ll be dead by then...',
+        'I\'m screwed, aren\'t I...',
+    ]
+}
+    
+class ExpieSurvivor(CharacterMoveset):
+    is_killer = False
+    hitpoints = 600
+    
+    description = (
+        "this game is unupdated as fuck so i got bored and made this"
+        "gummy if you remove this i swear to god "
+        "ill kill you il fucking kill you"
+        "There's no limit to the larp!"
+        "\n{'type': 'edit_text', 'color': (0, 0.8, 1)}"
+        "Lore"
+        "{'type': 'edit_text', 'color': 'default'}\n"
+        "there was a stupid idiota who really likes a certain "
+        "furry character a lot so he decides to add it to "
+        "basically every single game ever"
+        "{'type': 'separator'}"
+        "the end Go home! Goodbye!"
+    )
+    ability1_description = "Claw at a killer to shortly stun them."
+    ability2_description = "todo - maybe dumb dash move"
+    ability3_description = "todo - idk yet"
+
+    move_speed = 0.85
+    run_speed = 0.9
+    ability1_cooldown = 7
+    ability2_cooldown = 0
+    ability3_cooldown = 0
+
+    ability1_icon = babase.charstr(babase.SpecialChar.SKULL)
+    ability2_icon = 'X'
+    ability3_icon = 'X'
+
+    def __init__(self, spaz):
+        super().__init__(spaz)
+        self.sfx = {
+            'enraged': bs.getsound('expie/enrage'),
+            'enrage_end': bs.getsound('expie/enrage_end'),
+            'start_bleeding': bs.getsound('expie/mortal_damage'),
+            'bleed_spike': bs.getsound('expie/hurt'),
+            'status_effect': bs.getsound('expie/feeling_strange'),
+            'status_effect_relieved': bs.getsound('expie/heal'),
+            'die': bs.getsound('expie/die'),
+            'text_blip': bs.getsound('expie/blip'),
+            'error': bs.getsound('expie/error'),
+            'punch_swish': bs.getsound('punchSwish'),
+            'clawed': bs.getsound('Hitggg'),
+        }
+        # Defining effects here and keying them
+        # to specific damage types so we don't 
+        # have to mess with other movesets (and keep it mostly vanilla).
+        # Example:
+        # 'statuseffect': {
+          # 'speed_debuff': multiplier,
+          # 'prevent_abilities': [abilitynum, abilitynum],
+          # 'bleed_out': (interval, hp),
+          # 'ability_cooldown_debuffs': {abilitynum: seconds_inc}
+          # 'claw_stun_debuff': multiplier,
+          # 'claw_damage_debuff': multiplier,
+        # }
+        self._status_effects = {
+            'dizzy': {
+                'speed_debuff': 0.95,
+                'timeout': 10,
+            },
+            'burning': {
+                'bleed_out': (0.3, 1),
+                'timeout': 11,
+            },
+            'disoriented': {
+                'speed_debuff': 0.9,
+                'timeout': 13,
+            },
+            'injured_limb': {
+                'prevent_abilities': [1],
+                'bleed_out': (0.9, 1),
+                'timeout': 16,
+            },
+            'regen': {
+                'bleed_out': (0.2, -1),
+                'timeout': 10,
+            },
+            'enraged': {
+                'timeout': 16,
+                'speed_debuff': 1.1,
+                'claw_stun_debuff': 1.5,
+                'claw_damage_debuff': 7,
+                'ability_cooldown_debuffs': {1: -6}, 
+                'bleed_out': (0.1, 0.5),
+            },
+        }
+        self._enraged_sfx = bs.newnode(
+            'sound',
+            attrs={
+                'sound': bs.getsound('expie/enraged_loop'),
+                'positional': True,
+                'music': False,
+                'volume': 0,
+            }
+        )
+        self._voiceline_text = bs.newnode(
+            'text',
+            owner=self.spaz.node,
+            attrs={
+                'flatness': 1,
+                'shadow': 0.8,
+                'color': (1, 0.5, 0.2),
+                'scale': 1.1 / 100,
+                'in_world': True,
+                'h_align': 'center',
+                'v_align': 'bottom',
+            }
+        )
+        self._statuses_text = bs.newnode(
+            'text',
+            owner=self.spaz.node,
+            attrs={
+                'flatness': 1,
+                'shadow': 0.8,
+                'color': (1, 0, 0),
+                'scale': 0.9 / 100,
+                'in_world': True,
+                'h_align': 'left',
+                'v_align': 'top',
+                'opacity': 1,
+            }
+        )
+        self._idle_tick_timer = bs.Timer(1, self.idle_tick, repeat=True)
+        mnode = bs.newnode(
+            'math',
+            attrs={
+                'input1': (0, 1.7, 0),
+                'operation': 'add',
+            }
+        )
+        mnode2 = bs.newnode(
+            'math',
+            attrs={
+                'input1': (0.4, 1.3, 0),
+                'operation': 'add',
+            }
+        )
+        self.spaz.node.connectattr('position', mnode, 'input2')
+        self.spaz.node.connectattr('position', mnode2, 'input2')
+        mnode.connectattr('output', self._voiceline_text, 'position'),
+        mnode2.connectattr('output', self._statuses_text, 'position'),
+        self.spaz.node.connectattr('position', self._enraged_sfx, 'position')
+        self._claw_dmg = 40
+        self._claw_stun_time = 0.4
+        self._prevented_abilities = []
+        self._active_effects = []
+        self._bleed_timers = {}
+        self._idle_seconds = 0
+        self.factory = AsymFactory.get()
+    
+    def idle_tick(self):
+        if not self.spaz.node:
+            return
+        move_x = self.spaz.input_x
+        move_y = self.spaz.input_y
+        deadzone = 0.2
+        if abs(move_x) < deadzone and abs(move_y) < deadzone:
+            self._idle_seconds += 1
+            if self._idle_seconds > random.randint(9, 15):
+                self._idle_seconds = 0
+                voiceline = 'idle_critical' if self.spaz.hitpoints < 500 else 'idle'
+                self.play_voiceline(voiceline)
+        else:
+            self._idle_seconds = 0
+    
+    def _stream_sound(self, sound: str, volume: float = 1):
+        if not self.spaz.node:
+            return
+        self.play_sound(
+            sound, 
+            volume=volume,
+            position=self.spaz.node.position
+        )
+    
+    def _enrage(self):
+        bs.animate_array(
+            self.spaz.node,
+            'color',
+            3,
+            {
+                0: (1, 0, 0),
+                0.05: (0.8, 0.3, 0.3),
+                0.1: (1, 0, 0),
+            },
+            loop=True
+        )
+        self._stream_sound('enraged')
+        self._enraged_sfx.volume = 0.5
+        self.play_voiceline('enraged')
+    
+    def _calm_tf_down(self):
+        player = self.spaz.source_player
+        bs.animate_array(
+            self.spaz.node,
+            'color',
+            3,
+            {
+                0: self.spaz.node.color,
+                0.1: (0.5, 0.6, 0.9),
+                0.4: player.color,
+            }
+        )
+        self._enraged_sfx.volume = 0
+        self._stream_sound('enrage_end')
+    
+    def _update_status_text(self):
+        text = '\n'.join(self._active_effects)
+        self._statuses_text.text = text
+    
+    def relieve_status_effect(self, codename: str | dict):
+        """Relieves a Expie from one of their status effects."""
+        if not self.spaz.node:
+            return
+        # Allow support for passing dicts; so other movesets
+        # can define their own just incase.
+        if isinstance(codename, dict):
+            effect = codename
+            codename = str(id(effect))
+        else:
+            effect = self._status_effects.get(codename)
+        # For now; hardcode this.
+        if codename == 'enraged':
+            self._calm_tf_down()
+        if not effect:
+            # Strike this Expie; just so no further 
+            # side effects can occur.
+            self._gib()
+            # Raise the former.
+            raise RuntimeError(f'Status effect {codename} undefined/not found in Expie\'s moveset; Eradicating...')
+        if codename not in self._active_effects:
+            return
+        # Alright; remove everything.
+        # Speed debuff
+        if effect.get('speed_debuff'):
+            self.spaz.max_walk_speed /= effect.get('speed_debuff')
+            self.spaz.max_run_speed /= effect.get('speed_debuff')
+        # Ability blocks
+        if effect.get('prevent_abilities'):
+            for i in effect.get('prevent_abilities'):
+                self.allow_abillity(i)
+        # Claw debuffs
+        if effect.get('claw_stun_debuff'):
+            self._claw_stun_time /= effect.get('claw_stun_debuff')
+        if effect.get('claw_damage_debuff'):
+            self._claw_stun_time /= effect.get('claw_damage_debuff')
+        # Ability cooldowns
+        if effect.get('ability_cooldown_debuffs'):
+            for i in effect.get('ability_cooldown_debuffs').keys():
+                # We're certain these exist.
+                debuff = effect.get('ability_cooldown_debuffs')[i]
+                current = getattr(self, f'ability{i}_cooldown')
+                setattr(self, f'ability{i}_cooldown', current - debuff)
+        # Bleed out
+        if effect.get('bleed_out'):
+            self._bleed_timers[codename] = None
+        self._active_effects.remove(codename)
+        self._update_status_text()
+        self._stream_sound('status_effect_relieved')
+    
+    def apply_status_effect(self, codename: str, timeout_inc: int = 0):
+        """Gives a Expie a status effect.
+        timeout_inc means how much more/less time it'll 
+        take for this status effect to time-out."""
+        if not self.spaz.node:
+            return
+        if isinstance(codename, dict):
+            effect = codename
+            codename = str(id(effect))
+        else:
+            effect = self._status_effects.get(codename)
+        # For now; hardcode this.
+        if codename == 'enraged':
+            self._enrage()
+        if codename in self._active_effects:
+            return
+        if not effect:
+            # Strike this Expie; just so no further 
+            # side effects can occur.
+            self._gib()
+            # Raise the former.
+            raise RuntimeError(f'Status effect {codename} undefined/not found in Expie\'s moveset; Eradicating...')
+        self._update_status_text()
+        # Alright; apply everything.
+        timeout = effect.get('timeout') + timeout_inc
+        # Speed debuff
+        if effect.get('speed_debuff'):
+            self.spaz.max_walk_speed *= effect.get('speed_debuff')
+            self.spaz.max_run_speed *= effect.get('speed_debuff')
+        # Ability blocks
+        if effect.get('prevent_abilities'):
+            for i in effect.get('prevent_abilities'):
+                self.prevent_abillity(i)
+        # Claw debuffs
+        if effect.get('claw_stun_debuff'):
+            self._claw_stun_time *= effect.get('claw_stun_debuff')
+        if effect.get('claw_damage_debuff'):
+            self._claw_stun_time *= effect.get('claw_damage_debuff')
+        # Ability cooldowns
+        if effect.get('ability_cooldown_debuffs'):
+            for i in effect.get('ability_cooldown_debuffs').keys():
+                # We're certain these exist.
+                debuff = effect.get('ability_cooldown_debuffs')[i]
+                current = getattr(self, f'ability{i}_cooldown')
+                setattr(self, f'ability{i}_cooldown', current + debuff)
+        # Bleed out
+        if effect.get('bleed_out'):
+            interval, amount = effect.get('bleed_out')
+            timer = bs.Timer(
+                interval, 
+                bs.WeakCall(self._bleed_out, amount),
+                repeat=True,
+            )
+            self._bleed_timers[codename] = timer
+        self._active_effects.append(codename)
+        bs.timer(timeout, bs.WeakCall(self.relieve_status_effect, codename))
+        self._update_status_text()
+        self._stream_sound('status_effect')
+        
+    def prevent_ability(self, num: int):
+        # Making sure.
+        num = int(num)
+        if num not in self._prevented_abilities:
+            self._prevented_abilities.append(num)
+    
+    def allow_ability(self, num: int):
+        # Making sure.
+        num = int(num)
+        if num in self._prevented_abilities:
+            self._prevented_abilities.remove(num)
+    
+    def _emit_blood(self):
+        bs.emitfx(
+            position=self.spaz.node.position,
+            chunk_type='sweat',
+            velocity=(
+                random.uniform(-1.5, 1.5),
+                random.uniform(-1.5, 1.5),
+                random.uniform(-1.5, 1.5),
+            ),
+            count=random.randint(15, 20),
+            scale=1.8,
+            spread=0.4,
+        )
+    
+    def _gib(self):
+        self.spaz.shatter(True)
+        for _ in range(5):
+            self._emit_blood()
+        # Why
+        bs.getsound('expie/gib').play(
+            position=self.spaz.node.position
+        )
+    
+    def _bleed_out(self, amount: float):
+        # Sometimes we can have negative
+        # bleed out; perhaps like regen.
+        positive = amount < 0
+        # If this isn't one tho;
+        # make a nice little effect randomly.
+        if not positive:
+            if random.random() < 0.1:
+                self._emit_blood()
+            self._stream_sound('bleed_spike')
+            # FIXME: Cooldowns would be nice too..?
+            # Don't want this to end up activating twice
+            # if someone's lucky enough. That'll look bad.
+            if random.random() < 0.01:
+                self.play_voiceline('bleed_out')
+        self.spaz.hitpoints -= amount
+        if self.spaz.hitpoints <= 0:
+            self.spaz.handlemessage(
+                DamageMessage(
+                    damage=amount,
+                    type='bleed_out',
+                    hurt_sound=None,
+                )
+            )
+    
+    def _advance_typewriter(self):
+        if not self.spaz.is_alive():
+            self._typewriter_timer = None
+            self._voiceline_text.opacity = 0
+            return
+        self._typewriter_chunk += 1
+        text = self._typewriter_desired_text[:self._typewriter_chunk]
+        self._voiceline_text.text = text
+        self._stream_sound('text_blip')
+        if self._typewriter_chunk >= len(self._typewriter_desired_text):
+            self._typewriter_timer = None
+            bs.animate(
+                self._voiceline_text,
+                'opacity',
+                {
+                    0: 1,
+                    1: 1,
+                    1.5: 0,
+                }
+            )
+    
+    def play_voiceline(self, codename: str):
+        if not self.spaz.is_alive():
+            return
+        text = random.choice(VOICELINES[codename])
+        self._typewriter_desired_text = text
+        self._typewriter_chunk = 0
+        self._voiceline_text.text = ''
+        bs.animate(
+            self._voiceline_text,
+            'opacity',
+            {
+                0: 0,
+                0.05: 1,
+            }
+        )
+        self._typewriter_timer = bs.Timer(
+            0.01,
+            self._advance_typewriter,
+            repeat=True,
+        )
+    
+    def handle_impact_damage(self, mag: float):
+        if mag >= 5:
+            self.play_voiceline('fall_damage_strong')
+        else:
+            if random.random() < 1:
+                self.play_voiceline('fall_damage')
+        # Apply 'disoriented' if we've taken too much a fall.
+        if mag >= 3.5:
+            self.apply_status_effect('disoriented', 2 / mag)
+        return True
+
+    def ability1_extra_conditions(self):
+        allowed = 1 not in self._prevented_abilities
+        # Assume this is us being asked; 
+        # so just do some extra stuff here.
+        if not allowed:
+            if 'injured_limb' in self._active_effects:
+                PopupText(
+                    'Can\'t claw; Injured limb...',
+                    position=self.spaz.node.position,
+                    color=(0.8, 0.9, 1),
+                    scale=1.0,
+                ).autoretain()
+            self._stream_sound('error')
+        return allowed
+    def ability2_extra_conditions(self):
+        allowed = 2 not in self._prevented_abilities
+        # Assume this is us being asked; 
+        # so just do some extra stuff here.
+        if not allowed:
+            self._stream_sound('error')
+        return allowed
+    def ability3_extra_conditions(self):
+        allowed = 3 not in self._prevented_abilities
+        # Assume this is us being asked; 
+        # so just do some extra stuff here.
+        if not allowed:
+            self._stream_sound('error')
+        return allowed
+
+    def ability1(self):
+        self._punched_nodes = set()
+        self.spaz.node.punch_pressed = True
+        self.spaz.node.punch_pressed = False
+        self._stream_sound('punch_swish')
+   
+    def spaz_lost_all_hp(self, type):
+        super().spaz_lost_all_hp(type)
+        self._stream_sound('die')
+        # No matter what; we shatter.
+        # FIXME: Shouldn't do this too much...
+        # Would look dramatic for small damage kills like bleed out.
+        self._gib()
+
+    def handle_recieved_damage(self, damage, type):
+        # Ooohh... this is where it gets fun.
+        # 'hit_type': [(chance, status_effect, condition)]
+        possible_status_effects = {
+            # Explosive-ish; so kinda related to fire.
+            'maskedman_beam': [(0.3, 'burning', True)],
+            'ninja_mine': [(0.1, 'burning', True)],
+            'ninja_fire_punch': [(0.8, 'burning', True)],
+            # Punchy stuff.
+            'ninja_punch': [(0.01, 'dizzy', self.spaz.hitpoints < 600)],
+            'spaz_punch': [(0.01, 'dizzy', self.spaz.hitpoints < 600)],
+            'ali_punch': [(0.01, 'dizzy', self.spaz.hitpoints < 600)],
+            'bones_punch': [(0.1, 'disoriented', self.spaz.hitpoints < 300)],
+            'pixel_minion_punch': [
+                (0.05, 'dizzy', self.spaz.hitpoints < 300),
+                # Fuck you.
+                (0.1, 'regen', True),
+                (0.4, 'enraged', True),
+            ],
+            'ali_rush': [
+                (0.2, 'dizzy', True),
+                (0.4, 'disoriented', True),
+                (0.05, 'burning', True),
+                # can't detect limb hits.. methinks
+                # but this'll work (and kinda makes sense)
+                (0.2, 'injured_limb', True),
+            ],
+        }
+        # Eeewww...
+        jabbed = 'punch' in type
+        if jabbed:
+            if random.random() < 0.4:
+                voiceline = 'jabbed_critical' if self.spaz.hitpoints < 300 else 'jabbed'
+                self.play_voiceline(voiceline)
+        else:
+            if random.random() < 0.4:
+                voiceline = 'hit_any_critical' if self.spaz.hitpoints < 300 else 'hit_any'
+                self.play_voiceline(voiceline)
+        possible_effects = possible_status_effects.get(type)
+        if possible_effects:
+            for effect in possible_effects:
+                chance, codename, condition = effect
+                chance = 1
+                # Check if condition is lambda; then replace it
+                if callable(condition):
+                    condition = condition()
+                if random.random() < chance and condition == True:
+                    self.apply_status_effect(codename)
+        return True
+
+    def handle_spaz_punched_something(self, collision: bs.Collision) -> bool:
+        node = collision.opposingnode
+
+        if node.getnodetype() != 'spaz':
+            return False
+
+        if self.node_not_punched_nodes(node):
+            self._punched_nodes.add(node)
+            node.handlemessage(
+                DamageMessage(
+                    damage=self._claw_dmg,  
+                    spaz=self.spaz,
+                    type='expie_claw',
+                    hurt_sound=None,
+                )
+            )
+            node.handlemessage(
+                StunMessage(
+                    duration=self._claw_stun_time, 
+                    knockback_settings={
+                        'x': 18,
+                        'y': 9,
+                        'direction': node.velocity
+                    }
+                )
+            )
+            self.play_sound('clawed', position=node.position)
+            bs.emitfx(
+                position=self.spaz.node.position,
+                chunk_type='spark',
+                velocity=self.spaz.node.velocity,
+                count=random.randint(30, 55),
+                scale=0.8,
+                spread=0.3,
+            )
+                
+            if random.random() < 0.2:
+                voiceline = 'claw_critical' if self.spaz.hitpoints < 300 else 'claw'
+                self.play_voiceline(voiceline)
+        return False
+
+    def ability2(self):
+        self._stream_sound('error')
+        pass
+    def ability3(self):
+        self._stream_sound('error')
+        pass
+        
+
+
+   
